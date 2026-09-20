@@ -1,20 +1,101 @@
+import { useState } from 'react';
+import { Navigate, useNavigate } from 'react-router-dom';
+import { useSessionStore } from '../store/useSessionStore';
+import { useProgressStore } from '../store/useProgressStore';
 import { Card } from '../components/ui/Card';
+import { TestRunnerToolbar } from '../components/test-runner/TestRunnerToolbar';
+import { TestRunnerLayout } from '../components/test-runner/TestRunnerLayout';
+import { HighlightableText } from '../components/test-runner/HighlightableText';
+import { QuestionPanel } from '../components/test-runner/QuestionPanel';
+import { DesmosPanel } from '../components/test-runner/DesmosPanel';
 
 /**
- * OWNER: Phase 1 Track C2 (largest track — may be split into sub-components):
- * crosser (useSessionStore crossedChoices/crosserToolActive), highlighter
- * (src/lib/highlighter/*), SPR input (src/lib/scoring/answerChecking.ts),
- * timer/stopwatch, Desmos toggle (src/lib/desmos/loadDesmos.ts).
- * Reads the active session from useSessionStore (not URL params); redirect to
- * /setup if there's no active queue. On completion, call finishSession() +
- * useProgressStore.applySessionResult(result), then navigate to /results.
+ * The test-taking screen: one question at a time from the active session queue, with
+ * Bluebook-style tools (crosser, highlighter, optional Desmos calculator, timer/stopwatch,
+ * immediate or end-of-session answer reveal). Reads the active session from
+ * useSessionStore — there's no URL param for "which question"; navigation is driven by
+ * the store's currentIndex.
  */
 export function TestRunnerPage() {
+  const navigate = useNavigate();
+  const config = useSessionStore((s) => s.config);
+  const queue = useSessionStore((s) => s.queue);
+  const currentIndex = useSessionStore((s) => s.currentIndex);
+  const crosserActive = useSessionStore((s) => s.crosserActive);
+  const toggleCrosser = useSessionStore((s) => s.toggleCrosser);
+  const goToIndex = useSessionStore((s) => s.goToIndex);
+
+  const [desmosOpen, setDesmosOpen] = useState(false);
+
+  function finishFlow() {
+    const result = useSessionStore.getState().finishSession();
+    useProgressStore.getState().applySessionResult(result);
+    useSessionStore.getState().clearSession();
+    navigate('/results');
+  }
+
+  function handleNext() {
+    if (currentIndex + 1 >= queue.length) {
+      finishFlow();
+    } else {
+      goToIndex(currentIndex + 1);
+    }
+  }
+
+  if (queue.length === 0 || !config) {
+    return <Navigate to="/setup" replace />;
+  }
+
+  const question = queue[currentIndex];
+  if (!question) {
+    return <Navigate to="/setup" replace />;
+  }
+
+  const isLast = currentIndex + 1 >= queue.length;
+
   return (
-    <div className="mx-auto max-w-4xl px-4 py-8">
-      <Card>
-        <p className="text-sm text-venice-blue-dark/70">Test runner — coming soon.</p>
-      </Card>
+    <div className="min-h-screen pb-24">
+      <TestRunnerToolbar
+        currentIndex={currentIndex}
+        total={queue.length}
+        crosserActive={crosserActive}
+        onToggleCrosser={toggleCrosser}
+        showCalculatorToggle={question.subject === 'math'}
+        calculatorOpen={desmosOpen}
+        onToggleCalculator={() => setDesmosOpen((v) => !v)}
+        timerMode={config.timerMode}
+        countdownMinutes={config.countdownMinutes}
+        onTimerExpire={finishFlow}
+      />
+
+      <TestRunnerLayout
+        hasPassage={!!question.passage}
+        passage={
+          question.passage ? (
+            <Card>
+              <HighlightableText
+                key={question.id}
+                text={question.passage}
+                rangeKey={`${question.id}:passage`}
+                className="text-base leading-relaxed"
+              />
+            </Card>
+          ) : undefined
+        }
+        question={
+          <Card>
+            <QuestionPanel
+              key={question.id}
+              question={question}
+              revealMode={config.revealMode}
+              isLast={isLast}
+              onNext={handleNext}
+            />
+          </Card>
+        }
+      />
+
+      <DesmosPanel open={desmosOpen} onClose={() => setDesmosOpen(false)} />
     </div>
   );
 }
