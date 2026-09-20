@@ -16,6 +16,9 @@ interface SessionState {
   highlights: Record<string, HighlightRange[]>;
   streak: number;
   startedAt: string | null;
+  /** Set by finishSession(); survives clearSession() so ResultsPage can read it after the
+   *  running session state (queue/answers/index) is reset. Cleared only by the next finishSession(). */
+  lastResult: SessionResult | null;
 
   startSession: (config: SessionConfig, queue: Question[], initialStreak: number) => void;
   answerCurrent: (outcome: AttemptOutcome, selectedChoice?: string, submittedAnswer?: string) => void;
@@ -23,6 +26,8 @@ interface SessionState {
   toggleCrosser: () => void;
   toggleCrossedChoice: (questionId: string, choiceId: ChoiceId) => void;
   setHighlights: (key: string, ranges: HighlightRange[]) => void;
+  /** Computes the result, stores it as lastResult, and returns it. Does NOT call
+   *  useProgressStore.applySessionResult() itself — the caller (TestRunnerPage) must do that. */
   finishSession: () => SessionResult;
   clearSession: () => void;
 }
@@ -37,6 +42,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
   highlights: {},
   streak: 0,
   startedAt: null,
+  lastResult: null,
 
   startSession: (config, queue, initialStreak) => {
     set({
@@ -97,6 +103,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
       correctCount: list.filter((a) => a.outcome === 'correct').length,
       incorrectCount: list.filter((a) => a.outcome === 'incorrect').length,
     };
+    set({ lastResult: result });
     return result;
   },
 
