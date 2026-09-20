@@ -1,32 +1,33 @@
-# React + TypeScript + Vite
+# One for All SAT
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+A personal SAT practice app styled after College Board's digital "Bluebook" app — topic/domain/skill drills across Math and Reading & Writing, an answer eliminator, a text highlighter, a Desmos graphing calculator, configurable timers, and persistent Wrong/Right review tabs.
 
-Currently, two official plugins are available:
+**Live app:** https://dev-flowstate.github.io/one-for-all-sat/
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## How it works
 
-## React Compiler
+- **Everything runs client-side.** No login is required. Settings, points, streaks, and progress live in `localStorage`; the question bank lives in IndexedDB. Nothing is sent to a server.
+- **Local profile (optional).** You can set a nickname/avatar under Profile & Settings, but it's just a label saved in this browser — not a real account, no password, no sync across devices.
+- **Bundled demo questions.** The app ships with a small set of original practice questions (`src/data/bundled-bank/`) so it's usable out of the box.
+- **Import your own question bank.** Under Import, you can load a JSON file matching the schema in `src/lib/schema.ts` (`{ "questions": [...] }`) to add your own questions. Imported content is stored only in your browser and is never uploaded anywhere or committed to this repo.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Development
 
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+```bash
+npm install
+npm run dev      # start the dev server
+npm run build    # type-check + production build
+npm run preview  # preview the production build locally
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+### Desmos calculator
+
+The graphing calculator needs a free API key from [desmos.com/my-api](https://www.desmos.com/my-api). Copy `.env.example` to `.env.local` and set `VITE_DESMOS_API_KEY`. Without a key, the calculator panel shows a clear "not configured" message instead of failing silently. For the deployed site, set `VITE_DESMOS_API_KEY` as a GitHub Actions repository secret (Settings → Secrets and variables → Actions) — it's read by `.github/workflows/deploy.yml` at build time.
+
+## Deployment
+
+Pushing to `main` builds the app and deploys it to GitHub Pages automatically via `.github/workflows/deploy.yml`.
+
+## License
+
+MIT — see [LICENSE](LICENSE). Covers the code only; it does not cover any question content you import locally.
