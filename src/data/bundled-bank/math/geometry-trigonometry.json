@@ -1,1 +1,68 @@
-[]
+[
+  {
+    "id": "bundled-geo-01",
+    "subject": "math",
+    "domain": "Geometry and Trigonometry",
+    "skill": "Area and volume",
+    "difficulty": "Easy",
+    "type": "mcq",
+    "prompt": "A rectangular box has a length of 6 inches, a width of 4 inches, and a height of 3 inches. What is the volume of the box, in cubic inches?",
+    "choices": [
+      {"id": "A", "text": "13"},
+      {"id": "B", "text": "24"},
+      {"id": "C", "text": "48"},
+      {"id": "D", "text": "72"}
+    ],
+    "correctChoice": "D",
+    "explanation": "Volume = length x width x height = 6 x 4 x 3 = 72 cubic inches. Choice A results from adding the dimensions instead of multiplying them. Choice B multiplies only two of the three dimensions (6 x 4), omitting the height.",
+    "source": "bundled"
+  },
+  {
+    "id": "bundled-geo-02",
+    "subject": "math",
+    "domain": "Geometry and Trigonometry",
+    "skill": "Lines, angles, and triangles",
+    "difficulty": "Easy",
+    "type": "mcq",
+    "prompt": "In triangle ABC, angle A measures 50 degrees and angle B measures 65 degrees. What is the measure of angle C, in degrees?",
+    "choices": [
+      {"id": "A", "text": "50"},
+      {"id": "B", "text": "65"},
+      {"id": "C", "text": "115"},
+      {"id": "D", "text": "180"}
+    ],
+    "correctChoice": "B",
+    "explanation": "The angles of a triangle sum to 180 degrees, so angle C = 180 - 50 - 65 = 65. Choice C results from subtracting only one of the two given angles from 180 (180 - 65 = 115). Choice D is the total angle sum, not angle C alone.",
+    "source": "bundled"
+  },
+  {
+    "id": "bundled-geo-03",
+    "subject": "math",
+    "domain": "Geometry and Trigonometry",
+    "skill": "Right triangles and trigonometry",
+    "difficulty": "Medium",
+    "type": "spr",
+    "prompt": "A right triangle has legs of length 9 and 12. What is the length of the hypotenuse?",
+    "acceptableAnswers": ["15"],
+    "explanation": "By the Pythagorean theorem, the hypotenuse c satisfies c^2 = 9^2 + 12^2 = 81 + 144 = 225, so c = 15.",
+    "source": "bundled"
+  },
+  {
+    "id": "bundled-geo-04",
+    "subject": "math",
+    "domain": "Geometry and Trigonometry",
+    "skill": "Circles",
+    "difficulty": "Hard",
+    "type": "mcq",
+    "prompt": "A circle has a circumference of 18π. What is the area of the circle?",
+    "choices": [
+      {"id": "A", "text": "9π"},
+      {"id": "B", "text": "18π"},
+      {"id": "C", "text": "81π"},
+      {"id": "D", "text": "324π"}
+    ],
+    "correctChoice": "C",
+    "explanation": "Circumference = 2πr = 18π gives r = 9. Area = πr^2 = π(9)^2 = 81π. Choice D results from mistakenly using r = 18 (the diameter) instead of r = 9.",
+    "source": "bundled"
+  }
+]

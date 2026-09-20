@@ -1,1 +1,78 @@
-[]
+[
+  {
+    "id": "bundled-eoi-01",
+    "subject": "reading-writing",
+    "domain": "Expression of Ideas",
+    "skill": "Rhetorical Synthesis",
+    "difficulty": "Medium",
+    "type": "mcq",
+    "passage": "A student has taken the following notes:\n• The Sahara Desert was significantly wetter around 6,000 years ago, a period known as the African Humid Period.\n• Lake sediments and rock art depicting hippos and giraffes support this wetter climate.\n• Researchers debate whether the shift to today's arid climate happened gradually or abruptly.\n• Some models suggest the change occurred within just a few centuries.",
+    "prompt": "The student wants to emphasize the pace at which the Sahara's climate changed. Which choice most effectively uses relevant information from the notes to accomplish this goal?",
+    "choices": [
+      {"id": "A", "text": "The Sahara Desert was much wetter 6,000 years ago, during the African Humid Period."},
+      {"id": "B", "text": "Rock art depicting hippos and giraffes suggests the Sahara once supported very different wildlife."},
+      {"id": "C", "text": "Some models suggest the Sahara's shift from a wetter climate to today's arid conditions occurred within just a few centuries."},
+      {"id": "D", "text": "Researchers continue to study lake sediments to learn more about the Sahara's climate history."}
+    ],
+    "correctChoice": "C",
+    "explanation": "Choice C directly addresses the pace of change by citing the finding that the climate shift occurred within just a few centuries. The other choices mention related facts, such as the wetter period, rock art evidence, and ongoing research, but none address how quickly the change occurred.",
+    "source": "bundled"
+  },
+  {
+    "id": "bundled-eoi-02",
+    "subject": "reading-writing",
+    "domain": "Expression of Ideas",
+    "skill": "Rhetorical Synthesis",
+    "difficulty": "Easy",
+    "type": "mcq",
+    "passage": "A student has taken the following notes:\n• The city of Curitiba, Brazil, redesigned its bus system in the 1970s using tube-shaped stations for faster boarding.\n• Passengers pay before boarding, which reduces the time buses spend stopped.\n• The system inspired similar 'bus rapid transit' designs in over 200 cities worldwide.\n• Curitiba's population has grown significantly since the system was introduced.",
+    "prompt": "The student wants to explain why Curitiba's bus system became influential beyond its home city. Which choice most effectively uses relevant information from the notes to accomplish this goal?",
+    "choices": [
+      {"id": "A", "text": "Curitiba's tube-shaped stations allowed for faster boarding than traditional bus stops."},
+      {"id": "B", "text": "Passengers in Curitiba pay before boarding, which speeds up bus stops."},
+      {"id": "C", "text": "Curitiba's bus rapid transit design inspired similar systems in over 200 cities worldwide."},
+      {"id": "D", "text": "Curitiba's population has grown considerably since the 1970s."}
+    ],
+    "correctChoice": "C",
+    "explanation": "Choice C directly states that the design was adopted in over 200 other cities, which explains its influence beyond Curitiba. Choices A and B describe design features but don't address the system's broader influence, and choice D is unrelated to influence.",
+    "source": "bundled"
+  },
+  {
+    "id": "bundled-eoi-03",
+    "subject": "reading-writing",
+    "domain": "Expression of Ideas",
+    "skill": "Transitions",
+    "difficulty": "Easy",
+    "type": "mcq",
+    "passage": "The marathon route wound through five different neighborhoods, each with its own crowd of cheering spectators. _______, many runners said the final two miles, which cut through a quiet industrial area with almost no spectators, were the hardest part of the race.",
+    "prompt": "Which choice completes the text with the most logical transition?",
+    "choices": [
+      {"id": "A", "text": "For example"},
+      {"id": "B", "text": "Similarly"},
+      {"id": "C", "text": "However"},
+      {"id": "D", "text": "Therefore"}
+    ],
+    "correctChoice": "C",
+    "explanation": "The second sentence contrasts the lively, crowd-filled neighborhoods with the quiet, spectator-less final stretch, so a contrast transition like 'However' is needed. 'Therefore' would incorrectly suggest the quiet stretch was a result of the earlier crowds, which isn't the relationship described.",
+    "source": "bundled"
+  },
+  {
+    "id": "bundled-eoi-04",
+    "subject": "reading-writing",
+    "domain": "Expression of Ideas",
+    "skill": "Transitions",
+    "difficulty": "Hard",
+    "type": "mcq",
+    "passage": "Researchers initially believed that the newly discovered fossil belonged to an entirely unknown species. Further analysis of the bone structure, _______, revealed close similarities to a species already documented in the region, suggesting the fossil was simply an unusually large specimen of a known species.",
+    "prompt": "Which choice completes the text with the most logical transition?",
+    "choices": [
+      {"id": "A", "text": "for instance"},
+      {"id": "B", "text": "in addition"},
+      {"id": "C", "text": "as a result"},
+      {"id": "D", "text": "however"}
+    ],
+    "correctChoice": "D",
+    "explanation": "The sentence reverses the initial hypothesis of an unknown species with a finding pointing to a known species, so a contrastive transition like 'however' fits best. 'In addition' would incorrectly suggest the new finding simply adds to the initial belief rather than revising it.",
+    "source": "bundled"
+  }
+]

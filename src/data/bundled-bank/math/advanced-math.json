@@ -1,1 +1,68 @@
-[]
+[
+  {
+    "id": "bundled-adv-01",
+    "subject": "math",
+    "domain": "Advanced Math",
+    "skill": "Equivalent expressions",
+    "difficulty": "Easy",
+    "type": "mcq",
+    "prompt": "Which expression is equivalent to 3(2x - 5) + 4x?",
+    "choices": [
+      {"id": "A", "text": "10x - 15"},
+      {"id": "B", "text": "10x - 5"},
+      {"id": "C", "text": "6x - 11"},
+      {"id": "D", "text": "10x + 15"}
+    ],
+    "correctChoice": "A",
+    "explanation": "Distribute the 3 first: 3(2x - 5) = 6x - 15. Adding 4x gives 10x - 15. Choice D comes from a sign error when distributing (treating -5 times 3 as +15). Choice B comes from forgetting to multiply the -5 by 3.",
+    "source": "bundled"
+  },
+  {
+    "id": "bundled-adv-02",
+    "subject": "math",
+    "domain": "Advanced Math",
+    "skill": "Nonlinear functions",
+    "difficulty": "Medium",
+    "type": "mcq",
+    "prompt": "The function f is defined by f(x) = x^2 - 4x + 1. What is the value of f(5)?",
+    "choices": [
+      {"id": "A", "text": "5"},
+      {"id": "B", "text": "6"},
+      {"id": "C", "text": "46"},
+      {"id": "D", "text": "-9"}
+    ],
+    "correctChoice": "B",
+    "explanation": "Substituting x = 5 gives 5^2 - 4(5) + 1 = 25 - 20 + 1 = 6. Choice A omits the final +1. Choice C results from adding 4(5) instead of subtracting it (25 + 20 + 1 = 46).",
+    "source": "bundled"
+  },
+  {
+    "id": "bundled-adv-03",
+    "subject": "math",
+    "domain": "Advanced Math",
+    "skill": "Nonlinear equations in one variable and systems of equations in two variables",
+    "difficulty": "Medium",
+    "type": "spr",
+    "prompt": "What is the positive solution to the equation x^2 - 3x - 18 = 0?",
+    "acceptableAnswers": ["6"],
+    "explanation": "The equation factors as (x - 6)(x + 3) = 0, so x = 6 or x = -3. Since the question asks for the positive solution, the answer is 6.",
+    "source": "bundled"
+  },
+  {
+    "id": "bundled-adv-04",
+    "subject": "math",
+    "domain": "Advanced Math",
+    "skill": "Equivalent expressions",
+    "difficulty": "Hard",
+    "type": "mcq",
+    "prompt": "Which expression is equivalent to (3x^2y)^2 / (9xy), for all positive values of x and y?",
+    "choices": [
+      {"id": "A", "text": "x^3y"},
+      {"id": "B", "text": "x^3y^2"},
+      {"id": "C", "text": "3x^3y"},
+      {"id": "D", "text": "x^2y"}
+    ],
+    "correctChoice": "A",
+    "explanation": "Squaring the numerator gives (3x^2y)^2 = 9x^4y^2. Dividing by 9xy cancels the coefficients (9/9 = 1) and subtracts exponents on each variable: x^4/x = x^3 and y^2/y = y, giving x^3y. Choice B keeps the y-exponent from the numerator without subtracting. Choice C fails to fully cancel the coefficient 9/9 to 1.",
+    "source": "bundled"
+  }
+]

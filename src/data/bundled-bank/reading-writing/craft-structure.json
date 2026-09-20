@@ -1,1 +1,78 @@
-[]
+[
+  {
+    "id": "bundled-cs-01",
+    "subject": "reading-writing",
+    "domain": "Craft and Structure",
+    "skill": "Words in Context",
+    "difficulty": "Easy",
+    "type": "mcq",
+    "passage": "The community garden had thrived for a decade under careful tending. After weeks of drought, though, it looked utterly desolate: the soil had cracked into jagged plates, and the few remaining leaves crumbled at the slightest touch.",
+    "prompt": "As used in the text, what does the word 'desolate' most nearly mean?",
+    "choices": [
+      {"id": "A", "text": "Colorful"},
+      {"id": "B", "text": "Barren"},
+      {"id": "C", "text": "Crowded"},
+      {"id": "D", "text": "Peaceful"}
+    ],
+    "correctChoice": "B",
+    "explanation": "The description of cracked soil and crumbling leaves points to a lifeless, empty scene, which matches 'barren.' 'Peaceful' misreads the bleak imagery as calm rather than as desolation caused by drought damage.",
+    "source": "bundled"
+  },
+  {
+    "id": "bundled-cs-02",
+    "subject": "reading-writing",
+    "domain": "Craft and Structure",
+    "skill": "Text Structure and Purpose",
+    "difficulty": "Medium",
+    "type": "mcq",
+    "passage": "Many nutrition guides recommend eating breakfast within an hour of waking. But a closer look at the research reveals a more complicated picture: some studies find modest benefits to morning eating, others find no difference, and a few even suggest late-morning fasting can improve focus for certain people. The evidence, in short, is far less settled than popular advice implies.",
+    "prompt": "Which choice best describes the overall structure of the text?",
+    "choices": [
+      {"id": "A", "text": "It presents a common belief and then complicates it with conflicting evidence."},
+      {"id": "B", "text": "It compares two historical approaches to nutrition science."},
+      {"id": "C", "text": "It describes a study's methodology in chronological order."},
+      {"id": "D", "text": "It refutes a claim using a single counterexample."}
+    ],
+    "correctChoice": "A",
+    "explanation": "The text opens with the common recommendation to eat breakfast early, then complicates it by citing mixed research findings. Choice D is close but inaccurate because the text cites several conflicting findings, not just one counterexample.",
+    "source": "bundled"
+  },
+  {
+    "id": "bundled-cs-03",
+    "subject": "reading-writing",
+    "domain": "Craft and Structure",
+    "skill": "Cross-Text Connections",
+    "difficulty": "Hard",
+    "type": "mcq",
+    "passage": "Text 1\n\nSome economists argue that raising the minimum wage necessarily reduces employment, since businesses facing higher labor costs will hire fewer workers to control expenses.\n\nText 2\n\nOther economists point to studies of regions that raised their minimum wage and found little to no measurable drop in employment, suggesting that businesses often absorb higher labor costs through other means, such as reduced turnover or modest price increases.",
+    "prompt": "Based on the texts, how would the economists in Text 2 most likely respond to the claim in Text 1?",
+    "choices": [
+      {"id": "A", "text": "By agreeing that higher labor costs always force businesses to cut jobs."},
+      {"id": "B", "text": "By pointing to empirical evidence suggesting employment does not necessarily fall."},
+      {"id": "C", "text": "By arguing that minimum wage laws should be eliminated entirely."},
+      {"id": "D", "text": "By claiming that the economists in Text 1 have misunderstood how prices are set."}
+    ],
+    "correctChoice": "B",
+    "explanation": "Text 2 cites studies showing little to no employment drop after minimum wage increases, directly countering Text 1's claim with empirical evidence. Choice D introduces a claim about misunderstanding price-setting that neither text makes.",
+    "source": "bundled"
+  },
+  {
+    "id": "bundled-cs-04",
+    "subject": "reading-writing",
+    "domain": "Craft and Structure",
+    "skill": "Words in Context",
+    "difficulty": "Medium",
+    "type": "mcq",
+    "passage": "After months of anticipation, the committee finally unveiled its plan for addressing the funding shortfall. The proposal was hardly groundbreaking, however; it merely repackaged ideas that had circulated for a decade without offering any new solutions.",
+    "prompt": "As used in the text, what does the word 'repackaged' most nearly mean?",
+    "choices": [
+      {"id": "A", "text": "Invented"},
+      {"id": "B", "text": "Restated"},
+      {"id": "C", "text": "Rejected"},
+      {"id": "D", "text": "Concealed"}
+    ],
+    "correctChoice": "B",
+    "explanation": "The sentence explains that the proposal 'repackaged ideas that had circulated for a decade,' meaning it presented old ideas in a new form, which is closest to 'restated.' 'Concealed' contradicts the text, since the ideas had already circulated publicly.",
+    "source": "bundled"
+  }
+]

@@ -1,1 +1,78 @@
-[]
+[
+  {
+    "id": "bundled-ii-01",
+    "subject": "reading-writing",
+    "domain": "Information and Ideas",
+    "skill": "Central Ideas and Details",
+    "difficulty": "Easy",
+    "type": "mcq",
+    "passage": "In the early 2000s, city planners in Bogotá, Colombia, redesigned several major avenues to prioritize buses over private cars. Dedicated lanes allowed buses to bypass congested traffic entirely, cutting average commute times nearly in half. The system, known as TransMilenio, became a model that other cities around the world later studied and adapted.",
+    "prompt": "Which choice best states the main idea of the text?",
+    "choices": [
+      {"id": "A", "text": "Bogotá's buses are more comfortable than private cars."},
+      {"id": "B", "text": "A bus system in Bogotá reduced commute times and influenced transit planning elsewhere."},
+      {"id": "C", "text": "Private car ownership in Bogotá declined sharply after 2000."},
+      {"id": "D", "text": "TransMilenio was the first public transit system in South America."}
+    ],
+    "correctChoice": "B",
+    "explanation": "The text centers on how Bogotá's dedicated bus lanes reduced commute times and became a model that other cities studied and adapted, which is choice B. Choice C makes an unsupported claim about car ownership that the text never mentions. Choice D overstates the text's claim; the passage says other cities studied and adapted the system, not that it was the first of its kind.",
+    "source": "bundled"
+  },
+  {
+    "id": "bundled-ii-02",
+    "subject": "reading-writing",
+    "domain": "Information and Ideas",
+    "skill": "Inferences",
+    "difficulty": "Medium",
+    "type": "mcq",
+    "passage": "The desert horned lizard has a flattened body and coloring that closely matches the sand and rocks of its habitat. When a predator approaches, the lizard's first response is to freeze rather than flee. Only if the predator gets very close does the lizard resort to quick bursts of movement or, in some cases, squirting blood from its eyes to startle the attacker.",
+    "prompt": "Which choice best describes what the text suggests about the desert horned lizard's freezing behavior?",
+    "choices": [
+      {"id": "A", "text": "It is the lizard's most effective defense against all predators."},
+      {"id": "B", "text": "It relies on the lizard's camouflage remaining undetected as long as it stays still."},
+      {"id": "C", "text": "It occurs only when the lizard is too exhausted to run."},
+      {"id": "D", "text": "It is a behavior unique to desert horned lizards among reptiles."}
+    ],
+    "correctChoice": "B",
+    "explanation": "Because the text emphasizes the lizard's camouflage and describes freezing as its first response, escalating to other tactics only when a predator gets close, it implies the lizard relies on staying unnoticed through camouflage while still. Choice A is too strong, since the text indicates the lizard escalates to other defenses when freezing alone isn't enough. Choice C introduces an idea, exhaustion, that the text never mentions.",
+    "source": "bundled"
+  },
+  {
+    "id": "bundled-ii-03",
+    "subject": "reading-writing",
+    "domain": "Information and Ideas",
+    "skill": "Command of Evidence",
+    "difficulty": "Medium",
+    "type": "mcq",
+    "passage": "A researcher claimed that students who took short, five-minute walking breaks every hour during a study session retained more information than students who studied without breaks. To test this, she divided 60 volunteers into two equal groups: one group took walking breaks every hour during a three-hour study session, while the other studied continuously. Both groups took the same recall test immediately afterward. The walking-break group scored, on average, 15 percent higher than the continuous-study group.",
+    "prompt": "Which choice best describes the function of the last sentence in the text?",
+    "choices": [
+      {"id": "A", "text": "It presents evidence supporting the researcher's claim."},
+      {"id": "B", "text": "It introduces a counterargument to the researcher's claim."},
+      {"id": "C", "text": "It describes the method used to select volunteers."},
+      {"id": "D", "text": "It explains why walking breaks were held every hour."}
+    ],
+    "correctChoice": "A",
+    "explanation": "The last sentence reports the study's result, a 15 percent higher score for the walking-break group, which is evidence supporting the researcher's initial claim. Choice C misidentifies the sentence's content; the method of dividing volunteers into groups was already described earlier in the text, not in the last sentence.",
+    "source": "bundled"
+  },
+  {
+    "id": "bundled-ii-04",
+    "subject": "reading-writing",
+    "domain": "Information and Ideas",
+    "skill": "Command of Evidence",
+    "difficulty": "Hard",
+    "type": "mcq",
+    "passage": "Urban beekeeping has grown in popularity as city dwellers seek ways to support pollinator populations. Proponents argue that rooftop hives do not compete meaningfully with rural honeybee colonies for floral resources, since cities offer a wide variety of ornamental and garden plants that rural farmland often lacks in diversity.",
+    "prompt": "Which finding, if true, would most directly support the proponents' argument?",
+    "choices": [
+      {"id": "A", "text": "A survey found that urban gardens contain, on average, 40 percent more distinct flowering plant species than nearby farmland."},
+      {"id": "B", "text": "A survey found that rooftop hives produce less honey per year than rural hives."},
+      {"id": "C", "text": "A survey found that beekeeping equipment costs more in urban areas than in rural areas."},
+      {"id": "D", "text": "A survey found that city residents support pollinator conservation efforts more than rural residents do."}
+    ],
+    "correctChoice": "A",
+    "explanation": "The proponents' argument depends on cities having greater floral diversity than farmland, so a finding confirming that urban gardens have significantly more plant species directly supports it. Choices B, C, and D discuss honey yield, equipment cost, and public opinion, none of which bear on the claim about floral resource competition.",
+    "source": "bundled"
+  }
+]

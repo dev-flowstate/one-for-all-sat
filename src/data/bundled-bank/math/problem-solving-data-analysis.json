@@ -1,1 +1,68 @@
-[]
+[
+  {
+    "id": "bundled-psda-01",
+    "subject": "math",
+    "domain": "Problem-Solving and Data Analysis",
+    "skill": "Percentages",
+    "difficulty": "Easy",
+    "type": "mcq",
+    "prompt": "A jacket originally priced at $80 is on sale for 25% off. What is the sale price?",
+    "choices": [
+      {"id": "A", "text": "$20"},
+      {"id": "B", "text": "$55"},
+      {"id": "C", "text": "$60"},
+      {"id": "D", "text": "$64"}
+    ],
+    "correctChoice": "C",
+    "explanation": "25% of $80 is $20, so the sale price is $80 - $20 = $60. Choice A is just the discount amount, not the final sale price. Choice D results from discounting by 20% instead of 25% ($80 - $16 = $64).",
+    "source": "bundled"
+  },
+  {
+    "id": "bundled-psda-02",
+    "subject": "math",
+    "domain": "Problem-Solving and Data Analysis",
+    "skill": "Ratios, rates, proportional relationships, and units",
+    "difficulty": "Easy",
+    "type": "mcq",
+    "prompt": "A recipe calls for 3 cups of flour for every 2 cups of sugar. If a baker uses 9 cups of flour and keeps the same ratio, how many cups of sugar are needed?",
+    "choices": [
+      {"id": "A", "text": "8"},
+      {"id": "B", "text": "6"},
+      {"id": "C", "text": "7.5"},
+      {"id": "D", "text": "13.5"}
+    ],
+    "correctChoice": "B",
+    "explanation": "Since 9 cups of flour is 3 times the original 3 cups, the sugar must also scale by 3: 2 x 3 = 6 cups. Choice A comes from adding the increase in flour (6 cups) directly to the sugar amount instead of scaling proportionally. Choice D comes from applying the ratio backward, as if there were 3 cups of sugar for every 2 cups of flour.",
+    "source": "bundled"
+  },
+  {
+    "id": "bundled-psda-03",
+    "subject": "math",
+    "domain": "Problem-Solving and Data Analysis",
+    "skill": "One-variable data: distributions and measures of center and spread",
+    "difficulty": "Medium",
+    "type": "spr",
+    "prompt": "The data set below shows the number of books read last month by 7 students: 2, 3, 3, 5, 6, 8, 9. What is the median number of books read?",
+    "acceptableAnswers": ["5"],
+    "explanation": "With 7 data points already listed in increasing order, the median is the 4th value: 2, 3, 3, 5, 6, 8, 9. That value is 5.",
+    "source": "bundled"
+  },
+  {
+    "id": "bundled-psda-04",
+    "subject": "math",
+    "domain": "Problem-Solving and Data Analysis",
+    "skill": "Probability and conditional probability",
+    "difficulty": "Hard",
+    "type": "mcq",
+    "prompt": "A box contains 5 red marbles, 3 blue marbles, and 2 green marbles. One marble is drawn at random and not replaced, then a second marble is drawn. What is the probability that both marbles are red?",
+    "choices": [
+      {"id": "A", "text": "1/4"},
+      {"id": "B", "text": "2/9"},
+      {"id": "C", "text": "5/9"},
+      {"id": "D", "text": "4/5"}
+    ],
+    "correctChoice": "B",
+    "explanation": "P(first red) = 5/10. After removing one red marble, P(second red) = 4/9. Multiplying gives 5/10 x 4/9 = 20/90 = 2/9. Choice A incorrectly assumes the first marble is replaced before the second draw, giving 5/10 x 5/10 = 1/4.",
+    "source": "bundled"
+  }
+]

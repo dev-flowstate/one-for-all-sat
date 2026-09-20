@@ -1,1 +1,78 @@
-[]
+[
+  {
+    "id": "bundled-sec-01",
+    "subject": "reading-writing",
+    "domain": "Standard English Conventions",
+    "skill": "Boundaries",
+    "difficulty": "Easy",
+    "type": "mcq",
+    "passage": "The city council approved the new park budget _______ construction on the playground is expected to begin next spring.",
+    "prompt": "Which choice correctly completes the text?",
+    "choices": [
+      {"id": "A", "text": "budget, construction"},
+      {"id": "B", "text": "budget; construction"},
+      {"id": "C", "text": "budget, and, construction"},
+      {"id": "D", "text": "budget construction"}
+    ],
+    "correctChoice": "B",
+    "explanation": "The two ideas on either side of the blank are both independent clauses, so they must be joined with a semicolon, a period, or a comma plus a coordinating conjunction. Only choice B, with the semicolon, punctuates this correctly. Choice A creates a comma splice, and choice D creates a run-on sentence with no punctuation at all.",
+    "source": "bundled"
+  },
+  {
+    "id": "bundled-sec-02",
+    "subject": "reading-writing",
+    "domain": "Standard English Conventions",
+    "skill": "Boundaries",
+    "difficulty": "Medium",
+    "type": "mcq",
+    "passage": "Maria Alvarez _______ the lead architect on the project, insisted that the building's design include a rooftop garden.",
+    "prompt": "Which choice correctly completes the text?",
+    "choices": [
+      {"id": "A", "text": ", who was,"},
+      {"id": "B", "text": "who was"},
+      {"id": "C", "text": ", who was"},
+      {"id": "D", "text": "whom was"}
+    ],
+    "correctChoice": "C",
+    "explanation": "The phrase 'who was the lead architect on the project' is a nonrestrictive clause describing Maria Alvarez and must be set off by commas on both sides; since the text already has a comma after 'project,' the blank needs an opening comma as well, making choice C correct. Choice B omits that necessary opening comma, and choice D incorrectly uses the object pronoun 'whom' as the subject of 'was.'",
+    "source": "bundled"
+  },
+  {
+    "id": "bundled-sec-03",
+    "subject": "reading-writing",
+    "domain": "Standard English Conventions",
+    "skill": "Form, Structure, and Sense",
+    "difficulty": "Medium",
+    "type": "mcq",
+    "passage": "The collection of rare manuscripts, housed in a climate-controlled vault since the 1960s, _______ regularly examined by conservators to check for signs of deterioration.",
+    "prompt": "Which choice correctly completes the text?",
+    "choices": [
+      {"id": "A", "text": "are"},
+      {"id": "B", "text": "is"},
+      {"id": "C", "text": "were"},
+      {"id": "D", "text": "have been"}
+    ],
+    "correctChoice": "B",
+    "explanation": "The subject of the verb is the singular noun 'collection,' not the plural 'manuscripts' in the intervening phrase, so the verb must be singular: 'is.' Choices A and D incorrectly agree with the nearby plural noun 'manuscripts' rather than with the true subject.",
+    "source": "bundled"
+  },
+  {
+    "id": "bundled-sec-04",
+    "subject": "reading-writing",
+    "domain": "Standard English Conventions",
+    "skill": "Form, Structure, and Sense",
+    "difficulty": "Hard",
+    "type": "mcq",
+    "passage": "The new employee training program is designed to teach new hires how to manage their time, communicate with clients, and _______ effective presentations.",
+    "prompt": "Which choice correctly completes the text?",
+    "choices": [
+      {"id": "A", "text": "developing"},
+      {"id": "B", "text": "develops"},
+      {"id": "C", "text": "develop"},
+      {"id": "D", "text": "the development of"}
+    ],
+    "correctChoice": "C",
+    "explanation": "The sentence lists three parallel actions after 'how to': 'manage,' 'communicate,' and '(to) develop.' Only choice C, the bare infinitive form 'develop,' matches the grammatical form of the other two verbs. The other choices break the parallel structure by shifting to a gerund, a conjugated verb, or a noun phrase.",
+    "source": "bundled"
+  }
+]

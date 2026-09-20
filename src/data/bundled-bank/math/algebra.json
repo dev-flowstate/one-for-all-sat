@@ -1,1 +1,68 @@
-[]
+[
+  {
+    "id": "bundled-alg-01",
+    "subject": "math",
+    "domain": "Algebra",
+    "skill": "Linear equations in one variable",
+    "difficulty": "Easy",
+    "type": "mcq",
+    "prompt": "If 6x - 9 = 21, what is the value of x?",
+    "choices": [
+      {"id": "A", "text": "2"},
+      {"id": "B", "text": "4"},
+      {"id": "C", "text": "5"},
+      {"id": "D", "text": "30"}
+    ],
+    "correctChoice": "C",
+    "explanation": "Add 9 to both sides to get 6x = 30, then divide both sides by 6 to find x = 5. Choice A results from subtracting 9 instead of adding it (6x = 12, so x = 2). Choice D is the value of 6x, not x itself.",
+    "source": "bundled"
+  },
+  {
+    "id": "bundled-alg-02",
+    "subject": "math",
+    "domain": "Algebra",
+    "skill": "Linear functions",
+    "difficulty": "Medium",
+    "type": "mcq",
+    "prompt": "A linear function f satisfies f(2) = 5 and f(6) = 17. What is the value of f(9)?",
+    "choices": [
+      {"id": "A", "text": "20"},
+      {"id": "B", "text": "23"},
+      {"id": "C", "text": "26"},
+      {"id": "D", "text": "29"}
+    ],
+    "correctChoice": "C",
+    "explanation": "The rate of change is (17 - 5)/(6 - 2) = 3. Starting from f(6) = 17, f(9) = 17 + 3(9 - 6) = 26. Choice B comes from mistakenly computing the rate of change as (17 - 5)/6 = 2, giving 17 + 2(3) = 23.",
+    "source": "bundled"
+  },
+  {
+    "id": "bundled-alg-03",
+    "subject": "math",
+    "domain": "Algebra",
+    "skill": "Systems of two linear equations in two variables",
+    "difficulty": "Medium",
+    "type": "spr",
+    "prompt": "In the system of equations below, what is the value of x + y?\n2x + y = 11\nx - y = 1",
+    "acceptableAnswers": ["7"],
+    "explanation": "Adding the two equations eliminates y: (2x + y) + (x - y) = 11 + 1, so 3x = 12 and x = 4. Substituting into x - y = 1 gives y = 3. Therefore x + y = 4 + 3 = 7.",
+    "source": "bundled"
+  },
+  {
+    "id": "bundled-alg-04",
+    "subject": "math",
+    "domain": "Algebra",
+    "skill": "Linear inequalities in one or two variables",
+    "difficulty": "Hard",
+    "type": "mcq",
+    "prompt": "Which of the following values of x satisfies the inequality -3x + 5 ≤ -4?",
+    "choices": [
+      {"id": "A", "text": "2"},
+      {"id": "B", "text": "3"},
+      {"id": "C", "text": "2.9"},
+      {"id": "D", "text": "-3"}
+    ],
+    "correctChoice": "B",
+    "explanation": "Subtracting 5 from both sides gives -3x ≤ -9. Dividing both sides by -3 requires flipping the inequality sign, giving x ≥ 3. Only choice B meets this condition. Choices A and C come from forgetting to flip the inequality sign, which would incorrectly suggest x ≤ 3.",
+    "source": "bundled"
+  }
+]
