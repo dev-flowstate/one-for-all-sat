@@ -17,6 +17,11 @@ interface QuestionPanelProps {
   onNext: () => void;
 }
 
+// Stable reference so the Zustand selector below doesn't return a fresh `[]` on every
+// render when nothing's crossed out yet — a new array each time makes useSyncExternalStore
+// think the snapshot always changed, causing an infinite render loop.
+const EMPTY_CHOICE_IDS: ChoiceId[] = [];
+
 /**
  * The question pane for one question: prompt, images, choices/SPR input, and (once
  * answered) feedback + Next/Finish. Mount this keyed by question.id so all local
@@ -25,7 +30,7 @@ interface QuestionPanelProps {
 export function QuestionPanel({ question, revealMode, isLast, onNext }: QuestionPanelProps) {
   const [sprValue, setSprValue] = useState('');
   const crosserActive = useSessionStore((s) => s.crosserActive);
-  const crossedIds = useSessionStore((s) => s.crossedChoices[question.id] ?? []);
+  const crossedIds = useSessionStore((s) => s.crossedChoices[question.id] ?? EMPTY_CHOICE_IDS);
   const answered = useSessionStore((s) => s.answers[question.id]);
   const answerCurrent = useSessionStore((s) => s.answerCurrent);
   const toggleCrossedChoice = useSessionStore((s) => s.toggleCrossedChoice);

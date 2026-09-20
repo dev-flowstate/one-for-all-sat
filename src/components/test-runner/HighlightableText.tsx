@@ -18,13 +18,18 @@ interface PopoverState {
   range: HighlightRange;
 }
 
+// Stable reference so the Zustand selector below doesn't return a fresh `[]` on every
+// render when there are no highlights yet — a new array each time makes useSyncExternalStore
+// think the snapshot always changed, causing an infinite render loop.
+const EMPTY_RANGES: HighlightRange[] = [];
+
 /**
  * Renders plain text with highlight marks and the select-to-highlight interaction:
  * select text -> a floating "Highlight"/"Remove highlight" button appears near the
  * selection -> clicking it commits the change to the session store.
  */
 export function HighlightableText({ text, rangeKey, className = '' }: HighlightableTextProps) {
-  const ranges = useSessionStore((s) => s.highlights[rangeKey] ?? []);
+  const ranges = useSessionStore((s) => s.highlights[rangeKey] ?? EMPTY_RANGES);
   const setHighlights = useSessionStore((s) => s.setHighlights);
   const containerRef = useRef<HTMLDivElement>(null);
   const popoverRef = useRef<HTMLButtonElement>(null);
