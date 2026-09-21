@@ -14,6 +14,8 @@ interface RetryFormProps {
 function correctAnswerLabel(question: Question): string {
   if (question.type === 'mcq') {
     const correct = question.choices?.find((c) => c.id === question.correctChoice);
+    // With an image choice, `text` is only a placeholder — the letter is all we can say here.
+    if (correct?.image) return correct.id;
     return correct ? `${correct.id}. ${correct.text}` : (question.correctChoice ?? '—');
   }
   return (question.acceptableAnswers ?? []).join(' or ') || '—';
@@ -81,6 +83,7 @@ export function RetryForm({ question, onCancel }: RetryFormProps) {
               type="button"
               onClick={() => setSelectedChoice(choice.id)}
               disabled={showIncorrectFeedback}
+              aria-label={choice.image ? `Choice ${choice.id}` : undefined}
               className={`flex items-start gap-2 rounded-lg border px-3 py-2 text-left text-sm transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${
                 selectedChoice === choice.id
                   ? 'border-venice-blue bg-venice-blue/10 font-semibold'
@@ -90,7 +93,11 @@ export function RetryForm({ question, onCancel }: RetryFormProps) {
               <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-current text-xs">
                 {choice.id}
               </span>
-              <span>{choice.text}</span>
+              {choice.image ? (
+                <img src={choice.image} alt="" className="max-h-12 w-auto rounded object-contain object-left" />
+              ) : (
+                <span>{choice.text}</span>
+              )}
             </button>
           ))}
         </div>

@@ -34,6 +34,17 @@ export function TestRunnerPage() {
     navigate('/results');
   }
 
+  /** Abandons the session without calling applySessionResult, so answered questions stay
+   *  unattempted in the main pool. */
+  function handleExit() {
+    const hasAnswers = Object.keys(useSessionStore.getState().answers).length > 0;
+    if (hasAnswers && !window.confirm('Exit this session? Your answers so far will be discarded.')) {
+      return;
+    }
+    useSessionStore.getState().clearSession();
+    navigate('/');
+  }
+
   function handleNext() {
     if (currentIndex + 1 >= queue.length) {
       finishFlow();
@@ -58,6 +69,7 @@ export function TestRunnerPage() {
       <TestRunnerToolbar
         currentIndex={currentIndex}
         total={queue.length}
+        onExit={handleExit}
         crosserActive={crosserActive}
         onToggleCrosser={toggleCrosser}
         showCalculatorToggle={question.subject === 'math'}

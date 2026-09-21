@@ -28,7 +28,13 @@ export function AnswerComparison({ question, answer }: AnswerComparisonProps) {
               <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-current text-xs">
                 {choice.id}
               </span>
-              <span className="flex-1">{choice.text}</span>
+              <span className="flex-1">
+                {choice.image ? (
+                  <img src={choice.image} alt="" className="max-h-12 w-auto rounded object-contain object-left" />
+                ) : (
+                  choice.text
+                )}
+              </span>
               {isCorrect && <span className="shrink-0 text-xs font-semibold">Correct answer</span>}
               {isYourAnswer && !isCorrect && <span className="shrink-0 text-xs font-semibold">Your answer</span>}
             </div>

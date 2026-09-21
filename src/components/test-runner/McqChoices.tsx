@@ -81,7 +81,7 @@ function ChoiceButton({ choice, crossed, disabled, isSelected, isCorrect, isWron
       type="button"
       disabled={disabled}
       onClick={onClick}
-      aria-label={crossed ? `Restore choice ${choice.id}` : undefined}
+      aria-label={crossed ? `Restore choice ${choice.id}` : choice.image ? `Choice ${choice.id}` : undefined}
       className={`flex min-h-11 w-full items-center gap-3 rounded-lg border px-4 py-3 text-left text-sm transition-colors disabled:cursor-default disabled:opacity-70 ${stateClasses}`}
     >
       <span
@@ -91,7 +91,13 @@ function ChoiceButton({ choice, crossed, disabled, isSelected, isCorrect, isWron
       >
         {choice.id}
       </span>
-      <span className={`flex-1 ${crossed ? 'line-through' : ''}`}>{choice.text}</span>
+      <span className={`flex-1 ${crossed ? 'line-through' : ''}`}>
+        {choice.image ? (
+          <img src={choice.image} alt="" className="max-h-12 w-auto rounded object-contain object-left" />
+        ) : (
+          choice.text
+        )}
+      </span>
       {crossed && (
         <span aria-hidden="true" className="flex-none text-lg leading-none">
           ↺

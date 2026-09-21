@@ -9,6 +9,9 @@ export type ChoiceId = 'A' | 'B' | 'C' | 'D';
 export interface Choice {
   id: ChoiceId;
   text: string;
+  /** Set when the choice's value was typeset as a graphic in the source and couldn't be
+   *  extracted as text — render this instead of `text`, which is only a placeholder then. */
+  image?: string;
 }
 
 export interface QuestionImage {

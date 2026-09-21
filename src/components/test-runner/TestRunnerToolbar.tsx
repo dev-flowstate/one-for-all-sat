@@ -1,4 +1,5 @@
 import type { TimerMode } from '../../types/settings';
+import { Button } from '../ui/Button';
 import { Toggle } from '../ui/Toggle';
 import { ProgressBar } from '../ui/ProgressBar';
 import { TestTimer } from './TestTimer';
@@ -6,6 +7,8 @@ import { TestTimer } from './TestTimer';
 interface TestRunnerToolbarProps {
   currentIndex: number;
   total: number;
+  /** Abandons the session. The page handles confirming and discarding. */
+  onExit: () => void;
   crosserActive: boolean;
   onToggleCrosser: () => void;
   showCalculatorToggle: boolean;
@@ -20,6 +23,7 @@ interface TestRunnerToolbarProps {
 export function TestRunnerToolbar({
   currentIndex,
   total,
+  onExit,
   crosserActive,
   onToggleCrosser,
   showCalculatorToggle,
@@ -32,8 +36,11 @@ export function TestRunnerToolbar({
   return (
     <div className="sticky top-0 z-20 border-b border-rock-blue/40 bg-merino">
       <div className="mx-auto max-w-6xl px-4 py-3">
-        <div className="flex items-center justify-between gap-4">
-          <p className="text-sm font-semibold text-venice-blue-dark">
+        <div className="flex items-center gap-3">
+          <Button variant="ghost" onClick={onExit} className="-ml-2 min-h-[44px] px-3">
+            ← Exit
+          </Button>
+          <p className="mr-auto text-sm font-semibold text-venice-blue-dark">
             Question {currentIndex + 1} of {total}
           </p>
           <TestTimer mode={timerMode} countdownMinutes={countdownMinutes} onExpire={onTimerExpire} />

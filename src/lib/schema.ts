@@ -3,6 +3,7 @@ import { z } from 'zod';
 export const choiceSchema = z.object({
   id: z.enum(['A', 'B', 'C', 'D']),
   text: z.string().min(1),
+  image: z.string().optional(),
 });
 
 export const questionImageSchema = z.object({
