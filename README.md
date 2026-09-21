@@ -22,9 +22,20 @@ npm run preview  # preview the production build locally
 
 ### Graphing calculator
 
-The calculator is built into the app (`src/components/calculator/`, `src/lib/calculator/`) using [mathjs](https://mathjs.org/) for expression parsing and a canvas renderer for plotting — no API key, no external service, and it works offline. It plots `y = f(x)` expressions with pan/zoom (wheel, drag, pinch), evaluates plain arithmetic inline (`2+2*7` → `= 16`), and reports per-row parse errors. `log` is base 10 and `ln` is natural, matching SAT conventions. It's lazy-loaded, so its ~110 kB gzipped chunk only downloads the first time you open it.
+The calculator is built into the app (`src/components/calculator/`, `src/lib/calculator/`) using [mathjs](https://mathjs.org/) for expression parsing and a canvas renderer for plotting — no API key, no external service, and it works offline. It's lazy-loaded, so its chunk only downloads the first time you open it.
 
-Known limits: functions need parentheses (`sin(x)`, not `sin x`), only `y = f(x)` form (no implicit relations like `x^2 + y^2 = 9`), trig is in radians, and there are no sliders/tables/regressions.
+Supported:
+
+- **Functions and relations** — `y = 2x + 3`, a bare `x^2 - 4`, implicit relations like `x^2 + y^2 = 25`, and inequalities like `y > 2x + 1` (shaded, dashed boundary when strict)
+- **Points of interest** — roots, intersections, extrema, and y-intercepts are found numerically and marked on the graph; hover or tap one to read its coordinates
+- **Definitions and sliders** — `a = 5` gets a slider, `f(x) = x^2 + 3x - 4` can then be reused by later rows (`f(5)`, `y = f(x) + 1`)
+- **Restrictions** — `y = x^2 {0 < x < 5}`
+- **Angle mode** — RAD/DEG toggle; inverse trig returns degrees in degree mode
+- **Inline arithmetic** — a row with no `x` shows its value (`2+2*7` → `= 16`)
+- **SAT function set** — `sqrt`, `nthroot`, `abs`, `!`, `nCr`/`nPr`, `mean`/`median`/`stdev`/`stdevp`/`min`/`max`, `floor`/`ceil`/`round`/`sign`, `mod`/`gcd`/`lcm`, lists, and trig/hyperbolic functions. `log` is base 10 and `ln` is natural, matching SAT conventions.
+- Pan/zoom by wheel, drag, or pinch, plus `+` / `−` / reset buttons
+
+Not supported (deliberately — none of it appears on the SAT): 3D graphing, matrices, complex numbers, polar coordinates, regressions/tables, and animations. Functions also need parentheses (`sin(x)`, not `sin x`).
 
 ## Deployment
 

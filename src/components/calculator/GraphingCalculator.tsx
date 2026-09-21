@@ -1,7 +1,17 @@
-import { useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
+import { AngleModeToggle } from './AngleModeToggle';
 import { GraphCanvas } from './GraphCanvas';
-import { formatNumber, parseExpression, shouldPlot } from '../../lib/calculator/expression';
-import type { GraphPlot } from '../../lib/calculator/graph';
+import { compileRows, formatNumber } from '../../lib/calculator/expression';
+import { findPointsOfInterest } from '../../lib/calculator/analysis';
+import type { GraphLayer, GraphPoint } from '../../lib/calculator/graph';
+import type {
+  AngleMode,
+  FunctionRow,
+  ImplicitRow,
+  InequalityRow,
+  ParsedRow,
+  SearchRange,
+} from '../../lib/calculator/types';
 
 interface ExpressionRow {
   id: number;
@@ -12,36 +22,46 @@ interface ExpressionRow {
 const PLOT_COLORS = ['#16587b', '#b3401f', '#2e7d4f', '#7a4cc4', '#c2761b', '#0f7d8c'];
 const IDLE_COLOR = '#b6c6d0';
 const INITIAL_ROWS = 4;
+/** A slider covers ±this many times the constant's own magnitude, rounded to a power of ten. */
+const SLIDER_SPAN = 10;
+const SLIDER_STEPS = 100;
 
 /**
  * Desmos-style calculator: an expression list where each row is one equation, plotted live on
  * the graph beside it. Rows without an x (`2+2*7`, `sqrt(144)`) show their value instead, so
- * the same list doubles as a plain scientific calculator.
+ * the same list doubles as a plain scientific calculator, and a row that just names a constant
+ * (`a = 5`) gets a slider so later rows using `a` can be explored by dragging it.
  */
 export function GraphingCalculator() {
   const nextIdRef = useRef(INITIAL_ROWS);
+  const [angleMode, setAngleMode] = useState<AngleMode>('radians');
   const [rows, setRows] = useState<ExpressionRow[]>(() =>
     Array.from({ length: INITIAL_ROWS }, (_, index) => ({ id: index, text: '' })),
   );
 
-  const entries = useMemo(
-    () =>
-      rows.map((row, index) => ({
-        row,
-        color: PLOT_COLORS[index % PLOT_COLORS.length],
-        result: parseExpression(row.text),
-      })),
-    [rows],
+  const parsed = useMemo(
+    () => compileRows(rows.map((row) => row.text), angleMode),
+    [rows, angleMode],
   );
 
-  const plots = useMemo<GraphPlot[]>(
+  const layers = useMemo<GraphLayer[]>(
     () =>
-      entries.flatMap(({ color, result }) =>
-        result.status === 'ok' && shouldPlot(result.expression)
-          ? [{ color, evaluateAt: result.expression.evaluateAt }]
-          : [],
+      parsed.flatMap((row, index) =>
+        isDrawable(row) ? [{ color: PLOT_COLORS[index % PLOT_COLORS.length], row }] : [],
       ),
-    [entries],
+    [parsed],
+  );
+
+  const findPoints = useCallback(
+    (range: SearchRange): GraphPoint[] =>
+      findPointsOfInterest(parsed, range).map((point) => ({
+        x: point.x,
+        y: point.y,
+        kind: point.kind,
+        color: PLOT_COLORS[(point.rowIndexes[0] ?? 0) % PLOT_COLORS.length],
+        label: `(${formatNumber(point.x)}, ${formatNumber(point.y)})`,
+      })),
+    [parsed],
   );
 
   const updateRow = (id: number, text: string) => {
@@ -61,15 +81,19 @@ export function GraphingCalculator() {
   return (
     <div className="flex flex-col gap-3 p-3 sm:flex-row">
       <div className="flex w-full flex-col gap-2 sm:w-52">
+        <AngleModeToggle mode={angleMode} onChange={setAngleMode} />
+
         <ul className="max-h-44 space-y-2 overflow-y-auto pr-1 sm:max-h-72">
-          {entries.map(({ row, color, result }, index) => {
-            const plotted = result.status === 'ok' && shouldPlot(result.expression);
+          {rows.map((row, index) => {
+            const result = parsed[index];
+            const color = PLOT_COLORS[index % PLOT_COLORS.length];
+            const slider = sliderFor(result);
             return (
               <li key={row.id} className="flex items-start gap-2">
                 <span
                   aria-hidden="true"
                   className="mt-3 h-2.5 w-2.5 shrink-0 rounded-full"
-                  style={{ backgroundColor: plotted ? color : IDLE_COLOR }}
+                  style={{ backgroundColor: isDrawable(result) ? color : IDLE_COLOR }}
                 />
                 <div className="min-w-0 flex-1">
                   <input
@@ -83,14 +107,31 @@ export function GraphingCalculator() {
                     autoCapitalize="off"
                     spellCheck={false}
                     className={`min-h-9 w-full rounded-lg border bg-white px-2 py-1.5 font-mono text-sm text-venice-blue-dark placeholder:font-sans placeholder:text-venice-blue-dark/40 focus:border-venice-blue focus:outline-none ${
-                      result.status === 'error' ? 'border-danger bg-danger-bg' : 'border-rock-blue/50'
+                      result.kind === 'error' ? 'border-danger bg-danger-bg' : 'border-rock-blue/50'
                     }`}
                   />
-                  {result.status === 'error' && <p className="mt-0.5 text-xs text-danger">{result.message}</p>}
-                  {result.status === 'ok' && result.expression.value !== null && (
+                  {result.kind === 'error' && <p className="mt-0.5 text-xs text-danger">{result.message}</p>}
+                  {result.kind === 'value' && (
                     <p className="mt-0.5 font-mono text-xs font-semibold text-venice-blue">
-                      = {formatNumber(result.expression.value)}
+                      = {formatNumber(result.value)}
                     </p>
+                  )}
+                  {slider && (
+                    <div className="mt-1 flex items-center gap-2">
+                      <input
+                        type="range"
+                        min={slider.min}
+                        max={slider.max}
+                        step={slider.step}
+                        value={slider.value}
+                        onChange={(event) => updateRow(row.id, `${slider.name} = ${event.target.value}`)}
+                        aria-label={`Value of ${slider.name}`}
+                        className="h-6 min-w-0 flex-1 accent-venice-blue"
+                      />
+                      <span className="shrink-0 font-mono text-xs font-semibold text-venice-blue">
+                        {formatNumber(slider.value)}
+                      </span>
+                    </div>
                   )}
                 </div>
                 <button
@@ -115,14 +156,40 @@ export function GraphingCalculator() {
           + Add expression
         </button>
         <p className="hidden text-xs text-venice-blue-dark/60 sm:block">
-          Try <span className="font-mono">x^2 - 4</span>, <span className="font-mono">sin(x)</span> or{' '}
-          <span className="font-mono">2+2*7</span>.
+          Try <span className="font-mono">x^2 - 4</span>, <span className="font-mono">x^2 + y^2 = 25</span>,{' '}
+          <span className="font-mono">y &gt; 2x + 1</span> or <span className="font-mono">2+2*7</span>.
         </p>
       </div>
 
       <div className="h-56 flex-1 sm:h-80">
-        <GraphCanvas plots={plots} />
+        <GraphCanvas layers={layers} findPoints={findPoints} />
       </div>
     </div>
   );
+}
+
+/** Rows that put something on the canvas, as opposed to a value, a definition or an error. */
+function isDrawable(row: ParsedRow): row is FunctionRow | ImplicitRow | InequalityRow {
+  return row.kind === 'function' || row.kind === 'implicit' || row.kind === 'inequality';
+}
+
+interface Slider {
+  name: string;
+  value: number;
+  min: number;
+  max: number;
+  step: number;
+}
+
+/**
+ * Slider bounds for a constant row. The span is quantised to a power of ten so it can't shift
+ * under the student's thumb mid-drag: dragging `a = 5` anywhere in −10…10 keeps that same range.
+ */
+function sliderFor(row: ParsedRow): Slider | null {
+  if (row.kind !== 'definition' || !row.slidable || row.value === null || !Number.isFinite(row.value)) {
+    return null;
+  }
+  const magnitude = Math.abs(row.value);
+  const span = Math.max(SLIDER_SPAN, 10 ** Math.ceil(Math.log10(magnitude || 1)));
+  return { name: row.name, value: row.value, min: -span, max: span, step: span / SLIDER_STEPS };
 }
