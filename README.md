@@ -1,6 +1,6 @@
 # One for All SAT
 
-A personal SAT practice app styled after College Board's digital "Bluebook" app — topic/domain/skill drills across Math and Reading & Writing, an answer eliminator, a text highlighter, a Desmos graphing calculator, configurable timers, and persistent Wrong/Right review tabs.
+A personal SAT practice app styled after College Board's digital "Bluebook" app — topic/domain/skill drills across Math and Reading & Writing, an answer eliminator, a text highlighter, a built-in graphing calculator, configurable timers, and persistent Wrong/Right review tabs.
 
 **Live app:** https://dev-flowstate.github.io/one-for-all-sat/
 
@@ -20,9 +20,11 @@ npm run build    # type-check + production build
 npm run preview  # preview the production build locally
 ```
 
-### Desmos calculator
+### Graphing calculator
 
-The graphing calculator needs a free API key from [desmos.com/my-api](https://www.desmos.com/my-api). Copy `.env.example` to `.env.local` and set `VITE_DESMOS_API_KEY`. Without a key, the calculator panel shows a clear "not configured" message instead of failing silently. For the deployed site, set `VITE_DESMOS_API_KEY` as a GitHub Actions repository secret (Settings → Secrets and variables → Actions) — it's read by `.github/workflows/deploy.yml` at build time.
+The calculator is built into the app (`src/components/calculator/`, `src/lib/calculator/`) using [mathjs](https://mathjs.org/) for expression parsing and a canvas renderer for plotting — no API key, no external service, and it works offline. It plots `y = f(x)` expressions with pan/zoom (wheel, drag, pinch), evaluates plain arithmetic inline (`2+2*7` → `= 16`), and reports per-row parse errors. `log` is base 10 and `ln` is natural, matching SAT conventions. It's lazy-loaded, so its ~110 kB gzipped chunk only downloads the first time you open it.
+
+Known limits: functions need parentheses (`sin(x)`, not `sin x`), only `y = f(x)` form (no implicit relations like `x^2 + y^2 = 9`), trig is in radians, and there are no sliders/tables/regressions.
 
 ## Deployment
 

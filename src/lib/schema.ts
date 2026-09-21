@@ -25,6 +25,7 @@ export const questionSchema = z
     correctChoice: z.enum(['A', 'B', 'C', 'D']).optional(),
     acceptableAnswers: z.array(z.string()).optional(),
     explanation: z.string(),
+    promptIsPartial: z.boolean().optional(),
     images: z.array(questionImageSchema).optional(),
     source: z.enum(['bundled', 'imported']),
   })

@@ -60,7 +60,11 @@ export function QuestionPanel({ question, revealMode, isLast, onNext }: Question
 
   return (
     <div>
-      <HighlightableText text={question.prompt} rangeKey={`${question.id}:prompt`} className="text-base leading-relaxed" />
+      {/* When the prompt lost graphic-only content, the image below is the real question —
+          showing the broken text above it would just read as gibberish. */}
+      {!(question.promptIsPartial && question.images?.length) && (
+        <HighlightableText text={question.prompt} rangeKey={`${question.id}:prompt`} className="text-base leading-relaxed" />
+      )}
 
       {question.images && question.images.length > 0 && (
         <div className="mt-4 flex flex-col gap-3">

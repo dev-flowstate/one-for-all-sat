@@ -55,7 +55,10 @@ export function QuestionReviewCard({ question, actions, answerSummary, children 
         </div>
       )}
 
-      <p className="mb-3 whitespace-pre-wrap font-medium">{question.prompt}</p>
+      {/* Skip a prompt that lost graphic-only content — the image carries the real question. */}
+      {!(question.promptIsPartial && question.images?.length) && (
+        <p className="mb-3 whitespace-pre-wrap font-medium">{question.prompt}</p>
+      )}
 
       {answerSummary}
 

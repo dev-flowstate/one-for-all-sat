@@ -37,6 +37,9 @@ export interface Question {
   /** Present for type: 'spr' only — every equivalent accepted form. */
   acceptableAnswers?: string[];
   explanation: string;
+  /** True when `prompt` lost content that was typeset as a graphic in the source, so the
+   *  text alone reads broken ("what is the value of ?"). Render the image instead. */
+  promptIsPartial?: boolean;
   images?: QuestionImage[];
   source: 'bundled' | 'imported';
 }

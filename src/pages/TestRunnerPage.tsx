@@ -7,11 +7,11 @@ import { TestRunnerToolbar } from '../components/test-runner/TestRunnerToolbar';
 import { TestRunnerLayout } from '../components/test-runner/TestRunnerLayout';
 import { HighlightableText } from '../components/test-runner/HighlightableText';
 import { QuestionPanel } from '../components/test-runner/QuestionPanel';
-import { DesmosPanel } from '../components/test-runner/DesmosPanel';
+import { CalculatorPanel } from '../components/test-runner/CalculatorPanel';
 
 /**
  * The test-taking screen: one question at a time from the active session queue, with
- * Bluebook-style tools (crosser, highlighter, optional Desmos calculator, timer/stopwatch,
+ * Bluebook-style tools (crosser, highlighter, optional graphing calculator, timer/stopwatch,
  * immediate or end-of-session answer reveal). Reads the active session from
  * useSessionStore — there's no URL param for "which question"; navigation is driven by
  * the store's currentIndex.
@@ -25,7 +25,7 @@ export function TestRunnerPage() {
   const toggleCrosser = useSessionStore((s) => s.toggleCrosser);
   const goToIndex = useSessionStore((s) => s.goToIndex);
 
-  const [desmosOpen, setDesmosOpen] = useState(false);
+  const [calculatorOpen, setCalculatorOpen] = useState(false);
 
   function finishFlow() {
     const result = useSessionStore.getState().finishSession();
@@ -73,8 +73,8 @@ export function TestRunnerPage() {
         crosserActive={crosserActive}
         onToggleCrosser={toggleCrosser}
         showCalculatorToggle={question.subject === 'math'}
-        calculatorOpen={desmosOpen}
-        onToggleCalculator={() => setDesmosOpen((v) => !v)}
+        calculatorOpen={calculatorOpen}
+        onToggleCalculator={() => setCalculatorOpen((v) => !v)}
         timerMode={config.timerMode}
         countdownMinutes={config.countdownMinutes}
         onTimerExpire={finishFlow}
@@ -107,7 +107,7 @@ export function TestRunnerPage() {
         }
       />
 
-      <DesmosPanel open={desmosOpen} onClose={() => setDesmosOpen(false)} />
+      <CalculatorPanel open={calculatorOpen} onClose={() => setCalculatorOpen(false)} />
     </div>
   );
 }
