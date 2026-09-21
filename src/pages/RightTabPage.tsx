@@ -1,7 +1,6 @@
 import { useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useProgressStore } from '../store/useProgressStore';
-import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Tabs } from '../components/ui/Tabs';
 import { QuestionReviewCard } from '../components/review/QuestionReviewCard';
@@ -18,17 +17,18 @@ export function RightTabPage() {
   const wrongCount = useMemo(() => getWrongPool(questions, progress).length, [questions, progress]);
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-8">
-      <header className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-venice-blue-dark">Right questions</h1>
-          <p className="mt-1 text-venice-blue-dark/70">
-            Everything you&apos;ve got correct so far. Send any of them back for more practice.
-          </p>
-        </div>
-        <Link to="/">
-          <Button variant="ghost">Home</Button>
-        </Link>
+    <div className="mx-auto max-w-3xl px-4 py-6 sm:py-10">
+      <Link
+        to="/"
+        className="mb-4 inline-block text-xs font-semibold tracking-tight text-venice-blue uppercase hover:underline"
+      >
+        ← Home
+      </Link>
+      <header className="mb-5">
+        <h1 className="text-2xl leading-none font-bold tracking-tight uppercase sm:text-3xl">Right questions</h1>
+        <p className="mt-2 text-sm text-ink-soft">
+          Everything you&apos;ve got correct so far. Send any of them back for more practice.
+        </p>
       </header>
 
       <div className="mb-6">
@@ -43,11 +43,23 @@ export function RightTabPage() {
       </div>
 
       {!isLoaded ? (
-        <p className="text-center text-venice-blue-dark/60">Loading your question bank…</p>
+        <p className="panel p-4 text-sm text-ink-soft">Loading your question bank…</p>
       ) : rightPool.length === 0 ? (
-        <Card>
-          <p className="text-sm text-venice-blue-dark/70">No correct answers yet — go start a practice session.</p>
-        </Card>
+        <div className="panel px-4 py-12 text-center">
+          <span
+            aria-hidden="true"
+            className="inline-flex h-16 w-16 items-center justify-center border-2 border-ink bg-rock-blue text-3xl font-bold text-ink tabular-nums shadow-[4px_4px_0_var(--color-ink)]"
+          >
+            0
+          </span>
+          <p className="mt-5 text-sm font-semibold tracking-tight uppercase">Nothing banked yet</p>
+          <p className="mx-auto mt-2 max-w-sm text-sm text-ink-soft">
+            Every question you answer correctly collects here, ready to send back for more practice.
+          </p>
+          <Link to="/setup" className="mt-5 inline-block">
+            <Button variant="primary">Start practicing</Button>
+          </Link>
+        </div>
       ) : (
         <div className="flex flex-col gap-4">
           {rightPool.map((question) => (

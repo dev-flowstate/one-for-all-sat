@@ -6,53 +6,69 @@ interface AnswerComparisonProps {
   answer: SessionAnswer;
 }
 
+const LETTER_BASE =
+  'flex w-10 flex-none items-center justify-center border-r-2 border-ink font-mono text-sm font-bold';
+const TAG_BASE =
+  'flex-none border-2 border-ink px-2 py-0.5 font-mono text-[10px] font-semibold tracking-tight text-merino uppercase';
+
 /** Shows what the user answered vs. the correct answer, for a wrong session answer. */
 export function AnswerComparison({ question, answer }: AnswerComparisonProps) {
   if (question.type === 'mcq') {
     return (
-      <div className="mb-3 grid gap-2">
+      <div className="grid gap-2">
         {question.choices?.map((choice) => {
           const isCorrect = choice.id === question.correctChoice;
           const isYourAnswer = choice.id === answer.selectedChoice;
+          const rowTone = isCorrect ? 'bg-success-bg' : isYourAnswer ? 'bg-danger-bg' : 'bg-paper';
+          const letterTone = isCorrect
+            ? 'bg-success text-merino'
+            : isYourAnswer
+              ? 'bg-danger text-merino'
+              : 'bg-merino-dark text-ink';
           return (
-            <div
-              key={choice.id}
-              className={`flex items-start gap-2 rounded-lg border px-3 py-2 text-sm ${
-                isCorrect
-                  ? 'border-success/40 bg-success-bg text-success'
-                  : isYourAnswer
-                    ? 'border-danger/40 bg-danger-bg text-danger'
-                    : 'border-rock-blue/30'
-              }`}
-            >
-              <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-current text-xs">
-                {choice.id}
-              </span>
-              <span className="flex-1">
+            <div key={choice.id} className={`flex items-stretch border-2 border-ink ${rowTone}`}>
+              <span className={`${LETTER_BASE} ${letterTone}`}>{choice.id}</span>
+              {/* Wraps the verdict tag under the choice text when the row gets narrow. */}
+              <div className="flex min-w-0 flex-1 flex-wrap items-center justify-between gap-2 px-3 py-2">
                 {choice.image ? (
-                  <img src={choice.image} alt="" className="max-h-12 w-auto rounded object-contain object-left" />
+                  <img
+                    src={choice.image}
+                    alt=""
+                    className="max-h-12 w-auto border-2 border-ink bg-white object-contain object-left"
+                  />
                 ) : (
-                  choice.text
+                  <span className="min-w-0 flex-1 text-sm leading-relaxed">{choice.text}</span>
                 )}
-              </span>
-              {isCorrect && <span className="shrink-0 text-xs font-semibold">Correct answer</span>}
-              {isYourAnswer && !isCorrect && <span className="shrink-0 text-xs font-semibold">Your answer</span>}
+                {isCorrect && <span className={`${TAG_BASE} bg-success`}>Correct answer</span>}
+                {isYourAnswer && !isCorrect && <span className={`${TAG_BASE} bg-danger`}>Your answer</span>}
+              </div>
             </div>
           );
         })}
-        {!answer.selectedChoice && <p className="text-xs text-venice-blue-dark/60">You didn&apos;t select an answer.</p>}
+        {!answer.selectedChoice && (
+          <p className="border-2 border-ink bg-merino-dark px-3 py-2 font-mono text-xs">
+            You didn&apos;t select an answer.
+          </p>
+        )}
       </div>
     );
   }
 
   return (
-    <div className="mb-3 flex flex-col gap-2 text-sm">
-      <div className="rounded-lg border border-danger/40 bg-danger-bg px-3 py-2 text-danger">
-        Your answer: <span className="font-semibold">{answer.submittedAnswer || '(blank)'}</span>
+    <div className="flex flex-col gap-2">
+      <div className="border-2 border-ink bg-danger-bg">
+        <div className="border-b-2 border-ink bg-danger px-3 py-1 font-mono text-[10px] font-semibold tracking-tight text-merino uppercase">
+          Your answer
+        </div>
+        <p className="px-3 py-2 text-sm font-semibold break-words">{answer.submittedAnswer || '(blank)'}</p>
       </div>
-      <div className="rounded-lg border border-success/40 bg-success-bg px-3 py-2 text-success">
-        Correct answer:{' '}
-        <span className="font-semibold">{(question.acceptableAnswers ?? []).join(' or ') || '—'}</span>
+      <div className="border-2 border-ink bg-success-bg">
+        <div className="border-b-2 border-ink bg-success px-3 py-1 font-mono text-[10px] font-semibold tracking-tight text-merino uppercase">
+          Correct answer
+        </div>
+        <p className="px-3 py-2 text-sm font-semibold break-words">
+          {(question.acceptableAnswers ?? []).join(' or ') || '—'}
+        </p>
       </div>
     </div>
   );

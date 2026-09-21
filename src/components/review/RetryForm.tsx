@@ -84,17 +84,21 @@ export function RetryForm({ question, onCancel }: RetryFormProps) {
               onClick={() => setSelectedChoice(choice.id)}
               disabled={showIncorrectFeedback}
               aria-label={choice.image ? `Choice ${choice.id}` : undefined}
-              className={`flex items-start gap-2 rounded-lg border px-3 py-2 text-left text-sm transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${
+              className={`flex min-h-11 items-center gap-2.5 border-2 border-ink px-3 py-2 text-left text-sm disabled:cursor-not-allowed disabled:opacity-50 ${
                 selectedChoice === choice.id
-                  ? 'border-venice-blue bg-venice-blue/10 font-semibold'
-                  : 'border-rock-blue/40 hover:bg-rock-blue/10'
+                  ? 'bg-venice-blue font-semibold text-merino'
+                  : 'bg-paper hover:bg-merino-dark'
               }`}
             >
-              <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-current text-xs">
+              <span className="flex h-6 w-6 shrink-0 items-center justify-center border-2 border-current text-xs font-bold">
                 {choice.id}
               </span>
               {choice.image ? (
-                <img src={choice.image} alt="" className="max-h-12 w-auto rounded object-contain object-left" />
+                <img
+                  src={choice.image}
+                  alt=""
+                  className="max-h-12 w-auto border-2 border-ink bg-white object-contain object-left"
+                />
               ) : (
                 <span>{choice.text}</span>
               )}
@@ -108,12 +112,12 @@ export function RetryForm({ question, onCancel }: RetryFormProps) {
           onChange={(e) => setSprInput(e.target.value)}
           disabled={showIncorrectFeedback}
           placeholder="Enter your answer"
-          className="w-full rounded-lg border border-rock-blue/40 px-3 py-2 text-sm focus:border-venice-blue focus:outline-none disabled:opacity-60"
+          className="min-h-11 w-full border-2 border-ink bg-paper px-3 py-2 text-sm disabled:opacity-50"
         />
       )}
 
       {showIncorrectFeedback && (
-        <div className="mt-3 rounded-lg border border-danger/30 bg-danger-bg px-3 py-2 text-sm text-danger">
+        <div className="mt-3 border-2 border-danger bg-danger-bg px-3 py-2 text-sm text-danger">
           Not quite — the correct answer is <span className="font-semibold">{correctAnswerLabel(question)}</span>.
         </div>
       )}

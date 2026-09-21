@@ -26,7 +26,7 @@ interface Point {
 }
 
 const BUTTON_CLASS =
-  'flex h-8 w-8 items-center justify-center rounded-md border border-rock-blue/50 bg-white/90 text-base leading-none text-venice-blue-dark shadow-sm hover:bg-rock-blue/20';
+  'press flex h-10 w-10 items-center justify-center border-2 border-ink bg-paper text-base leading-none font-semibold text-ink shadow-[3px_3px_0_var(--color-ink)] hover:bg-rock-blue';
 
 /** Zoom applied by one tap of the +/− buttons. */
 const BUTTON_ZOOM = 1.6;
@@ -303,7 +303,7 @@ export function GraphCanvas({ layers, scatters, findPoints }: GraphCanvasProps) 
   };
 
   return (
-    <div className="relative h-full w-full overflow-hidden rounded-lg border border-rock-blue/40 bg-white">
+    <div className="relative h-full w-full overflow-hidden border-2 border-ink bg-paper">
       <canvas
         ref={canvasRef}
         role="img"

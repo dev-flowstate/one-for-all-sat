@@ -10,24 +10,27 @@ interface TimerModePickerProps {
 const OPTIONS: { value: TimerMode; label: string }[] = [
   { value: 'countdown', label: 'Countdown' },
   { value: 'stopwatch', label: 'Stopwatch' },
-  { value: 'none', label: 'No timer' },
+  { value: 'none', label: 'None' },
 ];
 
-export function TimerModePicker({ mode, onModeChange, countdownMinutes, onCountdownMinutesChange }: TimerModePickerProps) {
+export function TimerModePicker({
+  mode,
+  onModeChange,
+  countdownMinutes,
+  onCountdownMinutesChange,
+}: TimerModePickerProps) {
   return (
     <div>
-      <div className="flex flex-col gap-2 sm:flex-row">
-        {OPTIONS.map((opt) => (
+      <div className="flex border-2 border-ink bg-paper">
+        {OPTIONS.map((opt, index) => (
           <button
             key={opt.value}
             type="button"
             aria-pressed={mode === opt.value}
             onClick={() => onModeChange(opt.value)}
-            className={`flex-1 rounded-lg border px-4 py-3 text-sm font-medium transition-colors sm:text-center ${
-              mode === opt.value
-                ? 'border-venice-blue bg-venice-blue text-merino'
-                : 'border-rock-blue/40 bg-white/50 text-venice-blue-dark hover:bg-rock-blue/10'
-            }`}
+            className={`min-h-11 flex-1 px-3 py-2.5 text-xs font-semibold tracking-tight uppercase sm:text-sm ${
+              index > 0 ? 'border-l-2 border-ink' : ''
+            } ${mode === opt.value ? 'bg-venice-blue text-merino' : 'text-ink hover:bg-merino-dark'}`}
           >
             {opt.label}
           </button>
@@ -35,7 +38,7 @@ export function TimerModePicker({ mode, onModeChange, countdownMinutes, onCountd
       </div>
       {mode === 'countdown' && (
         <div className="mt-3 flex items-center gap-2">
-          <label htmlFor="countdown-minutes" className="text-sm text-venice-blue-dark/80">
+          <label htmlFor="countdown-minutes" className="text-xs font-semibold tracking-tight text-ink-soft uppercase">
             Minutes
           </label>
           <input
@@ -48,7 +51,7 @@ export function TimerModePicker({ mode, onModeChange, countdownMinutes, onCountd
               if (Number.isNaN(raw)) return;
               onCountdownMinutesChange(Math.max(1, raw));
             }}
-            className="w-20 rounded-lg border border-rock-blue/40 bg-white/70 px-3 py-1.5 text-sm text-venice-blue-dark"
+            className="min-h-11 w-24 border-2 border-ink bg-paper px-3 py-1.5 text-sm font-semibold tabular-nums"
           />
         </div>
       )}

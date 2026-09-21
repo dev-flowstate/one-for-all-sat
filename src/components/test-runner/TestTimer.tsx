@@ -45,7 +45,7 @@ export function TestTimer({ mode, countdownMinutes, onExpire }: TestTimerProps) 
   if (mode === 'none') return null;
 
   return (
-    <p className="rounded-md bg-rock-blue/20 px-3 py-1 text-sm font-bold tabular-nums text-venice-blue-dark">
+    <p className="flex-none border-2 border-ink bg-paper px-2 py-1.5 font-mono text-sm font-bold tabular-nums text-ink">
       {formatTime(seconds)}
     </p>
   );

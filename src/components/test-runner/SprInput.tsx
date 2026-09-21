@@ -24,7 +24,7 @@ export function SprInput({ value, onChange, onSubmit, submitted }: SprInputProps
         onChange={(e) => onChange(e.target.value)}
         placeholder="Enter your answer"
         aria-label="Your answer"
-        className="min-h-11 flex-1 rounded-lg border border-rock-blue/50 bg-white/80 px-4 py-2.5 text-sm text-venice-blue-dark placeholder:text-venice-blue-dark/40 focus:border-venice-blue disabled:opacity-60"
+        className="min-h-11 flex-1 border-2 border-ink bg-paper px-3 py-2.5 font-mono text-base tabular-nums text-ink placeholder:text-ink-soft disabled:bg-merino-dark disabled:text-ink-soft"
       />
       <Button type="submit" disabled={submitted || !value.trim()}>
         Submit

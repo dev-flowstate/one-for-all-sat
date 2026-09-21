@@ -63,18 +63,30 @@ export function QuestionPanel({ question, revealMode, isLast, onNext }: Question
       {/* When the prompt lost graphic-only content, the image below is the real question —
           showing the broken text above it would just read as gibberish. */}
       {!(question.promptIsPartial && question.images?.length) && (
-        <HighlightableText text={question.prompt} rangeKey={`${question.id}:prompt`} className="text-base leading-relaxed" />
+        <HighlightableText
+          text={question.prompt}
+          rangeKey={`${question.id}:prompt`}
+          className="prose-reading max-w-[68ch]"
+        />
       )}
 
       {question.images && question.images.length > 0 && (
         <div className="mt-4 flex flex-col gap-3">
+          {/* The figures are white-background PNGs, so they need a border to sit on the
+              cream paper rather than float in it. */}
           {question.images.map((img, i) => (
-            <img key={i} src={img.src} alt={img.alt ?? ''} className="max-w-full rounded-lg" />
+            <img
+              key={i}
+              src={img.src}
+              alt={img.alt ?? ''}
+              className="max-w-full self-start border-2 border-ink bg-white"
+            />
           ))}
         </div>
       )}
 
-      <div className="mt-5">
+      {/* An ink rule divides the thing being read from the thing being clicked. */}
+      <div className="mt-5 border-t-2 border-ink pt-5">
         {question.type === 'mcq' ? (
           <McqChoices
             choices={question.choices ?? []}
@@ -93,7 +105,7 @@ export function QuestionPanel({ question, revealMode, isLast, onNext }: Question
       {submitted && answered && (
         <div className="mt-5">
           {revealMode === 'immediate' && <AnswerFeedback outcome={answered.outcome} explanation={question.explanation} />}
-          <Button className="mt-3 w-full sm:w-auto" onClick={onNext}>
+          <Button className="mt-4 w-full sm:w-auto" onClick={onNext}>
             {isLast ? 'Finish' : 'Next'}
           </Button>
         </div>

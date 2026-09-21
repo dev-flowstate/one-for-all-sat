@@ -8,16 +8,16 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const VARIANT_CLASSES: Record<Variant, string> = {
-  primary: 'bg-venice-blue text-merino hover:bg-venice-blue-dark',
-  secondary: 'bg-rock-blue text-venice-blue-dark hover:bg-rock-blue-dark',
-  ghost: 'bg-transparent text-venice-blue hover:bg-venice-blue/10',
-  danger: 'bg-danger text-merino hover:opacity-90',
+  primary: 'panel press bg-coral text-paper hover:bg-coral-dark',
+  secondary: 'panel press bg-rock-blue text-ink hover:bg-rock-blue-dark',
+  ghost: 'border-2 border-transparent bg-transparent text-venice-blue hover:border-ink hover:bg-paper',
+  danger: 'panel press bg-danger text-paper hover:brightness-110',
 };
 
 export function Button({ variant = 'primary', className = '', children, ...rest }: ButtonProps) {
   return (
     <button
-      className={`inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${VARIANT_CLASSES[variant]} ${className}`}
+      className={`inline-flex min-h-11 items-center justify-center gap-2 px-4 py-2.5 font-mono text-sm font-semibold tracking-tight uppercase disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none ${VARIANT_CLASSES[variant]} ${className}`}
       {...rest}
     >
       {children}

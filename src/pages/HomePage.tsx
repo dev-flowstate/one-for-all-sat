@@ -1,7 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useProgressStore } from '../store/useProgressStore';
 import { useSettingsStore } from '../store/useSettingsStore';
-import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { getMainPool, getWrongPool, getRightPool } from '../lib/pools';
 
@@ -13,76 +12,114 @@ export function HomePage() {
   const wrongCount = getWrongPool(questions, progress).length;
   const rightCount = getRightPool(questions, progress).length;
 
+  /* The three pools are what a returning user scans first, so they get the loudest
+     treatment on the page: a solid colour-coded cap over an oversized figure. */
+  const pools = [
+    { label: 'Unattempted', value: mainCount, cap: 'bg-rock-blue text-ink' },
+    { label: 'Wrong', value: wrongCount, cap: 'bg-danger text-paper' },
+    { label: 'Right', value: rightCount, cap: 'bg-success text-paper' },
+  ];
+
   return (
-    <div className="mx-auto max-w-3xl px-4 py-8">
-      <header className="mb-8 text-center">
-        <h1 className="text-3xl font-bold text-venice-blue-dark">One for All SAT</h1>
-        <p className="mt-2 text-venice-blue-dark/70">
-          {profile ? `Welcome back, ${profile.avatar} ${profile.nickname}` : 'Your personal SAT practice space'}
-        </p>
+    <div className="mx-auto max-w-4xl px-4 py-6 sm:py-10">
+      <header className="panel-raised">
+        {/* Status bar: where you are, and how big the bank is. */}
+        <div className="flex items-center gap-2 border-b-2 border-ink bg-ink px-3 py-1.5">
+          <span aria-hidden="true" className="flex gap-1">
+            <span className="block h-2.5 w-2.5 border-2 border-merino" />
+            <span className="block h-2.5 w-2.5 border-2 border-merino" />
+          </span>
+          <span className="flex-1 truncate text-[11px] font-semibold tracking-tight text-merino uppercase">
+            Home
+          </span>
+          <span className="text-[11px] font-semibold tracking-tight text-merino uppercase tabular-nums">
+            {bundledCount + importedCount} questions
+          </span>
+        </div>
+
+        <div className="px-4 py-6 sm:px-6 sm:py-8">
+          <p className="text-[11px] font-semibold tracking-tight text-ink-soft uppercase">Digital SAT practice</p>
+          <h1 className="mt-2 text-3xl leading-none font-bold tracking-tight uppercase sm:text-5xl">
+            One for all <span className="inline-block bg-venice-blue px-2 py-1 text-merino">SAT</span>
+          </h1>
+          <p className="mt-4 text-sm text-ink-soft">
+            {profile ? `Welcome back, ${profile.avatar} ${profile.nickname}` : 'Your personal SAT practice space'}
+          </p>
+        </div>
       </header>
 
       {!isLoaded ? (
-        <p className="text-center text-venice-blue-dark/60">Loading your question bank…</p>
+        <p className="panel mt-4 p-4 text-sm text-ink-soft">Loading your question bank…</p>
       ) : (
         <>
-          <div className="mb-6 grid grid-cols-3 gap-3 text-center">
-            <Card>
-              <p className="text-2xl font-bold text-venice-blue">{mainCount}</p>
-              <p className="text-xs text-venice-blue-dark/70">Unattempted</p>
-            </Card>
-            <Card>
-              <p className="text-2xl font-bold text-danger">{wrongCount}</p>
-              <p className="text-xs text-venice-blue-dark/70">Wrong</p>
-            </Card>
-            <Card>
-              <p className="text-2xl font-bold text-success">{rightCount}</p>
-              <p className="text-xs text-venice-blue-dark/70">Right</p>
-            </Card>
+          <div className="mt-4 grid grid-cols-3 gap-3 sm:mt-6 sm:gap-4">
+            {pools.map((pool) => (
+              <div key={pool.label} className="panel">
+                <p
+                  className={`border-b-2 border-ink px-2 py-1 text-center text-[10px] font-semibold tracking-tight uppercase sm:text-[11px] ${pool.cap}`}
+                >
+                  {pool.label}
+                </p>
+                <p className="px-2 py-4 text-center text-3xl font-bold tabular-nums sm:py-6 sm:text-5xl">
+                  {pool.value}
+                </p>
+              </div>
+            ))}
           </div>
 
-          <Card className="mb-6 flex items-center justify-between">
-            <div>
-              <p className="text-sm text-venice-blue-dark/70">Total points</p>
-              <p className="text-xl font-bold text-venice-blue">{stats.points}</p>
+          {/* 2px gaps over an ink background draw the rules, so the cells stay aligned
+              however they wrap. */}
+          <dl className="mt-3 grid grid-cols-2 gap-[2px] border-2 border-ink bg-ink sm:mt-4 sm:grid-cols-3">
+            <div className="bg-merino-dark px-3 py-2.5">
+              <dt className="text-[10px] font-semibold tracking-tight text-ink-soft uppercase">Total points</dt>
+              <dd className="text-lg font-bold tabular-nums">{stats.points}</dd>
             </div>
-            <div className="text-right text-sm text-venice-blue-dark/70">
-              <p>
-                {bundledCount} demo + {importedCount} imported questions
-              </p>
-              <p>Best streak: {stats.bestStreak}</p>
+            <div className="bg-merino-dark px-3 py-2.5">
+              <dt className="text-[10px] font-semibold tracking-tight text-ink-soft uppercase">Best streak</dt>
+              <dd className="text-lg font-bold tabular-nums">{stats.bestStreak}</dd>
             </div>
-          </Card>
+            <div className="col-span-2 bg-merino-dark px-3 py-2.5 sm:col-span-1">
+              <dt className="text-[10px] font-semibold tracking-tight text-ink-soft uppercase">Question bank</dt>
+              <dd className="text-sm font-semibold tabular-nums">
+                {bundledCount} demo + {importedCount} imported
+              </dd>
+            </div>
+          </dl>
+
+          <div className="mt-4 sm:mt-6">
+            <Link to="/setup" className="block">
+              <Button variant="primary" className="w-full py-4 text-base sm:py-5 sm:text-lg">
+                Start practicing
+              </Button>
+            </Link>
+            <div className="mt-3 grid gap-3 sm:grid-cols-2">
+              <Link to="/wrong" className="block">
+                <Button className="w-full" variant="secondary">
+                  Review wrong ({wrongCount})
+                </Button>
+              </Link>
+              <Link to="/profile" className="block">
+                <Button className="w-full" variant="ghost">
+                  Profile & settings
+                </Button>
+              </Link>
+            </div>
+          </div>
 
           {importedCount === 0 && (
-            <Card className="mb-6 border-venice-blue/40 bg-rock-blue/10">
+            <div className="mt-4 flex flex-col gap-2 border-2 border-ink bg-merino-dark p-3 sm:flex-row sm:items-center sm:gap-3">
+              <span className="w-fit border-2 border-ink bg-venice-blue px-2 py-0.5 text-[11px] font-semibold tracking-tight text-merino uppercase">
+                Demo set
+              </span>
               <p className="text-sm">
                 You&apos;re practicing with the small original demo set.{' '}
-                <Link to="/import" className="font-semibold text-venice-blue underline">
+                <Link to="/import" className="font-semibold text-venice-blue underline underline-offset-2">
                   Import your own question bank
                 </Link>{' '}
                 to unlock your full library.
               </p>
-            </Card>
+            </div>
           )}
-
-          <div className="flex flex-col gap-3 sm:flex-row">
-            <Link to="/setup" className="flex-1">
-              <Button className="w-full" variant="primary">
-                Start practicing
-              </Button>
-            </Link>
-            <Link to="/wrong" className="flex-1">
-              <Button className="w-full" variant="secondary">
-                Review wrong ({wrongCount})
-              </Button>
-            </Link>
-            <Link to="/profile" className="flex-1">
-              <Button className="w-full" variant="ghost">
-                Profile & settings
-              </Button>
-            </Link>
-          </div>
         </>
       )}
     </div>

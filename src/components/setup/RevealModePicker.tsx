@@ -6,24 +6,22 @@ interface RevealModePickerProps {
 }
 
 const OPTIONS: { value: RevealMode; label: string }[] = [
-  { value: 'immediate', label: 'Show answer after each question' },
-  { value: 'end', label: 'Show all answers at the end' },
+  { value: 'immediate', label: 'After each question' },
+  { value: 'end', label: 'At the end' },
 ];
 
 export function RevealModePicker({ value, onChange }: RevealModePickerProps) {
   return (
-    <div className="flex flex-col gap-2 sm:flex-row">
-      {OPTIONS.map((opt) => (
+    <div className="flex border-2 border-ink bg-paper">
+      {OPTIONS.map((opt, index) => (
         <button
           key={opt.value}
           type="button"
           aria-pressed={value === opt.value}
           onClick={() => onChange(opt.value)}
-          className={`flex-1 rounded-lg border px-4 py-3 text-left text-sm font-medium transition-colors sm:text-center ${
-            value === opt.value
-              ? 'border-venice-blue bg-venice-blue text-merino'
-              : 'border-rock-blue/40 bg-white/50 text-venice-blue-dark hover:bg-rock-blue/10'
-          }`}
+          className={`min-h-11 flex-1 px-3 py-2.5 text-xs font-semibold tracking-tight uppercase sm:text-sm ${
+            index > 0 ? 'border-l-2 border-ink' : ''
+          } ${value === opt.value ? 'bg-venice-blue text-merino' : 'text-ink hover:bg-merino-dark'}`}
         >
           {opt.label}
         </button>

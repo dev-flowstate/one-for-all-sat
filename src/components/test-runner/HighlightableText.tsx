@@ -103,7 +103,7 @@ export function HighlightableText({ text, rangeKey, className = '' }: Highlighta
           ref={popoverRef}
           type="button"
           onClick={commitPopover}
-          className="fixed z-40 -translate-x-1/2 -translate-y-full rounded-md bg-venice-blue-dark px-3 py-1.5 text-xs font-semibold text-merino shadow-lg"
+          className="press fixed z-40 min-h-11 -translate-x-1/2 -translate-y-full border-2 border-ink bg-venice-blue px-3 py-1.5 font-mono text-xs font-bold tracking-tight text-merino uppercase shadow-[4px_4px_0_var(--color-ink)]"
           style={{ top: popover.top - 8, left: popover.left }}
         >
           {popover.mode === 'add' ? 'Highlight' : 'Remove highlight'}

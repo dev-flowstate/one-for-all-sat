@@ -136,7 +136,7 @@ export function GraphingCalculator() {
         <div
           role="group"
           aria-label="Calculator input"
-          className="flex shrink-0 gap-1 rounded-lg border border-rock-blue/50 bg-white p-0.5"
+          className="flex shrink-0 border-2 border-ink bg-paper"
         >
           {TABS.map((option) => (
             <button
@@ -144,10 +144,10 @@ export function GraphingCalculator() {
               type="button"
               onClick={() => setTab(option.tab)}
               aria-pressed={option.tab === tab}
-              className={`min-h-8 flex-1 rounded-md px-2 text-xs font-semibold ${
+              className={`min-h-9 flex-1 px-2 text-xs font-semibold tracking-tight uppercase ${
                 option.tab === tab
-                  ? 'bg-venice-blue text-white'
-                  : 'text-venice-blue-dark/60 hover:bg-rock-blue/20 hover:text-venice-blue-dark'
+                  ? 'bg-venice-blue text-merino'
+                  : 'text-ink hover:bg-merino-dark'
               }`}
             >
               {option.label}
@@ -166,7 +166,7 @@ export function GraphingCalculator() {
                   <li key={row.id} className="flex items-start gap-2">
                     <span
                       aria-hidden="true"
-                      className="mt-3 h-2.5 w-2.5 shrink-0 rounded-full"
+                      className="mt-3 h-3 w-3 shrink-0 border-2 border-ink"
                       style={{ backgroundColor: isDrawable(result) ? color : IDLE_COLOR }}
                     />
                     <div className="min-w-0 flex-1">
@@ -180,8 +180,8 @@ export function GraphingCalculator() {
                         autoCorrect="off"
                         autoCapitalize="off"
                         spellCheck={false}
-                        className={`min-h-9 w-full rounded-lg border bg-white px-2 py-1.5 font-mono text-sm text-venice-blue-dark placeholder:font-sans placeholder:text-venice-blue-dark/40 focus:border-venice-blue focus:outline-none ${
-                          result.kind === 'error' ? 'border-danger bg-danger-bg' : 'border-rock-blue/50'
+                        className={`min-h-9 w-full border-2 bg-paper px-2 py-1.5 font-mono text-sm text-ink placeholder:text-ink-soft/60 ${
+                          result.kind === 'error' ? 'border-danger bg-danger-bg' : 'border-ink'
                         }`}
                       />
                       {result.kind === 'error' && <p className="mt-0.5 text-xs text-danger">{result.message}</p>}
@@ -214,7 +214,7 @@ export function GraphingCalculator() {
                       onClick={() => removeRow(row.id)}
                       disabled={rows.length === 1}
                       aria-label={`Remove expression ${index + 1}`}
-                      className="mt-0.5 flex h-9 w-7 shrink-0 items-center justify-center rounded text-venice-blue-dark/60 hover:bg-rock-blue/20 hover:text-venice-blue-dark disabled:opacity-30"
+                      className="mt-0.5 flex h-9 w-7 shrink-0 items-center justify-center text-ink-soft hover:bg-merino-dark hover:text-ink disabled:opacity-30"
                     >
                       ✕
                     </button>
@@ -226,11 +226,11 @@ export function GraphingCalculator() {
             <button
               type="button"
               onClick={addRow}
-              className="min-h-9 shrink-0 rounded-lg bg-rock-blue/30 px-3 py-1.5 text-sm font-semibold text-venice-blue-dark hover:bg-rock-blue/50"
+              className="press min-h-9 shrink-0 border-2 border-ink bg-rock-blue px-3 py-1.5 text-xs font-semibold tracking-tight text-ink uppercase hover:bg-rock-blue-dark"
             >
               + Add expression
             </button>
-            <p className="hidden text-xs text-venice-blue-dark/60 sm:block">
+            <p className="hidden text-xs text-ink-soft sm:block">
               Try <span className="font-mono">x^2 - 4</span>, <span className="font-mono">x^2 + y^2 = 25</span>,{' '}
               <span className="font-mono">y &gt; 2x + 1</span> or <span className="font-mono">2+2*7</span>.
             </p>
@@ -252,11 +252,11 @@ export function GraphingCalculator() {
             <button
               type="button"
               onClick={addTable}
-              className="min-h-9 shrink-0 rounded-lg bg-rock-blue/30 px-3 py-1.5 text-sm font-semibold text-venice-blue-dark hover:bg-rock-blue/50"
+              className="press min-h-9 shrink-0 border-2 border-ink bg-rock-blue px-3 py-1.5 text-xs font-semibold tracking-tight text-ink uppercase hover:bg-rock-blue-dark"
             >
               + Add table
             </button>
-            <p className="hidden text-xs text-venice-blue-dark/60 sm:block">
+            <p className="hidden text-xs text-ink-soft sm:block">
               Paste two columns straight from a spreadsheet, then fit them with{' '}
               <span className="font-mono">y_1 ~ m*x_1 + b</span> in an expression row.
             </p>
@@ -285,9 +285,9 @@ function RegressionReadout({ row }: { row: RegressionRow }) {
           {name} = {formatNumber(value)}
         </span>
       ))}
-      <span className="text-venice-blue-dark/70">R² = {formatFitQuality(row.rSquared)}</span>
+      <span className="text-ink-soft">R² = {formatFitQuality(row.rSquared)}</span>
       {/* Only a straight-line fit has a meaningful r, so the engine returns null otherwise. */}
-      {row.r !== null && <span className="text-venice-blue-dark/70">r = {formatFitQuality(row.r)}</span>}
+      {row.r !== null && <span className="text-ink-soft">r = {formatFitQuality(row.r)}</span>}
     </div>
   );
 }

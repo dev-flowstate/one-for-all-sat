@@ -13,12 +13,8 @@ const OPTIONS: readonly { mode: AngleMode; short: string; full: string }[] = [
 /** Segmented control deciding how `sin`, `cos` and friends read their argument. */
 export function AngleModeToggle({ mode, onChange }: AngleModeToggleProps) {
   return (
-    <div
-      role="group"
-      aria-label="Angle mode"
-      className="flex shrink-0 gap-1 rounded-lg border border-rock-blue/50 bg-white p-0.5"
-    >
-      {OPTIONS.map((option) => {
+    <div role="group" aria-label="Angle mode" className="flex shrink-0 border-2 border-ink bg-paper">
+      {OPTIONS.map((option, index) => {
         const active = option.mode === mode;
         return (
           <button
@@ -27,11 +23,9 @@ export function AngleModeToggle({ mode, onChange }: AngleModeToggleProps) {
             onClick={() => onChange(option.mode)}
             aria-pressed={active}
             title={option.full}
-            className={`min-h-8 flex-1 rounded-md px-2 text-xs font-semibold ${
-              active
-                ? 'bg-venice-blue text-white'
-                : 'text-venice-blue-dark/60 hover:bg-rock-blue/20 hover:text-venice-blue-dark'
-            }`}
+            className={`min-h-10 flex-1 px-2 font-mono text-xs font-semibold tracking-tight uppercase ${
+              index > 0 ? 'border-l-2 border-ink' : ''
+            } ${active ? 'bg-venice-blue text-merino' : 'text-ink hover:bg-merino-dark'}`}
           >
             {option.short}
           </button>

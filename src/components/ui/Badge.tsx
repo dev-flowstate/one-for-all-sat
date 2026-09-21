@@ -8,7 +8,7 @@ interface BadgeProps {
 }
 
 const TONE_CLASSES: Record<BadgeTone, string> = {
-  neutral: 'bg-rock-blue/25 text-venice-blue-dark',
+  neutral: 'bg-merino-dark text-ink',
   success: 'bg-success-bg text-success',
   danger: 'bg-danger-bg text-danger',
   accent: 'bg-venice-blue text-merino',
@@ -16,7 +16,9 @@ const TONE_CLASSES: Record<BadgeTone, string> = {
 
 export function Badge({ children, tone = 'neutral' }: BadgeProps) {
   return (
-    <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${TONE_CLASSES[tone]}`}>
+    <span
+      className={`inline-flex items-center border-2 border-ink px-2 py-0.5 font-mono text-[11px] font-semibold tracking-tight uppercase ${TONE_CLASSES[tone]}`}
+    >
       {children}
     </span>
   );

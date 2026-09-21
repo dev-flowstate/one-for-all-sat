@@ -5,13 +5,26 @@ interface AnswerFeedbackProps {
   explanation: string;
 }
 
-/** Immediate-reveal-mode feedback banner shown right after a question is answered. */
+/**
+ * Immediate-reveal-mode feedback shown right after a question is answered: a solid
+ * verdict bar over the explanation, rather than a tinted wash. The glyph carries the
+ * verdict alongside the colour, and the explanation is long-form so it reads in the serif.
+ */
 export function AnswerFeedback({ outcome, explanation }: AnswerFeedbackProps) {
   const correct = outcome === 'correct';
   return (
-    <div className={`rounded-lg p-4 text-sm ${correct ? 'bg-success-bg text-success' : 'bg-danger-bg text-danger'}`}>
-      <p className="font-semibold">{correct ? 'Correct' : 'Incorrect'}</p>
-      <p className="mt-1 whitespace-pre-wrap">{explanation}</p>
+    <div className="border-2 border-ink shadow-[4px_4px_0_var(--color-ink)]">
+      <p
+        className={`flex items-center gap-2 border-b-2 border-ink px-3 py-2 font-mono text-xs font-bold tracking-tight uppercase text-paper ${
+          correct ? 'bg-success' : 'bg-danger'
+        }`}
+      >
+        <span aria-hidden="true">{correct ? '✓' : '✕'}</span>
+        {correct ? 'Correct' : 'Incorrect'}
+      </p>
+      <div className="bg-paper px-3 py-3">
+        <p className="prose-reading max-w-[68ch] whitespace-pre-wrap">{explanation}</p>
+      </div>
     </div>
   );
 }

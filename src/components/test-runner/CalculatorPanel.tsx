@@ -27,21 +27,23 @@ export function CalculatorPanel({ open, onClose }: CalculatorPanelProps) {
 
   return (
     <div
-      className={`fixed inset-x-4 bottom-4 z-30 mx-auto max-w-xl rounded-xl border border-rock-blue/40 bg-white shadow-lg sm:inset-x-auto sm:right-4 sm:w-[34rem] ${open ? '' : 'hidden'}`}
+      className={`panel-raised fixed inset-x-3 bottom-3 z-30 mx-auto max-w-xl sm:inset-x-auto sm:right-4 sm:w-[34rem] ${open ? '' : 'hidden'}`}
     >
-      <div className="flex items-center justify-between border-b border-rock-blue/30 px-3 py-2">
-        <p className="text-sm font-semibold text-venice-blue-dark">Graphing calculator</p>
+      {/* Same window chrome as the Card title bar, so the floating panel reads as part of
+          the same furniture. */}
+      <div className="flex items-center justify-between gap-2 border-b-2 border-ink bg-venice-blue py-0.5 pr-0.5 pl-3">
+        <p className="font-mono text-xs font-bold tracking-tight text-merino uppercase">Graphing calculator</p>
         <button
           type="button"
           onClick={onClose}
           aria-label="Close calculator"
-          className="rounded px-2 py-1 text-venice-blue-dark hover:bg-rock-blue/20"
+          className="flex h-11 w-11 flex-none items-center justify-center border-2 border-transparent font-mono text-sm text-merino hover:border-merino hover:bg-venice-blue-dark"
         >
           ✕
         </button>
       </div>
 
-      <Suspense fallback={<p className="p-4 text-sm text-venice-blue-dark/70">Loading calculator…</p>}>
+      <Suspense fallback={<p className="p-4 font-mono text-sm text-ink-soft">Loading calculator…</p>}>
         <GraphingCalculator />
       </Suspense>
     </div>

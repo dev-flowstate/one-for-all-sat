@@ -12,17 +12,18 @@ interface TabsProps {
 
 export function Tabs({ items, activeId, onChange }: TabsProps) {
   return (
-    <div className="flex gap-1 rounded-lg bg-rock-blue/20 p-1">
-      {items.map((item) => (
+    <div className="flex border-2 border-ink bg-paper">
+      {items.map((item, index) => (
         <button
           key={item.id}
           onClick={() => onChange(item.id)}
-          className={`flex-1 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
-            activeId === item.id ? 'bg-venice-blue text-merino' : 'text-venice-blue-dark hover:bg-rock-blue/30'
-          }`}
+          aria-pressed={activeId === item.id}
+          className={`min-h-11 flex-1 px-3 py-2 font-mono text-sm font-semibold tracking-tight uppercase ${
+            index > 0 ? 'border-l-2 border-ink' : ''
+          } ${activeId === item.id ? 'bg-venice-blue text-merino' : 'text-ink hover:bg-merino-dark'}`}
         >
           {item.label}
-          {item.count !== undefined && <span className="ml-1.5 opacity-75">({item.count})</span>}
+          {item.count !== undefined && <span className="ml-1.5 opacity-70">[{item.count}]</span>}
         </button>
       ))}
     </div>

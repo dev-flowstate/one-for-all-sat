@@ -60,21 +60,38 @@ interface ChoiceButtonProps {
   onClick: () => void;
 }
 
+const HARD_SHADOW = 'shadow-[4px_4px_0_var(--color-ink)]';
+
 /**
  * A crossed choice is NEVER given the `disabled` attribute — it must stay a real,
  * clickable, non-disabled button (with a descriptive aria-label) so restoring it via
  * assistive tech keeps working even after the question has been answered.
+ *
+ * Every state is a solid block: live choices sit raised on their own hard shadow, answered
+ * ones fill with a flat colour, and crossed ones drop flat onto the page. Nothing here
+ * relies on colour alone — the crossed state also draws a literal ink rule through the row,
+ * which is what keeps it readable for choices whose value is an <img> and so can't be
+ * struck through by `line-through`.
  */
 function ChoiceButton({ choice, crossed, disabled, isSelected, isCorrect, isWrongSelection, onClick }: ChoiceButtonProps) {
-  const stateClasses = crossed
-    ? 'border-rock-blue/40 bg-white/50 text-venice-blue-dark opacity-50'
+  const surface = crossed
+    ? 'bg-merino-dark text-ink-soft'
     : isCorrect
-      ? 'border-success bg-success-bg text-success'
+      ? `bg-success text-paper ${HARD_SHADOW}`
       : isWrongSelection
-        ? 'border-danger bg-danger-bg text-danger'
+        ? `bg-danger text-paper ${HARD_SHADOW}`
         : isSelected
-          ? 'border-venice-blue bg-venice-blue/10 text-venice-blue-dark'
-          : 'border-rock-blue/40 bg-white/60 text-venice-blue-dark hover:border-venice-blue/60 hover:bg-venice-blue/5';
+          ? `bg-venice-blue text-paper ${HARD_SHADOW}`
+          : disabled
+            ? 'bg-merino text-ink-soft'
+            : `bg-paper text-ink hover:bg-merino-dark ${HARD_SHADOW}`;
+
+  const badge =
+    crossed || disabled
+      ? 'border-ink-soft bg-merino text-ink-soft'
+      : isCorrect || isWrongSelection || isSelected
+        ? 'border-ink bg-paper text-ink'
+        : 'border-ink bg-merino-dark text-ink';
 
   return (
     <button
@@ -82,26 +99,44 @@ function ChoiceButton({ choice, crossed, disabled, isSelected, isCorrect, isWron
       disabled={disabled}
       onClick={onClick}
       aria-label={crossed ? `Restore choice ${choice.id}` : choice.image ? `Choice ${choice.id}` : undefined}
-      className={`flex min-h-11 w-full items-center gap-3 rounded-lg border px-4 py-3 text-left text-sm transition-colors disabled:cursor-default disabled:opacity-70 ${stateClasses}`}
+      className={`press relative flex min-h-14 w-full items-center gap-3 border-2 border-ink px-3 py-2.5 text-left disabled:cursor-default ${surface}`}
     >
       <span
-        className={`flex h-7 w-7 flex-none items-center justify-center rounded-full border text-xs font-bold ${
-          crossed ? 'border-venice-blue-dark/30' : 'border-current'
-        }`}
+        className={`flex h-8 w-8 flex-none items-center justify-center border-2 font-mono text-sm font-bold ${badge}`}
       >
         {choice.id}
       </span>
-      <span className={`flex-1 ${crossed ? 'line-through' : ''}`}>
+
+      {/* The choice's value is content, not chrome, so it reads in the serif like the stem. */}
+      <span
+        className={`min-w-0 flex-1 font-serif text-[1.0625rem] leading-snug ${crossed ? 'line-through decoration-2' : ''}`}
+      >
         {choice.image ? (
-          <img src={choice.image} alt="" className="max-h-12 w-auto rounded object-contain object-left" />
+          <img
+            src={choice.image}
+            alt=""
+            className="max-h-12 w-auto border-2 border-ink bg-white object-contain object-left"
+          />
         ) : (
           choice.text
         )}
       </span>
+
       {crossed && (
-        <span aria-hidden="true" className="flex-none text-lg leading-none">
-          ↺
-        </span>
+        <>
+          {/* Drawn across the whole row (letter badge included) so an image choice still
+              reads as eliminated. Stops short of the restore glyph. */}
+          <span
+            aria-hidden="true"
+            className="pointer-events-none absolute top-1/2 right-14 left-2 h-0.5 -translate-y-1/2 bg-ink"
+          />
+          <span
+            aria-hidden="true"
+            className="relative z-10 flex h-8 w-8 flex-none items-center justify-center border-2 border-ink bg-paper font-mono text-sm leading-none text-ink"
+          >
+            ↺
+          </span>
+        </>
       )}
     </button>
   );

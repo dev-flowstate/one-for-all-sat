@@ -40,89 +40,104 @@ export function ProfileSettingsPage() {
     }
   }
 
+  const statEntries: { label: string; value: string | number }[] = [
+    { label: 'Points', value: stats.points },
+    { label: 'Attempted', value: stats.questionsAttempted },
+    { label: 'Correct', value: stats.correctCount },
+    { label: 'Accuracy', value: `${accuracy}%` },
+    { label: 'Streak', value: stats.currentStreak },
+    { label: 'Best streak', value: stats.bestStreak },
+  ];
+
   return (
-    <div className="mx-auto max-w-2xl px-4 py-8">
-      <Link to="/" className="mb-4 inline-block text-sm text-venice-blue hover:underline">
+    <div className="mx-auto max-w-3xl px-4 py-6 sm:py-10">
+      <Link
+        to="/"
+        className="mb-4 inline-block text-xs font-semibold tracking-tight text-venice-blue uppercase hover:underline"
+      >
         ← Home
       </Link>
-      <h1 className="mb-6 text-2xl font-bold text-venice-blue-dark">Profile & settings</h1>
+      <h1 className="mb-5 text-2xl leading-none font-bold tracking-tight uppercase sm:text-3xl">
+        Profile & settings
+      </h1>
 
-      <Card className="mb-6">
-        <h2 className="mb-1 text-lg font-semibold text-venice-blue-dark">Local profile</h2>
-        <p className="mb-4 text-sm text-venice-blue-dark/70">
-          This is a local profile stored only in this browser — not a real account. No password, no server, no
-          syncing across devices. Clearing your browser data will remove it.
+      <Card className="mb-4" title="Local profile">
+        <p className="mb-4 text-sm text-ink-soft">
+          Stored only in this browser — not a real account. No password, no server, no syncing across
+          devices. Clearing your browser data removes it.
         </p>
 
         <label className="mb-4 block">
-          <span className="mb-1 block text-sm font-medium text-venice-blue-dark">Nickname</span>
+          <span className="mb-1.5 block text-xs font-semibold tracking-tight text-ink-soft uppercase">
+            Nickname
+          </span>
           <input
             type="text"
             value={nickname}
             onChange={(e) => setNickname(e.target.value)}
             placeholder="Enter a nickname"
-            className="w-full rounded-lg border border-rock-blue-dark/40 bg-white/80 px-3 py-2 text-sm text-venice-blue-dark focus:border-venice-blue focus:outline-none"
+            className="min-h-11 w-full border-2 border-ink bg-paper px-3 py-2 text-sm"
           />
         </label>
 
         <div className="mb-4">
-          <span className="mb-1 block text-sm font-medium text-venice-blue-dark">Avatar</span>
+          <span className="mb-1.5 block text-xs font-semibold tracking-tight text-ink-soft uppercase">
+            Avatar
+          </span>
           <AvatarPicker selected={avatar} onSelect={setAvatar} />
         </div>
 
-        <div className="flex items-center gap-3">
-          <Button onClick={handleSave} disabled={!trimmedNickname || !hasChanges}>
-            {profile && !hasChanges ? 'Saved' : 'Save'}
-          </Button>
-        </div>
-      </Card>
-
-      <Card className="mb-6">
-        <h2 className="mb-3 text-lg font-semibold text-venice-blue-dark">Your stats</h2>
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
-          <StatBlock label="Points" value={stats.points} />
-          <StatBlock label="Attempted" value={stats.questionsAttempted} />
-          <StatBlock label="Correct" value={stats.correctCount} />
-          <StatBlock label="Accuracy" value={`${accuracy}%`} />
-          <StatBlock label="Current streak" value={stats.currentStreak} />
-          <StatBlock label="Best streak" value={stats.bestStreak} />
-        </div>
-        <p className="mt-4 text-sm text-venice-blue-dark/70">
-          {bundledCount} demo · {importedCount} imported question{importedCount === 1 ? '' : 's'} loaded
-        </p>
-      </Card>
-
-      <Card className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h2 className="text-lg font-semibold text-venice-blue-dark">Question bank</h2>
-          <p className="text-sm text-venice-blue-dark/70">Import your own question bank or replace it.</p>
-        </div>
-        <Link to="/import">
-          <Button variant="secondary" className="w-full sm:w-auto">
-            Manage
-          </Button>
-        </Link>
-      </Card>
-
-      <Card className="border-danger/40 bg-danger-bg/30">
-        <h2 className="mb-1 text-lg font-semibold text-danger">Danger zone</h2>
-        <p className="mb-3 text-sm text-venice-blue-dark/70">
-          Moves every question back to unattempted, clearing your Wrong and Right lists. Points and streaks are not
-          affected.
-        </p>
-        <Button variant="danger" onClick={handleResetAll}>
-          Reset ALL progress
+        <Button onClick={handleSave} disabled={!trimmedNickname || !hasChanges}>
+          {profile && !hasChanges ? 'Saved' : 'Save'}
         </Button>
       </Card>
-    </div>
-  );
-}
 
-function StatBlock({ label, value }: { label: string; value: string | number }) {
-  return (
-    <div>
-      <p className="text-2xl font-bold text-venice-blue">{value}</p>
-      <p className="text-xs text-venice-blue-dark/70">{label}</p>
+      <Card
+        className="mb-4"
+        title="Your stats"
+        titleRight={
+          <span className="text-[11px] font-semibold tracking-tight text-merino tabular-nums">
+            {bundledCount} demo · {importedCount} imported
+          </span>
+        }
+      >
+        {/* 2px gaps over an ink background draw the rules, so cells stay aligned as they wrap. */}
+        <dl className="grid grid-cols-2 gap-[2px] border-2 border-ink bg-ink sm:grid-cols-3">
+          {statEntries.map((stat) => (
+            <div key={stat.label} className="bg-merino-dark px-3 py-2.5">
+              <dt className="text-[10px] font-semibold tracking-tight text-ink-soft uppercase">{stat.label}</dt>
+              <dd className="text-xl font-bold tabular-nums">{stat.value}</dd>
+            </div>
+          ))}
+        </dl>
+      </Card>
+
+      <Card className="mb-4" title="Question bank">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-sm text-ink-soft">Import your own question bank, or replace the current one.</p>
+          <Link to="/import" className="flex-none">
+            <Button variant="secondary" className="w-full sm:w-auto">
+              Manage
+            </Button>
+          </Link>
+        </div>
+      </Card>
+
+      {/* Destructive, so it gets the loudest frame on the page. */}
+      <div className="border-2 border-danger bg-danger-bg shadow-[4px_4px_0_var(--color-danger)]">
+        <div className="border-b-2 border-danger bg-danger px-3 py-1.5 text-xs font-semibold tracking-tight text-paper uppercase">
+          Danger zone
+        </div>
+        <div className="p-4">
+          <p className="mb-3 text-sm text-ink">
+            Moves every question back to unattempted, clearing your Wrong and Right lists. Points and
+            streaks are not affected.
+          </p>
+          <Button variant="danger" onClick={handleResetAll}>
+            Reset all progress
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }

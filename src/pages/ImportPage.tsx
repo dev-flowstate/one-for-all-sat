@@ -54,59 +54,73 @@ export function ImportPage() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl px-4 py-8">
-      <Link to="/" className="mb-4 inline-block text-sm text-venice-blue hover:underline">
+    <div className="mx-auto max-w-3xl px-4 py-6 sm:py-10">
+      <Link
+        to="/"
+        className="mb-4 inline-block text-xs font-semibold tracking-tight text-venice-blue uppercase hover:underline"
+      >
         ← Home
       </Link>
-      <h1 className="mb-2 text-2xl font-bold text-venice-blue-dark">Import your question bank</h1>
-      <p className="mb-6 text-sm text-venice-blue-dark/70">
+      <h1 className="mb-2 text-2xl leading-none font-bold tracking-tight uppercase sm:text-3xl">
+        Import question bank
+      </h1>
+      <p className="mb-5 text-sm text-ink-soft">
         Select a question bank JSON file to load your own questions into this browser. The file stays on this
         device — nothing is uploaded anywhere. Importing replaces any previously imported question bank; the
         built-in demo questions are unaffected.
       </p>
 
-      <Card className="mb-6">
-        <label className="flex flex-col gap-2">
-          <span className="text-sm font-medium text-venice-blue-dark">Question bank file (.json)</span>
+      <Card className="mb-4" title="Choose a file">
+        <label className="flex cursor-pointer flex-col gap-2 border-2 border-dashed border-ink bg-merino-dark p-5">
+          <span className="text-xs font-semibold tracking-tight text-ink-soft uppercase">
+            Question bank file (.json)
+          </span>
           <input
             type="file"
             accept="application/json"
             onChange={handleFileChange}
             disabled={isBusy}
-            className="w-full cursor-pointer rounded-lg border border-dashed border-rock-blue-dark/50 bg-merino/40 p-4 text-sm text-venice-blue-dark file:mr-3 file:cursor-pointer file:rounded-md file:border-0 file:bg-venice-blue file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-merino hover:file:bg-venice-blue-dark disabled:cursor-not-allowed disabled:opacity-50"
+            className="w-full cursor-pointer text-sm file:mr-3 file:min-h-11 file:cursor-pointer file:border-2 file:border-ink file:bg-venice-blue file:px-3 file:py-2 file:font-mono file:text-sm file:font-semibold file:tracking-tight file:text-merino file:uppercase hover:file:bg-venice-blue-dark disabled:cursor-not-allowed disabled:opacity-40"
           />
         </label>
       </Card>
 
       {state.status === 'error' && (
-        <Card className="mb-6 border-danger/40 bg-danger-bg/40">
-          <p className="mb-2 text-sm font-semibold text-danger">That file couldn&apos;t be imported:</p>
-          <ul className="list-inside list-disc space-y-1 text-sm text-danger">
+        <div className="mb-4 border-2 border-danger bg-danger-bg shadow-[4px_4px_0_var(--color-danger)]">
+          <div className="border-b-2 border-danger bg-danger px-3 py-1.5 text-xs font-semibold tracking-tight text-paper uppercase">
+            Couldn&apos;t import that file
+          </div>
+          <ul className="list-inside list-disc space-y-1 p-4 text-sm text-danger">
             {state.messages.map((msg, i) => (
               <li key={i}>{msg}</li>
             ))}
           </ul>
-        </Card>
+        </div>
       )}
 
       {state.status === 'ready' && (
-        <Card className="mb-6">
+        <Card className="mb-4" title="Ready to import">
           <ImportSummary questions={state.questions} />
           <Button className="mt-4 w-full" onClick={handleConfirm} disabled={state.importing}>
-            {state.importing ? 'Importing…' : 'Confirm Import'}
+            {state.importing ? 'Importing…' : 'Confirm import'}
           </Button>
         </Card>
       )}
 
       {state.status === 'done' && (
-        <Card className="border-success/40 bg-success-bg/40">
-          <p className="mb-3 text-sm font-semibold text-success">
-            Imported {state.count} question{state.count === 1 ? '' : 's'}.
-          </p>
-          <Link to="/">
-            <Button variant="secondary">Back to home</Button>
-          </Link>
-        </Card>
+        <div className="border-2 border-success bg-success-bg shadow-[4px_4px_0_var(--color-success)]">
+          <div className="border-b-2 border-success bg-success px-3 py-1.5 text-xs font-semibold tracking-tight text-paper uppercase">
+            Imported
+          </div>
+          <div className="p-4">
+            <p className="mb-3 text-sm font-semibold text-success">
+              {state.count} question{state.count === 1 ? '' : 's'} loaded into this browser.
+            </p>
+            <Link to="/">
+              <Button variant="secondary">Back to home</Button>
+            </Link>
+          </div>
+        </div>
       )}
     </div>
   );

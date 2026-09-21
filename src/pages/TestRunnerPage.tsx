@@ -20,6 +20,7 @@ export function TestRunnerPage() {
   const navigate = useNavigate();
   const config = useSessionStore((s) => s.config);
   const queue = useSessionStore((s) => s.queue);
+  const lastResult = useSessionStore((s) => s.lastResult);
   const currentIndex = useSessionStore((s) => s.currentIndex);
   const crosserActive = useSessionStore((s) => s.crosserActive);
   const toggleCrosser = useSessionStore((s) => s.toggleCrosser);
@@ -53,13 +54,18 @@ export function TestRunnerPage() {
     }
   }
 
+  // finishFlow clears the session before navigating, so this guard re-runs with an empty
+  // queue and would otherwise bounce to /setup, beating navigate('/results') and eating the
+  // results screen entirely. A just-finished session has a lastResult, so send those there.
+  const fallback = lastResult ? '/results' : '/setup';
+
   if (queue.length === 0 || !config) {
-    return <Navigate to="/setup" replace />;
+    return <Navigate to={fallback} replace />;
   }
 
   const question = queue[currentIndex];
   if (!question) {
-    return <Navigate to="/setup" replace />;
+    return <Navigate to={fallback} replace />;
   }
 
   const isLast = currentIndex + 1 >= queue.length;
@@ -84,18 +90,19 @@ export function TestRunnerPage() {
         hasPassage={!!question.passage}
         passage={
           question.passage ? (
-            <Card>
+            <Card title="Passage">
+              {/* Serif, and a capped measure: this is read for hours, not scanned. */}
               <HighlightableText
                 key={question.id}
                 text={question.passage}
                 rangeKey={`${question.id}:passage`}
-                className="text-base leading-relaxed"
+                className="prose-reading max-w-[68ch]"
               />
             </Card>
           ) : undefined
         }
         question={
-          <Card>
+          <Card title="Question">
             <QuestionPanel
               key={question.id}
               question={question}

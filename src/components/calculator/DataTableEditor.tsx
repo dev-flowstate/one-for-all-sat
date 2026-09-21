@@ -12,9 +12,9 @@ interface DataTableEditorProps {
 }
 
 const CELL_CLASS =
-  'min-h-8 w-full rounded-md border border-rock-blue/50 bg-white px-1.5 py-1 text-right font-mono text-xs text-venice-blue-dark focus:border-venice-blue focus:outline-none';
+  'min-h-9 w-full border-2 border-ink bg-paper px-1.5 py-1 text-right font-mono text-xs text-ink';
 const ICON_BUTTON_CLASS =
-  'flex h-9 w-6 items-center justify-center rounded text-venice-blue-dark/60 hover:bg-rock-blue/20 hover:text-venice-blue-dark';
+  'flex h-9 w-6 items-center justify-center text-ink-soft hover:bg-merino-dark hover:text-ink';
 
 /**
  * Spreadsheet-style editor for one table of paired data. Pasting a block of tab- or
@@ -48,14 +48,14 @@ export function DataTableEditor({ table, color, onChange, onRemove }: DataTableE
   };
 
   return (
-    <div className="rounded-lg border border-rock-blue/40 p-1.5">
+    <div className="border-2 border-ink bg-merino p-2">
       <div className="flex items-center gap-2 px-0.5">
         <span
           aria-hidden="true"
-          className="h-2.5 w-2.5 shrink-0 rounded-sm"
+          className="h-3 w-3 shrink-0 border-2 border-ink"
           style={{ backgroundColor: color }}
         />
-        <p className="flex-1 text-xs font-semibold text-venice-blue-dark">Table {table.index}</p>
+        <p className="flex-1 text-xs font-semibold text-ink">Table {table.index}</p>
         {onRemove && (
           <button
             type="button"
@@ -123,7 +123,7 @@ export function DataTableEditor({ table, color, onChange, onRemove }: DataTableE
       <button
         type="button"
         onClick={() => onChange([...table.rows, createRow()])}
-        className="min-h-8 w-full rounded-md bg-rock-blue/20 text-xs font-semibold text-venice-blue-dark hover:bg-rock-blue/40"
+        className="min-h-9 w-full border-2 border-ink bg-rock-blue text-xs font-semibold tracking-tight text-ink uppercase hover:bg-rock-blue-dark"
       >
         + Row
       </button>

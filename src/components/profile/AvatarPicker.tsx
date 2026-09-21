@@ -15,10 +15,10 @@ export function AvatarPicker({ selected, onSelect }: AvatarPickerProps) {
           onClick={() => onSelect(avatar)}
           aria-pressed={selected === avatar}
           aria-label={`Avatar ${avatar}`}
-          className={`flex h-11 w-11 items-center justify-center rounded-lg text-xl transition-colors ${
+          className={`press flex h-11 w-11 items-center justify-center border-2 border-ink text-xl ${
             selected === avatar
-              ? 'bg-venice-blue text-merino ring-2 ring-venice-blue-dark'
-              : 'bg-rock-blue/25 hover:bg-rock-blue/40'
+              ? 'bg-venice-blue shadow-[4px_4px_0_var(--color-ink)]'
+              : 'bg-paper hover:bg-merino-dark'
           }`}
         >
           {avatar}

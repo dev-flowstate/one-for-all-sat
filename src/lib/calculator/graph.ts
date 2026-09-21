@@ -96,13 +96,17 @@ const POINT_MARGIN = 8;
 const SCATTER_SIZE = 7;
 const TAU = Math.PI * 2;
 
-const FONT_STACK = 'ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif';
-const MINOR_GRID_COLOR = '#e8eff4';
-const MAJOR_GRID_COLOR = '#cbdde8';
-const AXIS_COLOR = '#6c9db8';
-const LABEL_COLOR = '#0f3f59';
-const LABEL_HALO_COLOR = 'rgba(255, 255, 255, 0.85)';
-const SURFACE_COLOR = '#ffffff';
+const FONT_STACK = "'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace";
+/** Graph paper printed on the same stock as the rest of the app: warm paper, ink strokes. */
+const MINOR_GRID_COLOR = '#ece5d5';
+const MAJOR_GRID_COLOR = '#d3c9b2';
+const AXIS_COLOR = '#1e2a2c';
+const LABEL_COLOR = '#1e2a2c';
+/** Solid rather than translucent, so a tick label never muddies the curve underneath it. */
+const LABEL_HALO_COLOR = '#fdf8ec';
+const SURFACE_COLOR = '#fdf8ec';
+/** Ink outline around markers and label boxes, matching the 2px borders in the UI. */
+const MARKER_EDGE_COLOR = '#1e2a2c';
 
 export function createDefaultView(width: number): GraphView {
   return { centerX: 0, centerY: 0, pixelsPerUnit: Math.max(width, 1) / DEFAULT_X_SPAN };
@@ -234,7 +238,7 @@ function drawGrid(ctx: CanvasRenderingContext2D, frame: Frame, spacing: number, 
 
 function drawAxes(ctx: CanvasRenderingContext2D, frame: Frame): void {
   ctx.strokeStyle = AXIS_COLOR;
-  ctx.lineWidth = 1.5;
+  ctx.lineWidth = 2;
   ctx.beginPath();
   const axisY = frame.pixelY(0);
   if (axisY >= 0 && axisY <= frame.height) {
@@ -479,7 +483,7 @@ function drawScatters(
   scatters: readonly GraphScatter[],
 ): void {
   ctx.lineWidth = 1.5;
-  ctx.strokeStyle = SURFACE_COLOR;
+  ctx.strokeStyle = MARKER_EDGE_COLOR;
   for (const scatter of scatters) {
     ctx.fillStyle = scatter.color;
     for (const point of scatter.points) {
@@ -529,7 +533,7 @@ function drawPoints(ctx: CanvasRenderingContext2D, frame: Frame, scene: GraphSce
     ctx.beginPath();
     ctx.arc(px, py, radius, 0, TAU);
     ctx.fillStyle = solid ? point.color : SURFACE_COLOR;
-    ctx.strokeStyle = solid ? SURFACE_COLOR : point.color;
+    ctx.strokeStyle = solid ? MARKER_EDGE_COLOR : point.color;
     ctx.fill();
     ctx.stroke();
 
@@ -553,7 +557,8 @@ function drawPointLabel(ctx: CanvasRenderingContext2D, frame: Frame, point: Grap
   ctx.textAlign = 'left';
   ctx.textBaseline = 'middle';
 
-  const boxWidth = ctx.measureText(point.label).width + 14;
+  // Padding leaves room for the colour flag on the left and an even gap on the right.
+  const boxWidth = ctx.measureText(point.label).width + 20;
   const boxHeight = 22;
   const px = frame.pixelX(point.x);
   const py = frame.pixelY(point.y);
@@ -562,32 +567,21 @@ function drawPointLabel(ctx: CanvasRenderingContext2D, frame: Frame, point: Grap
   const boxX = clamp(flipX ? px - 12 - boxWidth : px + 12, 4, Math.max(4, frame.width - boxWidth - 4));
   const boxY = clamp(flipY ? py + 12 : py - 12 - boxHeight, 4, Math.max(4, frame.height - boxHeight - 4));
 
+  // Squared and ink-bordered, so the bubble reads as the same stock as every panel in the UI.
   ctx.beginPath();
-  roundedRect(ctx, boxX, boxY, boxWidth, boxHeight, 6);
+  ctx.rect(boxX, boxY, boxWidth, boxHeight);
   ctx.fillStyle = SURFACE_COLOR;
   ctx.fill();
-  ctx.lineWidth = 1.5;
-  ctx.strokeStyle = point.color;
+  ctx.lineWidth = 2;
+  ctx.strokeStyle = MARKER_EDGE_COLOR;
   ctx.stroke();
 
-  ctx.fillStyle = LABEL_COLOR;
-  ctx.fillText(point.label, boxX + 7, boxY + boxHeight / 2);
-}
+  // A flag of the point's own colour keeps the bubble tied to its curve.
+  ctx.fillStyle = point.color;
+  ctx.fillRect(boxX + 2, boxY + 2, 4, boxHeight - 4);
 
-function roundedRect(
-  ctx: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  width: number,
-  height: number,
-  radius: number,
-): void {
-  ctx.moveTo(x + radius, y);
-  ctx.arcTo(x + width, y, x + width, y + height, radius);
-  ctx.arcTo(x + width, y + height, x, y + height, radius);
-  ctx.arcTo(x, y + height, x, y, radius);
-  ctx.arcTo(x, y, x + width, y, radius);
-  ctx.closePath();
+  ctx.fillStyle = LABEL_COLOR;
+  ctx.fillText(point.label, boxX + 10, boxY + boxHeight / 2);
 }
 
 function drawLabels(ctx: CanvasRenderingContext2D, frame: Frame, step: number): void {

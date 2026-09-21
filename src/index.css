@@ -1,19 +1,33 @@
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Serif:wght@400;500;600&display=swap');
 @import "tailwindcss";
 
 @theme {
-  --color-merino: #f5eedd;
-  --color-merino-dark: #ebe0c9;
+  /* Page and surfaces */
+  --color-merino: #f2e9d6;
+  --color-merino-dark: #e5d8bd;
+  --color-paper: #fdf8ec;
+
+  /* Ink carries the whole look: every border and every hard shadow is this colour. */
+  --color-ink: #1e2a2c;
+  --color-ink-soft: #4a5c5e;
+
   --color-rock-blue: #84b3ce;
-  --color-rock-blue-dark: #6c9db8;
+  --color-rock-blue-dark: #5d93b2;
   --color-venice-blue: #16587b;
   --color-venice-blue-dark: #0f3f59;
-  --color-success: #2e7d4f;
-  --color-success-bg: #e3f2e9;
-  --color-danger: #b3401f;
-  --color-danger-bg: #fbe9e4;
 
-  --font-sans:
-    ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  /* Warm accent, borrowed from the references' coral against cool tones. */
+  --color-coral: #cf5246;
+  --color-coral-dark: #b23f34;
+
+  --color-success: #2f6b4a;
+  --color-success-bg: #dcebdf;
+  --color-danger: #a8392a;
+  --color-danger-bg: #f6e2dd;
+
+  --font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-serif: 'IBM Plex Serif', Georgia, 'Times New Roman', serif;
+  --font-sans: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
 html,
@@ -24,8 +38,13 @@ body,
 
 body {
   background-color: var(--color-merino);
-  color: var(--color-venice-blue-dark);
-  font-family: var(--font-sans);
+  /* A faint grid, so the page reads as graph paper rather than a blank slab. */
+  background-image:
+    linear-gradient(to right, color-mix(in srgb, var(--color-ink) 5%, transparent) 1px, transparent 1px),
+    linear-gradient(to bottom, color-mix(in srgb, var(--color-ink) 5%, transparent) 1px, transparent 1px);
+  background-size: 24px 24px;
+  color: var(--color-ink);
+  font-family: var(--font-mono);
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -33,9 +52,66 @@ body {
   box-sizing: border-box;
 }
 
+/* Reading passages and question stems are long-form: they get a serif, not mono. */
+.prose-reading {
+  font-family: var(--font-serif);
+  font-size: 1.0625rem;
+  line-height: 1.65;
+}
+
 mark.highlight {
-  background-color: #fde68a;
+  background-color: #f6dd7a;
   color: inherit;
-  border-radius: 2px;
   padding: 0 1px;
+  box-decoration-break: clone;
+}
+
+/*
+ * The primitives the whole look rests on. Squared corners and hard, un-blurred
+ * shadows are the load-bearing choices — a border radius or a soft shadow
+ * anywhere immediately reads as a different (and more generic) design language.
+ */
+@utility panel {
+  border: 2px solid var(--color-ink);
+  background-color: var(--color-paper);
+  box-shadow: 4px 4px 0 var(--color-ink);
+}
+
+/** Prominent elevation, for surfaces that float over the page. */
+@utility panel-raised {
+  border: 2px solid var(--color-ink);
+  background-color: var(--color-paper);
+  box-shadow: 8px 8px 0 var(--color-ink);
+}
+
+@utility panel-flat {
+  border: 2px solid var(--color-ink);
+  background-color: var(--color-paper);
+}
+
+/* Chunky press: the button physically moves onto its own shadow. */
+@utility press {
+  transition:
+    transform 80ms ease,
+    box-shadow 80ms ease;
+
+  &:active:not(:disabled) {
+    transform: translate(3px, 3px);
+    box-shadow: none !important;
+  }
+}
+
+/* "Focus always visible" — never rely on the browser default here, it disappears
+   against the ink borders. */
+:focus-visible {
+  outline: 3px solid var(--color-coral);
+  outline-offset: 2px;
+}
+
+/* Squared corners are part of the language, so opt out of any inherited rounding. */
+button,
+input,
+select,
+textarea {
+  border-radius: 0;
 }
