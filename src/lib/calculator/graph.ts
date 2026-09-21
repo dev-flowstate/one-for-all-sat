@@ -1,4 +1,11 @@
-import type { FunctionRow, ImplicitRow, InequalityRow, PointKind, Residual } from './types';
+import type {
+  FunctionRow,
+  ImplicitRow,
+  InequalityRow,
+  PointKind,
+  RegressionRow,
+  Residual,
+} from './types';
 
 /** Viewport of the graph paper. One `pixelsPerUnit` for both axes keeps circles round. */
 export interface GraphView {
@@ -10,7 +17,13 @@ export interface GraphView {
 /** One drawable row plus the colour of its entry in the expression list. */
 export interface GraphLayer {
   color: string;
-  row: FunctionRow | ImplicitRow | InequalityRow;
+  row: FunctionRow | ImplicitRow | InequalityRow | RegressionRow;
+}
+
+/** One table's data points, drawn as loose markers — never joined into a curve. */
+export interface GraphScatter {
+  color: string;
+  points: readonly { x: number; y: number }[];
 }
 
 /** A point of interest, already coloured and labelled by the expression list. */
@@ -25,6 +38,7 @@ export interface GraphPoint {
 
 export interface GraphScene {
   layers: readonly GraphLayer[];
+  scatters: readonly GraphScatter[];
   points: readonly GraphPoint[];
   /** Index into `points` of the one showing its label (hovered or tapped), or -1 for none. */
   activeIndex: number;
@@ -78,6 +92,8 @@ const POLE_FACTOR = 4;
 const POINT_RADIUS = 4.5;
 /** Pixels a point of interest may sit outside the canvas before it stops being drawn. */
 const POINT_MARGIN = 8;
+/** Side of a table's square marker, which reads differently from the round points of interest. */
+const SCATTER_SIZE = 7;
 const TAU = Math.PI * 2;
 
 const FONT_STACK = 'ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif';
@@ -171,12 +187,15 @@ export function drawGraph(
   }
 
   drawLabels(ctx, frame, step);
+  drawScatters(ctx, frame, scene.scatters);
   drawPoints(ctx, frame, scene);
 }
 
 function drawLayer(ctx: CanvasRenderingContext2D, frame: Frame, layer: GraphLayer): void {
   switch (layer.row.kind) {
     case 'function':
+    case 'regression':
+      // A fitted model is just another y = f(x) once its parameters are known.
       drawPlot(ctx, frame, layer.color, layer.row.evaluateAt);
       return;
     case 'implicit':
@@ -448,6 +467,40 @@ function fillRegion(
   }
   ctx.fill();
   ctx.restore();
+}
+
+/**
+ * Plots each table's rows as separate markers. A pair with a blank or unreadable cell is NaN,
+ * which simply isn't drawn — the same rows a regression drops.
+ */
+function drawScatters(
+  ctx: CanvasRenderingContext2D,
+  frame: Frame,
+  scatters: readonly GraphScatter[],
+): void {
+  ctx.lineWidth = 1.5;
+  ctx.strokeStyle = SURFACE_COLOR;
+  for (const scatter of scatters) {
+    ctx.fillStyle = scatter.color;
+    for (const point of scatter.points) {
+      const px = frame.pixelX(point.x);
+      const py = frame.pixelY(point.y);
+      if (
+        !Number.isFinite(px) ||
+        !Number.isFinite(py) ||
+        px < -POINT_MARGIN ||
+        px > frame.width + POINT_MARGIN ||
+        py < -POINT_MARGIN ||
+        py > frame.height + POINT_MARGIN
+      ) {
+        continue;
+      }
+      ctx.beginPath();
+      ctx.rect(px - SCATTER_SIZE / 2, py - SCATTER_SIZE / 2, SCATTER_SIZE, SCATTER_SIZE);
+      ctx.fill();
+      ctx.stroke();
+    }
+  }
 }
 
 function drawPoints(ctx: CanvasRenderingContext2D, frame: Frame, scene: GraphScene): void {

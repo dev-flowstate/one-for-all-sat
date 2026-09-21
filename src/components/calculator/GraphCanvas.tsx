@@ -9,11 +9,13 @@ import {
   valueXAt,
   zoomView,
 } from '../../lib/calculator/graph';
-import type { GraphLayer, GraphPoint, GraphView } from '../../lib/calculator/graph';
+import type { GraphLayer, GraphPoint, GraphScatter, GraphView } from '../../lib/calculator/graph';
 import type { PointKind, SearchRange } from '../../lib/calculator/types';
 
 interface GraphCanvasProps {
   layers: readonly GraphLayer[];
+  /** One entry per data table, drawn as markers. */
+  scatters: readonly GraphScatter[];
   /** Asked for the points to mark, once the view has settled. */
   findPoints: (range: SearchRange) => readonly GraphPoint[];
 }
@@ -52,10 +54,11 @@ const KIND_PRIORITY: Record<PointKind, number> = {
  * Graph paper that draws every layer on a 2D canvas. The viewport lives in a ref rather than
  * state so dragging and pinching redraw straight from the gesture without a React re-render.
  */
-export function GraphCanvas({ layers, findPoints }: GraphCanvasProps) {
+export function GraphCanvas({ layers, scatters, findPoints }: GraphCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const viewRef = useRef<GraphView | null>(null);
   const layersRef = useRef<readonly GraphLayer[]>(layers);
+  const scattersRef = useRef<readonly GraphScatter[]>(scatters);
   const findPointsRef = useRef(findPoints);
   const pointsRef = useRef<readonly GraphPoint[]>([]);
   const activeRef = useRef(-1);
@@ -85,6 +88,7 @@ export function GraphCanvas({ layers, findPoints }: GraphCanvasProps) {
     viewRef.current ??= createDefaultView(width);
     drawGraph(ctx, width, height, viewRef.current, {
       layers: layersRef.current,
+      scatters: scattersRef.current,
       points: pointsRef.current,
       activeIndex: activeRef.current,
     });
@@ -138,6 +142,11 @@ export function GraphCanvas({ layers, findPoints }: GraphCanvasProps) {
     layersRef.current = layers;
     scheduleRender();
   }, [layers, scheduleRender]);
+
+  useEffect(() => {
+    scattersRef.current = scatters;
+    scheduleRender();
+  }, [scatters, scheduleRender]);
 
   useEffect(() => {
     findPointsRef.current = findPoints;

@@ -53,12 +53,42 @@ export interface EmptyRow {
   kind: 'empty';
 }
 
+/** One column of table data, referenced from expressions by name (`x_1`, `y_1`, ...). */
+export interface DataColumn {
+  name: string;
+  /** Blank cells are NaN; rows where either column is NaN are excluded from a fit. */
+  values: readonly number[];
+}
+
+export interface TableData {
+  id: string;
+  columns: readonly DataColumn[];
+}
+
+/**
+ * A fitted model from a `~` row, e.g. `y_1 ~ m*x_1 + b`. Parameters are whatever free
+ * symbols the model introduced; the renderer draws it like a function row.
+ */
+export interface RegressionRow {
+  kind: 'regression';
+  /** Fitted values keyed by parameter name, e.g. `{ m: 2.1, b: 0.4 }`. */
+  parameters: Record<string, number>;
+  /** Coefficient of determination for the fit. NaN when it can't be computed. */
+  rSquared: number;
+  /** Correlation coefficient. Only meaningful for a straight-line fit, else null. */
+  r: number | null;
+  residuals: readonly number[];
+  /** Evaluates the fitted model, so the fit can be plotted over the data. */
+  evaluateAt: (x: number) => number;
+}
+
 export type ParsedRow =
   | FunctionRow
   | ImplicitRow
   | InequalityRow
   | ValueRow
   | DefinitionRow
+  | RegressionRow
   | ErrorRow
   | EmptyRow;
 

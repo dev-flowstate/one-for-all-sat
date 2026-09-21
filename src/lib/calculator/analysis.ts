@@ -46,7 +46,9 @@ export function findPointsOfInterest(
 
   const series: Series[] = [];
   rows.forEach((row, index) => {
-    if (row.kind !== 'function') return;
+    // A fitted regression curve exposes evaluateAt just like a function, and reading a value
+    // off a line of best fit is exactly what the scatterplot questions ask for.
+    if (row.kind !== 'function' && row.kind !== 'regression') return;
     const values = xs.map((x) => row.evaluateAt(x));
     series.push({ index, at: row.evaluateAt, values, scale: magnitude(values) });
   });

@@ -31,11 +31,12 @@ Supported:
 - **Definitions and sliders** — `a = 5` gets a slider, `f(x) = x^2 + 3x - 4` can then be reused by later rows (`f(5)`, `y = f(x) + 1`)
 - **Restrictions** — `y = x^2 {0 < x < 5}`
 - **Angle mode** — RAD/DEG toggle; inverse trig returns degrees in degree mode
+- **Data tables and regressions** — enter or paste (from a spreadsheet) paired data into a table, then fit it with a `~` row: `y_1 ~ m*x_1 + b`, `y_1 ~ a*x_1^2 + b*x_1 + c`, `y_1 ~ a*b^x_1`, or any model you write. Shows the fitted parameters, R², and r, draws the fit over the scatter, and makes the fitted parameters usable by later rows. `r` is only reported for straight-line fits, where it's actually meaningful.
 - **Inline arithmetic** — a row with no `x` shows its value (`2+2*7` → `= 16`)
 - **SAT function set** — `sqrt`, `nthroot`, `abs`, `!`, `nCr`/`nPr`, `mean`/`median`/`stdev`/`stdevp`/`min`/`max`, `floor`/`ceil`/`round`/`sign`, `mod`/`gcd`/`lcm`, lists, and trig/hyperbolic functions. `log` is base 10 and `ln` is natural, matching SAT conventions.
 - Pan/zoom by wheel, drag, or pinch, plus `+` / `−` / reset buttons
 
-Not supported (deliberately — none of it appears on the SAT): 3D graphing, matrices, complex numbers, polar coordinates, regressions/tables, and animations. Functions also need parentheses (`sin(x)`, not `sin x`).
+Not supported (deliberately — none of it appears on the SAT): 3D graphing, matrices, complex numbers, polar coordinates, and animations. Functions also need parentheses (`sin(x)`, not `sin x`).
 
 ## Deployment
 

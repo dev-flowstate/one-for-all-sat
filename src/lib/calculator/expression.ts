@@ -1,11 +1,17 @@
 import type { EvalFunction, MathNode, SymbolNode } from 'mathjs/number';
+import { fitModel } from './regression';
+import type { ModelAt } from './regression';
 import { createBaseScope, isReservedName, math } from './scope';
 import type { Scope } from './scope';
-import type { AngleMode, ParsedRow } from './types';
+import type { AngleMode, ParsedRow, TableData } from './types';
 
 /** x/y used when probing a row for unknown names — away from poles and domain edges. */
 const PROBE_X = 1.2345;
 const PROBE_Y = 0.6789;
+/** Stand-in for a fitted parameter when asking what shape a model has, rather than how it fits. */
+const PROBE_PARAMETER = 0.7;
+/** How far a sampled model may bend and still count as a straight line. */
+const STRAIGHT_TOLERANCE = 1e-9;
 
 /** `a` / `f(x, t)` on the left of an `=`. */
 const CONSTANT_NAME = /^[A-Za-z][A-Za-z0-9_]*$/;
@@ -21,6 +27,8 @@ const RESTRICTION = /\{([^{}]*)\}\s*$/;
 type Predicate = (x: number, y: number) => boolean;
 /** Evaluates an expression that may use both graph variables. */
 type Surface = (x: number, y: number) => number;
+/** Table columns visible to every row, keyed by the name expressions reference them with. */
+type Columns = ReadonlyMap<string, readonly number[]>;
 
 /** A message that is already fit to show the student, as opposed to a mathjs failure. */
 class RowError extends Error {}
@@ -29,10 +37,28 @@ class RowError extends Error {}
  * Compiles every row of the expression list in one pass, so a definition in one row is
  * visible to the rows below it. Never throws: a bad row comes back as `kind: 'error'`.
  */
-export function compileRows(inputs: readonly string[], angleMode: AngleMode): ParsedRow[] {
+export function compileRows(
+  inputs: readonly string[],
+  angleMode: AngleMode,
+  tables?: readonly TableData[],
+): ParsedRow[] {
+  const columns = collectColumns(tables);
   const base = createBaseScope(angleMode);
+  // Each column is one list-valued symbol, so `x_1` reads as an array in any row.
+  for (const [name, values] of columns) base[name] = [...values];
   const definitions: Scope = {};
-  return inputs.map((input) => compileRow(input, base, definitions));
+  return inputs.map((input) => compileRow(input, base, definitions, columns));
+}
+
+/** Later tables win a name clash; a column can't take over `x`, `y` or a built-in. */
+function collectColumns(tables: readonly TableData[] | undefined): Columns {
+  const columns = new Map<string, readonly number[]>();
+  for (const table of tables ?? []) {
+    for (const column of table.columns) {
+      if (column.name && !isReservedName(column.name)) columns.set(column.name, column.values);
+    }
+  }
+  return columns;
 }
 
 /** Trims floating-point noise off a numeric answer (`0.30000000000000004` → `0.3`). */
@@ -48,19 +74,37 @@ export function formatNumber(value: number): string {
   return String(rounded);
 }
 
-function compileRow(input: string, base: Scope, definitions: Scope): ParsedRow {
+function compileRow(
+  input: string,
+  base: Scope,
+  definitions: Scope,
+  columns: Columns,
+): ParsedRow {
   const normalized = normalize(input);
   if (!normalized.trim()) return { kind: 'empty' };
   try {
-    return buildRow(normalized, { ...base, ...definitions }, definitions);
+    return buildRow(normalized, { ...base, ...definitions }, definitions, columns);
   } catch (error) {
     return { kind: 'error', message: error instanceof RowError ? error.message : toMessage(error) };
   }
 }
 
-function buildRow(normalized: string, snapshot: Scope, definitions: Scope): ParsedRow {
+function buildRow(
+  normalized: string,
+  snapshot: Scope,
+  definitions: Scope,
+  columns: Columns,
+): ParsedRow {
   const { body, conditions } = splitRestrictions(normalized);
   if (!body) throw new RowError('Add an expression before the restriction');
+
+  const fits = findOperators(body, ['~']);
+  if (fits.length > 0) {
+    if (fits.length > 1) throw new RowError('Use one ~ per row');
+    if (conditions.length > 0) throw new RowError("A regression can't take a restriction");
+    return buildRegression(body, fits[0].index, snapshot, definitions, columns);
+  }
+
   const restriction = compileRestriction(conditions, snapshot);
 
   const comparisons = findOperators(body, ['<=', '>=', '<', '>']);
@@ -182,6 +226,184 @@ function buildInequality(
       return strict ? delta < 0 : delta <= 0;
     },
   };
+}
+
+// --- regression --------------------------------------------------------------------------
+
+/**
+ * `y_1 ~ m*x_1 + b` fits the model on the right to the data on the left. Every symbol the
+ * model introduces — one that isn't a column, a definition, a constant or a function — is a
+ * parameter to be fitted, and stays readable by the rows below.
+ */
+function buildRegression(
+  body: string,
+  index: number,
+  snapshot: Scope,
+  definitions: Scope,
+  columns: Columns,
+): ParsedRow {
+  const left = body.slice(0, index).trim();
+  const right = body.slice(index + 1).trim();
+  if (!left || !right) throw new RowError('Both sides of ~ need an expression');
+
+  const targetNode = math.parse(rewrite(left));
+  const modelNode = math.parse(rewrite(right));
+  if (usesVariable(modelNode, 'x') || usesVariable(modelNode, 'y')) {
+    throw new RowError('A regression is written with table columns, not x or y');
+  }
+  const unknown = freeNames(targetNode, snapshot)[0];
+  if (unknown) throw new RowError(`Unknown variable ${unknown} — the left of ~ is the data`);
+
+  const parameters = freeNames(modelNode, snapshot);
+  const used = [...columns]
+    .filter(([name]) => mentions(targetNode, name) || mentions(modelNode, name))
+    .map(([name, values]) => ({ name, values }));
+  if (used.length === 0) throw new RowError('A regression needs table data, as in y_1 ~ m*x_1 + b');
+
+  const targetCode = targetNode.compile();
+  const modelCode = modelNode.compile();
+  const rowScope: Scope = { ...snapshot };
+  const bind = (scope: Scope, row: number) => {
+    for (const column of used) scope[column.name] = column.values[row];
+  };
+
+  // A row is only usable once every column it draws on has a real number in it.
+  const length = Math.min(...used.map((column) => column.values.length));
+  const rows: number[] = [];
+  const targets: number[] = [];
+  for (let row = 0; row < length; row += 1) {
+    if (used.some((column) => !Number.isFinite(column.values[row]))) continue;
+    bind(rowScope, row);
+    const target = evaluateNumber(targetCode, rowScope);
+    if (!Number.isFinite(target)) continue;
+    rows.push(row);
+    targets.push(target);
+  }
+
+  const modelScope: Scope = { ...snapshot };
+  const model: ModelAt = (values, point) => {
+    bind(modelScope, rows[point]);
+    parameters.forEach((name, k) => {
+      modelScope[name] = values[k];
+    });
+    return evaluateNumber(modelCode, modelScope);
+  };
+
+  const result = fitModel(model, targets, parameters.length);
+  if (!result.ok) throw new RowError(result.message);
+
+  const fitted: Record<string, number> = {};
+  parameters.forEach((name, k) => {
+    fitted[name] = result.fit.parameters[k];
+    definitions[name] = result.fit.parameters[k];
+  });
+
+  // The one column the model reads is its independent variable, so the fit can be drawn over
+  // the data. A model reading several columns has no single x to plot against.
+  const inputs = used.filter((column) => mentions(modelNode, column.name));
+  const independent = inputs.length === 1 ? inputs[0] : null;
+  const plotScope: Scope = { ...snapshot, ...fitted };
+  const evaluateAt = (x: number): number => {
+    if (independent) plotScope[independent.name] = x;
+    return evaluateNumber(modelCode, plotScope);
+  };
+
+  return {
+    kind: 'regression',
+    parameters: fitted,
+    rSquared: result.fit.rSquared,
+    r: lineCorrelation(modelCode, snapshot, parameters, independent, rows, targets),
+    residuals: result.fit.residuals,
+    evaluateAt,
+  };
+}
+
+/**
+ * The correlation coefficient, but only for a fit that is a straight line in its column —
+ * reporting r for a parabola would say something the number doesn't mean. Straightness is
+ * judged from the model as written, with stand-in parameters, so a quadratic never qualifies
+ * on the strength of its x² term fitting to nearly zero.
+ */
+function lineCorrelation(
+  code: EvalFunction,
+  snapshot: Scope,
+  parameters: readonly string[],
+  independent: { name: string; values: readonly number[] } | null,
+  rows: readonly number[],
+  targets: readonly number[],
+): number | null {
+  if (!independent) return null;
+  const inputs = rows.map((row) => independent.values[row]);
+  const low = Math.min(...inputs);
+  const high = Math.max(...inputs);
+  if (!(high > low)) return null;
+
+  const scope: Scope = { ...snapshot };
+  for (const name of parameters) scope[name] = PROBE_PARAMETER;
+  const step = (high - low) / 3;
+  const sampled = [0, 1, 2, 3].map((k) => {
+    scope[independent.name] = low + k * step;
+    return evaluateNumber(code, scope);
+  });
+  if (!sampled.every(Number.isFinite)) return null;
+  // A straight line has no curvature, so its second differences vanish.
+  const scale = Math.max(1, ...sampled.map(Math.abs));
+  const straight = [0, 1].every(
+    (k) =>
+      Math.abs(sampled[k + 2] - 2 * sampled[k + 1] + sampled[k]) <= scale * STRAIGHT_TOLERANCE,
+  );
+  return straight ? correlation(inputs, targets) : null;
+}
+
+function correlation(inputs: readonly number[], targets: readonly number[]): number | null {
+  const meanInput = inputs.reduce((total, value) => total + value, 0) / inputs.length;
+  const meanTarget = targets.reduce((total, value) => total + value, 0) / targets.length;
+  let together = 0;
+  let spreadInput = 0;
+  let spreadTarget = 0;
+  inputs.forEach((input, i) => {
+    const dx = input - meanInput;
+    const dy = targets[i] - meanTarget;
+    together += dx * dy;
+    spreadInput += dx * dx;
+    spreadTarget += dy * dy;
+  });
+  const spread = Math.sqrt(spreadInput * spreadTarget);
+  return spread > 0 ? together / spread : null;
+}
+
+/** Symbols the expression introduces itself: not a column, a definition, a constant or a function. */
+function freeNames(node: MathNode, snapshot: Scope): string[] {
+  const names: string[] = [];
+  const symbols = node.filter(
+    (candidate, path, parent) =>
+      candidate.type === 'SymbolNode' && !(parent?.type === 'FunctionNode' && path === 'fn'),
+  );
+  for (const symbol of symbols) {
+    const { name } = symbol as SymbolNode;
+    if (!names.includes(name) && !isKnownName(name, snapshot)) names.push(name);
+  }
+  return names;
+}
+
+function isKnownName(name: string, snapshot: Scope): boolean {
+  if (Object.hasOwn(snapshot, name) || isReservedName(name)) return true;
+  // mathjs resolves its own constants (pi, e, phi, …) without them ever being in scope.
+  try {
+    math.evaluate(name, {});
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function evaluateNumber(code: EvalFunction, scope: Scope): number {
+  try {
+    const result: unknown = code.evaluate(scope);
+    return typeof result === 'number' ? result : Number.NaN;
+  } catch {
+    return Number.NaN;
+  }
 }
 
 // --- definitions -------------------------------------------------------------------------
