@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { DomainPicker } from '../components/setup/DomainPicker';
@@ -99,6 +99,9 @@ export function SetupPage() {
   if (!isLoaded) {
     return (
       <div className="mx-auto max-w-2xl px-4 py-8">
+        <Link to="/" className="mb-4 inline-block text-sm text-venice-blue hover:underline">
+          ← Home
+        </Link>
         <h1 className="mb-4 text-2xl font-bold text-venice-blue-dark">Set up a practice session</h1>
         <Card>
           <p className="text-sm text-venice-blue-dark/70">Loading your question bank…</p>
@@ -109,6 +112,9 @@ export function SetupPage() {
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-8">
+      <Link to="/" className="mb-4 inline-block text-sm text-venice-blue hover:underline">
+        ← Home
+      </Link>
       <h1 className="mb-6 text-2xl font-bold text-venice-blue-dark">Set up a practice session</h1>
 
       <div className="flex flex-col gap-4">
