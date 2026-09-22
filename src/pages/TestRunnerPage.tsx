@@ -5,7 +5,6 @@ import { useProgressStore } from '../store/useProgressStore';
 import { Card } from '../components/ui/Card';
 import { TestRunnerToolbar } from '../components/test-runner/TestRunnerToolbar';
 import { TestRunnerLayout } from '../components/test-runner/TestRunnerLayout';
-import { HighlightableText } from '../components/test-runner/HighlightableText';
 import { QuestionPanel } from '../components/test-runner/QuestionPanel';
 import { CalculatorPanel } from '../components/test-runner/CalculatorPanel';
 
@@ -86,33 +85,17 @@ export function TestRunnerPage() {
         onTimerExpire={finishFlow}
       />
 
-      <TestRunnerLayout
-        hasPassage={!!question.passage}
-        passage={
-          question.passage ? (
-            <Card title="Passage">
-              {/* Serif, and a capped measure: this is read for hours, not scanned. */}
-              <HighlightableText
-                key={question.id}
-                text={question.passage}
-                rangeKey={`${question.id}:passage`}
-                className="prose-reading max-w-[68ch]"
-              />
-            </Card>
-          ) : undefined
-        }
-        question={
-          <Card title="Question">
-            <QuestionPanel
-              key={question.id}
-              question={question}
-              revealMode={config.revealMode}
-              isLast={isLast}
-              onNext={handleNext}
-            />
-          </Card>
-        }
-      />
+      <TestRunnerLayout>
+        <Card title="Question">
+          <QuestionPanel
+            key={question.id}
+            question={question}
+            revealMode={config.revealMode}
+            isLast={isLast}
+            onNext={handleNext}
+          />
+        </Card>
+      </TestRunnerLayout>
 
       <CalculatorPanel open={calculatorOpen} onClose={() => setCalculatorOpen(false)} />
     </div>

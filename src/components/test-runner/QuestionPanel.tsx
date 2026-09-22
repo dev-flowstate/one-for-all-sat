@@ -23,9 +23,12 @@ interface QuestionPanelProps {
 const EMPTY_CHOICE_IDS: ChoiceId[] = [];
 
 /**
- * The question pane for one question: prompt, images, choices/SPR input, and (once
- * answered) feedback + Next/Finish. Mount this keyed by question.id so all local
- * per-question UI state resets automatically when the parent moves to a new question.
+ * One question, split the way the real test splits it: everything you *read* (passage,
+ * stem, figures) on the left, everything you *click* (choices, feedback, Next) on the
+ * right. Stacks into one column below `lg`, where side-by-side would leave both halves
+ * too narrow to use.
+ *
+ * Mount this keyed by question.id so all local per-question UI state resets on navigation.
  */
 export function QuestionPanel({ question, revealMode, isLast, onNext }: QuestionPanelProps) {
   const [sprValue, setSprValue] = useState('');
@@ -58,35 +61,52 @@ export function QuestionPanel({ question, revealMode, isLast, onNext }: Question
     answerCurrent(outcome, undefined, sprValue);
   }
 
+  // When the prompt lost graphic-only content, the image below is the real question —
+  // showing the broken text above it would just read as gibberish.
+  const showPrompt = !(question.promptIsPartial && question.images?.length);
+
   return (
-    <div>
-      {/* When the prompt lost graphic-only content, the image below is the real question —
-          showing the broken text above it would just read as gibberish. */}
-      {!(question.promptIsPartial && question.images?.length) && (
-        <HighlightableText
-          text={question.prompt}
-          rangeKey={`${question.id}:prompt`}
-          className="prose-reading max-w-[68ch]"
-        />
-      )}
-
-      {question.images && question.images.length > 0 && (
-        <div className="mt-4 flex flex-col gap-3">
-          {/* The figures are white-background PNGs, so they need a border to sit on the
-              cream paper rather than float in it. */}
-          {question.images.map((img, i) => (
-            <img
-              key={i}
-              src={img.src}
-              alt={img.alt ?? ''}
-              className="max-w-full self-start border-2 border-ink bg-white"
+    <div className="grid grid-cols-1 lg:grid-cols-2 lg:divide-x-2 lg:divide-ink">
+      <div className="min-w-0 lg:pr-6">
+        {question.passage && (
+          <div className="mb-4 border-2 border-ink bg-merino">
+            <div className="border-b-2 border-ink bg-merino-dark px-3 py-1 font-mono text-[11px] font-semibold tracking-tight uppercase">
+              Passage
+            </div>
+            <HighlightableText
+              text={question.passage}
+              rangeKey={`${question.id}:passage`}
+              className="prose-reading px-3 py-3"
             />
-          ))}
-        </div>
-      )}
+          </div>
+        )}
 
-      {/* An ink rule divides the thing being read from the thing being clicked. */}
-      <div className="mt-5 border-t-2 border-ink pt-5">
+        {showPrompt && (
+          <HighlightableText
+            text={question.prompt}
+            rangeKey={`${question.id}:prompt`}
+            className="prose-reading"
+          />
+        )}
+
+        {question.images && question.images.length > 0 && (
+          <div className="mt-4 flex flex-col gap-3">
+            {/* White-background PNGs, so they need a border to sit on the cream paper
+                rather than float in it. */}
+            {question.images.map((img, i) => (
+              <img
+                key={i}
+                src={img.src}
+                alt={img.alt ?? ''}
+                className="max-w-full self-start border-2 border-ink bg-white"
+              />
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Below lg the columns stack, so the rule has to move to the top edge. */}
+      <div className="mt-5 min-w-0 border-t-2 border-ink pt-5 lg:mt-0 lg:border-t-0 lg:pt-0 lg:pl-6">
         {question.type === 'mcq' ? (
           <McqChoices
             choices={question.choices ?? []}
@@ -100,16 +120,18 @@ export function QuestionPanel({ question, revealMode, isLast, onNext }: Question
         ) : (
           <SprInput value={sprValue} onChange={setSprValue} onSubmit={handleSprSubmit} submitted={submitted} />
         )}
-      </div>
 
-      {submitted && answered && (
-        <div className="mt-5">
-          {revealMode === 'immediate' && <AnswerFeedback outcome={answered.outcome} explanation={question.explanation} />}
-          <Button className="mt-4 w-full sm:w-auto" onClick={onNext}>
-            {isLast ? 'Finish' : 'Next'}
-          </Button>
-        </div>
-      )}
+        {submitted && answered && (
+          <div className="mt-5">
+            {revealMode === 'immediate' && (
+              <AnswerFeedback outcome={answered.outcome} explanation={question.explanation} />
+            )}
+            <Button className="mt-4 w-full" onClick={onNext}>
+              {isLast ? 'Finish' : 'Next'}
+            </Button>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

@@ -27,5 +27,9 @@ dist-ssr
 .env
 .env.local
 
-# Personal question bank tooling — never commit College Board content
+# Source material and conversion scratch. The generated bank itself IS committed, at
+# public/question-bank.json — this only keeps the giant inputs and intermediates out of
+# git (the two PDFs alone are 126MB, and the extracted page images ~2,400 files).
+/Salar own made questions.docx
 /tools/pdf-import/
+/tools/docx-import/

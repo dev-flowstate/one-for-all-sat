@@ -3,6 +3,7 @@ import type { Question } from '../types/question';
 import type { ProgressMap, ProfileStats, SessionResult } from '../types/progress';
 import { DEFAULT_STATS, getProgress, setProgress, getStats, setStats } from '../lib/storage/localStorage';
 import { ensureBundledSeeded, getAllQuestions, replaceImportedQuestions, getQuestionCounts } from '../lib/storage/db';
+import { fetchShippedBank } from '../lib/storage/seedBank';
 
 interface ProgressStore {
   questions: Question[];
@@ -14,6 +15,10 @@ interface ProgressStore {
 
   /** Seeds the bundled demo set (first run only) and loads everything from storage. */
   loadAll: (bundled: Question[]) => Promise<void>;
+  /** Loads the bank shipped at public/question-bank.json, if present and not already in.
+   *  Runs on startup so the app never needs a manual import; a no-op when either the file
+   *  is absent or a bank has already been stored. */
+  loadShippedBank: () => Promise<void>;
   applySessionResult: (result: SessionResult) => void;
   /** Pass 'all' or a list of question ids to return to the unattempted main pool. */
   resetProgress: (questionIds: string[] | 'all') => void;
@@ -39,6 +44,21 @@ export const useProgressStore = create<ProgressStore>((set, get) => ({
       bundledCount: counts.bundled,
       importedCount: counts.imported,
     });
+  },
+
+  loadShippedBank: async () => {
+    // Already holding an imported bank (shipped or hand-imported) — leave it alone, so this
+    // never clobbers a bank the user imported themselves.
+    if (get().importedCount > 0) return;
+
+    const result = await fetchShippedBank();
+    if (result.status !== 'loaded') {
+      if (result.status === 'invalid') {
+        console.error('question-bank.json failed validation:', result.issues);
+      }
+      return;
+    }
+    await get().importQuestions(result.questions);
   },
 
   applySessionResult: (result) => {
