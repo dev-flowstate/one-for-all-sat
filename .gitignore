@@ -37,3 +37,7 @@ dist-ssr
 # Local throwaway test scripts
 _*.mjs
 _*.ts
+
+# Question-repair working data — never commit question content
+/repair_work/
+/Backups/
