@@ -254,7 +254,7 @@ function buildRegression(
   const unknown = freeNames(targetNode, snapshot)[0];
   if (unknown) throw new RowError(`Unknown variable ${unknown} — the left of ~ is the data`);
 
-  const parameters = freeNames(modelNode, snapshot);
+  const parameters = regressionParameters(modelNode, snapshot);
   const used = [...columns]
     .filter(([name]) => mentions(targetNode, name) || mentions(modelNode, name))
     .map(([name, values]) => ({ name, values }));
@@ -370,6 +370,27 @@ function correlation(inputs: readonly number[], targets: readonly number[]): num
   });
   const spread = Math.sqrt(spreadInput * spreadTarget);
   return spread > 0 ? together / spread : null;
+}
+
+/**
+ * The names a `~` row fits. A regression's parameters belong to that row, so a symbol is a
+ * parameter even when an earlier row already gave it a value.
+ *
+ * Without this, the conventional names collide: fitting `y_1 ~ m*x_1 + b` publishes `b`, and
+ * a later `y_1 ~ a*x_1^2 + b*x_1 + c` then treats that `b` as a fixed constant and fits only
+ * what's left. The result is silent — plausible-looking parameters and a nonsense R² — which
+ * is worse than an error, so the row simply owns its own names instead.
+ *
+ * Only plain numbers are shadowed. Table columns are lists and user-defined functions are
+ * functions, so both still resolve normally; mathjs' own constants (pi, e) are never in scope
+ * to begin with and are recognised by `isKnownName`'s fallback.
+ */
+function regressionParameters(node: MathNode, snapshot: Scope): string[] {
+  const shadowed: Scope = { ...snapshot };
+  for (const [name, value] of Object.entries(shadowed)) {
+    if (typeof value === 'number') delete shadowed[name];
+  }
+  return freeNames(node, shadowed);
 }
 
 /** Symbols the expression introduces itself: not a column, a definition, a constant or a function. */
