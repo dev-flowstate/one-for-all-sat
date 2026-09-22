@@ -22,7 +22,7 @@ interface ProgressStore {
   applySessionResult: (result: SessionResult) => void;
   /** Pass 'all' or a list of question ids to return to the unattempted main pool. */
   resetProgress: (questionIds: string[] | 'all') => void;
-  importQuestions: (qs: Question[]) => Promise<void>;
+  importQuestions: (qs: Question[], onProgress?: (written: number, total: number) => void) => Promise<void>;
 }
 
 export const useProgressStore = create<ProgressStore>((set, get) => ({
@@ -102,8 +102,8 @@ export const useProgressStore = create<ProgressStore>((set, get) => ({
     set({ progress });
   },
 
-  importQuestions: async (qs) => {
-    await replaceImportedQuestions(qs);
+  importQuestions: async (qs, onProgress) => {
+    await replaceImportedQuestions(qs, onProgress);
     const [questions, counts] = await Promise.all([getAllQuestions(), getQuestionCounts()]);
     set({ questions, bundledCount: counts.bundled, importedCount: counts.imported });
   },

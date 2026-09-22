@@ -2,6 +2,7 @@ import { useState, type ChangeEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
+import { ProgressBar } from '../components/ui/ProgressBar';
 import { ImportSummary } from '../components/import/ImportSummary';
 import { questionBankFileSchema } from '../lib/schema';
 import type { Question } from '../types/question';
@@ -10,8 +11,22 @@ import { useProgressStore } from '../store/useProgressStore';
 type ImportState =
   | { status: 'idle' }
   | { status: 'error'; messages: string[] }
-  | { status: 'ready'; questions: Question[]; importing: boolean }
+  | { status: 'ready'; questions: Question[]; importing: boolean; written: number }
   | { status: 'done'; count: number };
+
+/** Turns a storage failure into something a person can act on. Running out of room is by far
+ *  the most common way a big bank fails to import, and phones hit it long before desktops. */
+function describeImportFailure(error: unknown): string[] {
+  const name = error instanceof DOMException ? error.name : '';
+  if (name === 'QuotaExceededError') {
+    return [
+      "This device doesn't have enough free storage for a bank this size.",
+      'Free up space, or import a smaller bank (for example English only instead of the combined file).',
+    ];
+  }
+  const detail = error instanceof Error ? error.message : String(error);
+  return [`The import failed partway through: ${detail}`, 'Your previous question bank may have been cleared.'];
+}
 
 export function ImportPage() {
   const [state, setState] = useState<ImportState>({ status: 'idle' });
@@ -42,15 +57,26 @@ export function ImportPage() {
       return;
     }
 
-    setState({ status: 'ready', questions: result.data.questions, importing: false });
+    setState({ status: 'ready', questions: result.data.questions, importing: false, written: 0 });
   }
 
   async function handleConfirm() {
     if (state.status !== 'ready' || state.importing) return;
-    const mapped: Question[] = state.questions.map((q) => ({ ...q, source: 'imported' as const }));
-    setState({ status: 'ready', questions: state.questions, importing: true });
-    await useProgressStore.getState().importQuestions(mapped);
-    setState({ status: 'done', count: mapped.length });
+    const { questions } = state;
+    setState({ status: 'ready', questions, importing: true, written: 0 });
+
+    try {
+      // The store forces `source: 'imported'` as it writes, so there's no second copy of
+      // the whole array here — that copy alone can be tens of MB on a phone.
+      await useProgressStore.getState().importQuestions(questions, (written) => {
+        setState({ status: 'ready', questions, importing: true, written });
+      });
+      setState({ status: 'done', count: questions.length });
+    } catch (error) {
+      // Without this the button sits on "Importing…" forever and the only trace is an
+      // unhandled rejection in a console nobody has open — especially on a phone.
+      setState({ status: 'error', messages: describeImportFailure(error) });
+    }
   }
 
   return (
@@ -101,6 +127,14 @@ export function ImportPage() {
       {state.status === 'ready' && (
         <Card className="mb-4" title="Ready to import">
           <ImportSummary questions={state.questions} />
+          {state.importing && (
+            <div className="mt-4">
+              <ProgressBar value={(state.written / Math.max(state.questions.length, 1)) * 100} />
+              <p className="mt-1.5 text-xs font-semibold tracking-tight text-ink-soft tabular-nums uppercase">
+                Saving {state.written} / {state.questions.length}
+              </p>
+            </div>
+          )}
           <Button className="mt-4 w-full" onClick={handleConfirm} disabled={state.importing}>
             {state.importing ? 'Importing…' : 'Confirm import'}
           </Button>
