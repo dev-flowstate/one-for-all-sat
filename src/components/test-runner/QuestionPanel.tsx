@@ -9,6 +9,7 @@ import { McqChoices } from './McqChoices';
 import { SprInput } from './SprInput';
 import { AnswerFeedback } from './AnswerFeedback';
 import { Button } from '../ui/Button';
+import { splitPrompt } from '../../lib/promptParts';
 
 interface QuestionPanelProps {
   question: Question;
@@ -65,35 +66,32 @@ export function QuestionPanel({ question, revealMode, isLast, onNext }: Question
   // showing the broken text above it would just read as gibberish.
   const showPrompt = !(question.promptIsPartial && question.images?.length);
 
-  // With a passage, the left pane is the thing being read and the stem belongs at the top of
-  // the answer column, directly above the choices it asks about — the way the real test does
-  // it. Without a passage the stem *is* the left pane, so it stays put.
-  const promptNode = showPrompt ? (
-    <HighlightableText
-      text={question.prompt}
-      rangeKey={`${question.id}:prompt`}
-      className="prose-reading"
-    />
-  ) : null;
-  const promptGoesRight = !!question.passage;
+  // Imported banks keep the stimulus and the question in one `prompt` field, so fall back to
+  // splitting it here when there's no separate passage.
+  const parts = splitPrompt(question.prompt);
+  const stimulus = question.passage ?? parts.stimulus;
+  const stem = question.passage ? question.prompt : parts.stem;
+
+  // The stem belongs at the top of the answer column, next to the choices it asks about —
+  // the way the real test does it. With nothing to read on the left, though, it stays there,
+  // because moving it would leave that pane empty.
+  const stemGoesRight = !!stimulus;
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 lg:divide-x-2 lg:divide-ink">
       <div className="min-w-0 lg:pr-6">
-        {question.passage && (
-          <div className="mb-4 border-2 border-ink bg-merino">
-            <div className="border-b-2 border-ink bg-merino-dark px-3 py-1 font-mono text-[11px] font-semibold tracking-tight uppercase">
-              Passage
-            </div>
-            <HighlightableText
-              text={question.passage}
-              rangeKey={`${question.id}:passage`}
-              className="prose-reading px-3 py-3"
-            />
-          </div>
+        {stimulus && (
+          <HighlightableText
+            text={stimulus}
+            rangeKey={`${question.id}:stimulus`}
+            className="prose-reading"
+          />
         )}
 
-        {!promptGoesRight && promptNode}
+        {/* Nothing to read on the left, so the question itself lives here instead. */}
+        {!stemGoesRight && showPrompt && (
+          <HighlightableText text={stem} rangeKey={`${question.id}:prompt`} className="prose-reading" />
+        )}
 
         {question.images && question.images.length > 0 && (
           <div className="mt-4 flex flex-col gap-3">
@@ -113,7 +111,13 @@ export function QuestionPanel({ question, revealMode, isLast, onNext }: Question
 
       {/* Below lg the columns stack, so the rule has to move to the top edge. */}
       <div className="mt-5 min-w-0 border-t-2 border-ink pt-5 lg:mt-0 lg:border-t-0 lg:pt-0 lg:pl-6">
-        {promptGoesRight && promptNode && <div className="mb-4">{promptNode}</div>}
+        {stemGoesRight && showPrompt && (
+          <HighlightableText
+            text={stem}
+            rangeKey={`${question.id}:prompt`}
+            className="prose-reading mb-4 font-semibold"
+          />
+        )}
 
         {question.type === 'mcq' ? (
           <McqChoices
