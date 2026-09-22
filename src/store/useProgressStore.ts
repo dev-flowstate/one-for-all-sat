@@ -2,7 +2,13 @@ import { create } from 'zustand';
 import type { Question } from '../types/question';
 import type { ProgressMap, ProfileStats, SessionResult } from '../types/progress';
 import { DEFAULT_STATS, getProgress, setProgress, getStats, setStats } from '../lib/storage/localStorage';
-import { ensureBundledSeeded, getAllQuestions, replaceImportedQuestions, getQuestionCounts } from '../lib/storage/db';
+import {
+  ensureBundledSeeded,
+  getAllQuestions,
+  replaceImportedQuestions,
+  mergeQuestions,
+  getQuestionCounts,
+} from '../lib/storage/db';
 import { fetchShippedBank } from '../lib/storage/seedBank';
 
 interface ProgressStore {
@@ -15,9 +21,10 @@ interface ProgressStore {
 
   /** Seeds the bundled demo set (first run only) and loads everything from storage. */
   loadAll: (bundled: Question[]) => Promise<void>;
-  /** Loads the bank shipped at public/question-bank.json, if present and not already in.
-   *  Runs on startup so the app never needs a manual import; a no-op when either the file
-   *  is absent or a bank has already been stored. */
+  /** Merges the bank shipped at public/question-bank.json into whatever is already stored.
+   *  Runs on startup so the app never needs a manual import. Additive: it never removes a
+   *  question someone imported themselves, and never re-adds one already present, so answered
+   *  questions can't reappear in the unattempted pool. */
   loadShippedBank: () => Promise<void>;
   applySessionResult: (result: SessionResult) => void;
   /** Pass 'all' or a list of question ids to return to the unattempted main pool. */
@@ -47,10 +54,6 @@ export const useProgressStore = create<ProgressStore>((set, get) => ({
   },
 
   loadShippedBank: async () => {
-    // Already holding an imported bank (shipped or hand-imported) — leave it alone, so this
-    // never clobbers a bank the user imported themselves.
-    if (get().importedCount > 0) return;
-
     const result = await fetchShippedBank();
     if (result.status !== 'loaded') {
       if (result.status === 'invalid') {
@@ -58,7 +61,14 @@ export const useProgressStore = create<ProgressStore>((set, get) => ({
       }
       return;
     }
-    await get().importQuestions(result.questions);
+
+    // Merged rather than imported: importQuestions replaces the whole imported set, which
+    // would delete questions someone had imported and left this bank out of.
+    const { added } = await mergeQuestions(result.questions);
+    if (added === 0) return;
+
+    const [questions, counts] = await Promise.all([getAllQuestions(), getQuestionCounts()]);
+    set({ questions, bundledCount: counts.bundled, importedCount: counts.imported });
   },
 
   applySessionResult: (result) => {
