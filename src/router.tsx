@@ -7,6 +7,9 @@ import { WrongTabPage } from './pages/WrongTabPage';
 import { RightTabPage } from './pages/RightTabPage';
 import { ProfileSettingsPage } from './pages/ProfileSettingsPage';
 import { ImportPage } from './pages/ImportPage';
+import { VocabPage } from './pages/VocabPage';
+import { VocabDrillPage } from './pages/VocabDrillPage';
+import { VocabReviewPage } from './pages/VocabReviewPage';
 
 export function AppRouter() {
   return (
@@ -20,6 +23,9 @@ export function AppRouter() {
         <Route path="/right" element={<RightTabPage />} />
         <Route path="/profile" element={<ProfileSettingsPage />} />
         <Route path="/import" element={<ImportPage />} />
+        <Route path="/vocab" element={<VocabPage />} />
+        <Route path="/vocab/drill" element={<VocabDrillPage />} />
+        <Route path="/vocab/review" element={<VocabReviewPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </HashRouter>

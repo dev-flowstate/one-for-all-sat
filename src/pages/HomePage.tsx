@@ -95,6 +95,13 @@ export function HomePage() {
                 Start practicing
               </Button>
             </Link>
+            {/* Vocabulary is its own section with its own decks and progress, so it gets its
+                own full-width entry rather than sitting in the row of secondary links. */}
+            <Link to="/vocab" className="mt-3 block">
+              <Button variant="secondary" className="w-full py-4 text-base">
+                Vocabulary flashcards
+              </Button>
+            </Link>
             <div className="mt-3 grid gap-3 sm:grid-cols-2">
               <Link to="/wrong" className="block">
                 <Button className="w-full" variant="secondary">

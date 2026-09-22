@@ -1,6 +1,6 @@
 import type { ButtonHTMLAttributes, ReactNode } from 'react';
 
-type Variant = 'primary' | 'secondary' | 'ghost' | 'danger';
+type Variant = 'primary' | 'secondary' | 'ghost' | 'danger' | 'success';
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: Variant;
@@ -12,6 +12,8 @@ const VARIANT_CLASSES: Record<Variant, string> = {
   secondary: 'panel press bg-rock-blue text-ink hover:bg-rock-blue-dark',
   ghost: 'border-2 border-transparent bg-transparent text-venice-blue hover:border-ink hover:bg-paper',
   danger: 'panel press bg-danger text-paper hover:brightness-110',
+  // Pairs with `danger` wherever a choice is being graded, so the two read as opposites.
+  success: 'panel press bg-success text-paper hover:brightness-110',
 };
 
 export function Button({ variant = 'primary', className = '', children, ...rest }: ButtonProps) {

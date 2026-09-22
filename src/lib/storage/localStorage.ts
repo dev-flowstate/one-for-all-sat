@@ -1,10 +1,14 @@
 import type { ProgressMap, ProfileStats } from '../../types/progress';
 import type { LocalProfile } from '../../types/settings';
+import type { VocabProgressMap } from '../../types/vocab';
 
 const KEYS = {
   profile: 'ofa-sat:profile',
   progress: 'ofa-sat:progress',
   stats: 'ofa-sat:stats',
+  // Its own key: vocabulary is a separate section, and mixing the two maps would make
+  // "reset my wrong questions" quietly wipe flashcard progress too.
+  vocabProgress: 'ofa-sat:vocab-progress',
 } as const;
 
 function read<T>(key: string, fallback: T): T {
@@ -54,4 +58,12 @@ export function getStats(): ProfileStats {
 
 export function setStats(stats: ProfileStats): void {
   write(KEYS.stats, stats);
+}
+
+export function getVocabProgress(): VocabProgressMap {
+  return read<VocabProgressMap>(KEYS.vocabProgress, {});
+}
+
+export function setVocabProgress(progress: VocabProgressMap): void {
+  write(KEYS.vocabProgress, progress);
 }

@@ -1,6 +1,6 @@
 # One for All SAT
 
-A personal SAT practice app styled after College Board's digital "Bluebook" app — topic/domain/skill drills across Math and Reading & Writing, an answer eliminator, a text highlighter, a built-in graphing calculator, configurable timers, and persistent Wrong/Right review tabs.
+A personal SAT practice app styled after College Board's digital "Bluebook" app — topic/domain/skill drills across Math and Reading & Writing, a vocabulary flashcard deck, an answer eliminator, a text highlighter, a built-in graphing calculator, configurable timers, and persistent Wrong/Right review tabs.
 
 **Live app:** https://dev-flowstate.github.io/one-for-all-sat/
 
@@ -10,6 +10,17 @@ A personal SAT practice app styled after College Board's digital "Bluebook" app 
 - **Local profile (optional).** You can set a nickname/avatar under Profile & Settings, but it's just a label saved in this browser — not a real account, no password, no sync across devices.
 - **Bundled demo questions.** The app ships with a small set of original practice questions (`src/data/bundled-bank/`) so it's usable out of the box.
 - **Import your own question bank.** Under Import, you can load a JSON file matching the schema in `src/lib/schema.ts` (`{ "questions": [...] }`) to add your own questions. Imported content is stored only in your browser and is never uploaded anywhere or committed to this repo.
+
+## Vocabulary flashcards
+
+A separate section from the question drills, with its own decks and its own progress — practising vocabulary never touches your question pools, and resetting questions never touches your words.
+
+- **991 words** (`src/data/vocab/`), one file per letter. The word on the front, its meaning and an example sentence on the back.
+- **Grade yourself.** *Got it right* files the card into **Right** and retires it. *Got it wrong* files it into **Wrong** and sends it to the back of the current deck, so it comes round once more before you finish — once only, so a word you can't recall can't loop forever.
+- **Cards you've graded leave the New deck** and stay out of it. Draw a new deck from New, Wrong, Right, or all 991, and reset any word (or a whole list) back to New from the review screen.
+- Progress is saved in `localStorage` under `ofa-sat:vocab-progress`, per browser, like everything else here.
+
+The definitions and example sentences were written for this app. They are not reproduced from SparkNotes, Barron's, or any other published word list.
 
 ## Development
 
