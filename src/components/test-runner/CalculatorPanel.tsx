@@ -11,10 +11,13 @@ const GraphingCalculator = lazy(async () => ({
 }));
 
 /**
- * Floating graphing calculator. Renders nothing until first opened. Once opened it stays
- * mounted for the rest of the session — closing just hides it via CSS so calculator state
- * (typed equations, zoom level) persists like real Bluebook. Has its own close button so it's
- * never left stuck open on a question where the toolbar toggle is hidden (non-math questions).
+ * The calculator, filling whatever pane the test runner gives it. It used to float over the
+ * page, which on a phone meant it sat on top of the question and the answer choices — you
+ * could have the calculator or the question, never both. The runner now splits the screen
+ * between them instead, so this only has to fill its share.
+ *
+ * Renders nothing until first opened. After that it stays mounted and is merely hidden when
+ * closed, so typed equations and the zoom level survive being toggled, as they do in Bluebook.
  */
 export function CalculatorPanel({ open, onClose }: CalculatorPanelProps) {
   const [everOpened, setEverOpened] = useState(false);
@@ -26,12 +29,10 @@ export function CalculatorPanel({ open, onClose }: CalculatorPanelProps) {
   if (!everOpened) return null;
 
   return (
-    <div
-      className={`panel-raised fixed inset-x-3 bottom-3 z-30 mx-auto max-w-xl sm:inset-x-auto sm:right-4 sm:w-[34rem] ${open ? '' : 'hidden'}`}
-    >
-      {/* Same window chrome as the Card title bar, so the floating panel reads as part of
-          the same furniture. */}
-      <div className="flex items-center justify-between gap-2 border-b-2 border-ink bg-venice-blue py-0.5 pr-0.5 pl-3">
+    <div className={`flex h-full min-h-0 flex-col bg-paper ${open ? '' : 'hidden'}`}>
+      {/* Same window chrome as the Card title bar, so the pane reads as part of the same
+          furniture as the question beside it. */}
+      <div className="flex flex-none items-center justify-between gap-2 border-y-2 border-ink bg-venice-blue py-0.5 pr-0.5 pl-3 lg:border-t-0">
         <p className="font-mono text-xs font-bold tracking-tight text-merino uppercase">Graphing calculator</p>
         <button
           type="button"
@@ -43,9 +44,13 @@ export function CalculatorPanel({ open, onClose }: CalculatorPanelProps) {
         </button>
       </div>
 
-      <Suspense fallback={<p className="p-4 font-mono text-sm text-ink-soft">Loading calculator…</p>}>
-        <GraphingCalculator />
-      </Suspense>
+      {/* Scrolls within the pane rather than resizing the calculator itself, so a short pane
+          never squeezes the graph down to nothing. */}
+      <div className="min-h-0 flex-1 overflow-y-auto">
+        <Suspense fallback={<p className="p-4 font-mono text-sm text-ink-soft">Loading calculator…</p>}>
+          <GraphingCalculator />
+        </Suspense>
+      </div>
     </div>
   );
 }

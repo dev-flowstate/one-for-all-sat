@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { useSessionStore } from '../store/useSessionStore';
 import { useProgressStore } from '../store/useProgressStore';
@@ -7,6 +7,22 @@ import { TestRunnerToolbar } from '../components/test-runner/TestRunnerToolbar';
 import { TestRunnerLayout } from '../components/test-runner/TestRunnerLayout';
 import { QuestionPanel } from '../components/test-runner/QuestionPanel';
 import { CalculatorPanel } from '../components/test-runner/CalculatorPanel';
+import { SplitDivider } from '../components/test-runner/SplitDivider';
+
+/** Side-by-side above this, stacked below — the same 1024px pivot the question grid uses. */
+const WIDE_QUERY = '(min-width: 1024px)';
+
+function useIsWide(): boolean {
+  const [wide, setWide] = useState(() => window.matchMedia(WIDE_QUERY).matches);
+  useEffect(() => {
+    const query = window.matchMedia(WIDE_QUERY);
+    const update = (event: MediaQueryListEvent) => setWide(event.matches);
+    query.addEventListener('change', update);
+    setWide(query.matches);
+    return () => query.removeEventListener('change', update);
+  }, []);
+  return wide;
+}
 
 /**
  * The test-taking screen: one question at a time from the active session queue, with
@@ -26,6 +42,11 @@ export function TestRunnerPage() {
   const goToIndex = useSessionStore((s) => s.goToIndex);
 
   const [calculatorOpen, setCalculatorOpen] = useState(false);
+  /** Percentage of the split given to the question. Above half, because the question is what
+   *  you're actually answering — the calculator is the aid. */
+  const [questionShare, setQuestionShare] = useState(55);
+  const splitRef = useRef<HTMLDivElement>(null);
+  const isWide = useIsWide();
 
   function finishFlow() {
     const result = useSessionStore.getState().finishSession();
@@ -70,7 +91,9 @@ export function TestRunnerPage() {
   const isLast = currentIndex + 1 >= queue.length;
 
   return (
-    <div className="min-h-screen pb-24">
+    // With the calculator open the page becomes a fixed-height split and each pane scrolls
+    // itself; closed, it goes back to being an ordinary scrolling document.
+    <div className={calculatorOpen ? 'flex h-[100dvh] flex-col overflow-hidden' : 'min-h-screen pb-24'}>
       <TestRunnerToolbar
         currentIndex={currentIndex}
         total={queue.length}
@@ -85,19 +108,39 @@ export function TestRunnerPage() {
         onTimerExpire={finishFlow}
       />
 
-      <TestRunnerLayout>
-        <Card title="Question">
-          <QuestionPanel
-            key={question.id}
-            question={question}
-            revealMode={config.revealMode}
-            isLast={isLast}
-            onNext={handleNext}
-          />
-        </Card>
-      </TestRunnerLayout>
+      <div ref={splitRef} className={calculatorOpen ? 'flex min-h-0 flex-1 flex-col lg:flex-row' : ''}>
+        <div
+          className={calculatorOpen ? 'min-h-0 overflow-y-auto' : ''}
+          style={calculatorOpen ? { flexBasis: `${questionShare}%`, flexGrow: 0, flexShrink: 0 } : undefined}
+        >
+          <TestRunnerLayout>
+            <Card title="Question">
+              <QuestionPanel
+                key={question.id}
+                question={question}
+                revealMode={config.revealMode}
+                isLast={isLast}
+                onNext={handleNext}
+              />
+            </Card>
+          </TestRunnerLayout>
+        </div>
 
-      <CalculatorPanel open={calculatorOpen} onClose={() => setCalculatorOpen(false)} />
+        {calculatorOpen && (
+          <SplitDivider
+            containerRef={splitRef}
+            horizontal={isWide}
+            value={questionShare}
+            onChange={setQuestionShare}
+          />
+        )}
+
+        {/* Hidden rather than unmounted, so closing the calculator doesn't wipe what's
+            typed into it. */}
+        <div className={calculatorOpen ? 'min-h-0 flex-1' : 'hidden'}>
+          <CalculatorPanel open={calculatorOpen} onClose={() => setCalculatorOpen(false)} />
+        </div>
+      </div>
     </div>
   );
 }

@@ -230,9 +230,13 @@ export function GraphingCalculator() {
             >
               + Add expression
             </button>
-            <p className="hidden text-xs text-ink-soft sm:block">
+            {/* Shown at every width. Hidden below `sm` these were invisible on a phone, which
+                is where most people meet the calculator — and the syntax it can't guess at,
+                like a restriction, may as well not exist if it's never mentioned. */}
+            <p className="text-xs text-ink-soft">
               Try <span className="font-mono">x^2 - 4</span>, <span className="font-mono">x^2 + y^2 = 25</span>,{' '}
-              <span className="font-mono">y &gt; 2x + 1</span> or <span className="font-mono">2+2*7</span>.
+              <span className="font-mono">y &gt; 2x + 1</span>, <span className="font-mono">a = 5</span> for a slider,
+              or <span className="font-mono">y = x^2 &#123;0&lt;x&lt;5&#125;</span> to restrict a curve.
             </p>
           </>
         ) : (
@@ -256,9 +260,11 @@ export function GraphingCalculator() {
             >
               + Add table
             </button>
-            <p className="hidden text-xs text-ink-soft sm:block">
-              Paste two columns straight from a spreadsheet, then fit them with{' '}
-              <span className="font-mono">y_1 ~ m*x_1 + b</span> in an expression row.
+            <p className="text-xs text-ink-soft">
+              Type or paste two columns, then fit them from an expression row:{' '}
+              <span className="font-mono">y_1 ~ m*x_1 + b</span> for a line,{' '}
+              <span className="font-mono">y_1 ~ a*x_1^2 + b*x_1 + c</span> for a parabola, or{' '}
+              <span className="font-mono">y_1 ~ a*b^x_1</span> for growth.
             </p>
           </>
         )}
