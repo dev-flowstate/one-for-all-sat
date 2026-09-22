@@ -65,6 +65,18 @@ export function QuestionPanel({ question, revealMode, isLast, onNext }: Question
   // showing the broken text above it would just read as gibberish.
   const showPrompt = !(question.promptIsPartial && question.images?.length);
 
+  // With a passage, the left pane is the thing being read and the stem belongs at the top of
+  // the answer column, directly above the choices it asks about — the way the real test does
+  // it. Without a passage the stem *is* the left pane, so it stays put.
+  const promptNode = showPrompt ? (
+    <HighlightableText
+      text={question.prompt}
+      rangeKey={`${question.id}:prompt`}
+      className="prose-reading"
+    />
+  ) : null;
+  const promptGoesRight = !!question.passage;
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 lg:divide-x-2 lg:divide-ink">
       <div className="min-w-0 lg:pr-6">
@@ -81,13 +93,7 @@ export function QuestionPanel({ question, revealMode, isLast, onNext }: Question
           </div>
         )}
 
-        {showPrompt && (
-          <HighlightableText
-            text={question.prompt}
-            rangeKey={`${question.id}:prompt`}
-            className="prose-reading"
-          />
-        )}
+        {!promptGoesRight && promptNode}
 
         {question.images && question.images.length > 0 && (
           <div className="mt-4 flex flex-col gap-3">
@@ -107,6 +113,8 @@ export function QuestionPanel({ question, revealMode, isLast, onNext }: Question
 
       {/* Below lg the columns stack, so the rule has to move to the top edge. */}
       <div className="mt-5 min-w-0 border-t-2 border-ink pt-5 lg:mt-0 lg:border-t-0 lg:pt-0 lg:pl-6">
+        {promptGoesRight && promptNode && <div className="mb-4">{promptNode}</div>}
+
         {question.type === 'mcq' ? (
           <McqChoices
             choices={question.choices ?? []}
