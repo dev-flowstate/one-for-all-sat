@@ -33,3 +33,7 @@ dist-ssr
 /Salar own made questions.docx
 /tools/pdf-import/
 /tools/docx-import/
+
+# Local throwaway test scripts
+_*.mjs
+_*.ts
