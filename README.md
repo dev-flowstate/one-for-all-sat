@@ -45,3 +45,5 @@ Pushing to `main` builds the app and deploys it to GitHub Pages automatically vi
 ## License
 
 MIT — see [LICENSE](LICENSE). Covers the code only; it does not cover any question content you import locally.
+
+Made by Muhammad Salar Khan.

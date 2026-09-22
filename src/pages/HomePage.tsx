@@ -122,6 +122,10 @@ export function HomePage() {
           )}
         </>
       )}
+
+      <footer className="mt-10 border-t-2 border-ink pt-4 text-center text-[11px] font-semibold tracking-tight text-ink-soft uppercase">
+        Made by Muhammad Salar Khan
+      </footer>
     </div>
   );
 }
