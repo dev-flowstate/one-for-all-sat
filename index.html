@@ -14,5 +14,13 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    <!-- Cloudflare Web Analytics. Cookieless and no client-side state, so it doesn't touch
+         the localStorage/IndexedDB the app keeps progress in. The token is a public beacon
+         id, not a secret — it ships in the page source to every visitor. -->
+    <script
+      defer
+      src="https://static.cloudflareinsights.com/beacon.min.js"
+      data-cf-beacon='{"token": "496c8d9902414b6ca48df0863bc74c9f"}'
+    ></script>
   </body>
 </html>
