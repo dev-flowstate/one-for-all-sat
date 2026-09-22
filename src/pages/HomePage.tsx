@@ -48,9 +48,12 @@ export function HomePage() {
         </div>
       </header>
 
-      {!isLoaded ? (
-        <p className="panel mt-4 p-4 text-sm text-ink-soft">Loading your question bank…</p>
-      ) : (
+      {/* Rendered whether or not storage has answered yet, with placeholders standing in for
+          the numbers. Swapping a short "loading" block for the full layout grew the page by
+          ~380px on every visit, which is a visible jolt and the app's whole CLS score. */}
+      {(() => {
+        const placeholder = '—';
+        return (
         <>
           <div className="mt-4 grid grid-cols-3 gap-3 sm:mt-6 sm:gap-4">
             {pools.map((pool) => (
@@ -61,7 +64,7 @@ export function HomePage() {
                   {pool.label}
                 </p>
                 <p className="px-2 py-4 text-center text-3xl font-bold tabular-nums sm:py-6 sm:text-5xl">
-                  {pool.value}
+                  {isLoaded ? pool.value : placeholder}
                 </p>
               </div>
             ))}
@@ -72,16 +75,16 @@ export function HomePage() {
           <dl className="mt-3 grid grid-cols-2 gap-[2px] border-2 border-ink bg-ink sm:mt-4 sm:grid-cols-3">
             <div className="bg-merino-dark px-3 py-2.5">
               <dt className="text-[10px] font-semibold tracking-tight text-ink-soft uppercase">Total points</dt>
-              <dd className="text-lg font-bold tabular-nums">{stats.points}</dd>
+              <dd className="text-lg font-bold tabular-nums">{isLoaded ? stats.points : placeholder}</dd>
             </div>
             <div className="bg-merino-dark px-3 py-2.5">
               <dt className="text-[10px] font-semibold tracking-tight text-ink-soft uppercase">Best streak</dt>
-              <dd className="text-lg font-bold tabular-nums">{stats.bestStreak}</dd>
+              <dd className="text-lg font-bold tabular-nums">{isLoaded ? stats.bestStreak : placeholder}</dd>
             </div>
             <div className="col-span-2 bg-merino-dark px-3 py-2.5 sm:col-span-1">
               <dt className="text-[10px] font-semibold tracking-tight text-ink-soft uppercase">Question bank</dt>
               <dd className="text-sm font-semibold tabular-nums">
-                {bundledCount} demo + {importedCount} imported
+                {isLoaded ? `${bundledCount} demo + ${importedCount} imported` : placeholder}
               </dd>
             </div>
           </dl>
@@ -95,7 +98,7 @@ export function HomePage() {
             <div className="mt-3 grid gap-3 sm:grid-cols-2">
               <Link to="/wrong" className="block">
                 <Button className="w-full" variant="secondary">
-                  Review wrong ({wrongCount})
+                  Review wrong {isLoaded ? `(${wrongCount})` : ''}
                 </Button>
               </Link>
               <Link to="/profile" className="block">
@@ -106,7 +109,9 @@ export function HomePage() {
             </div>
           </div>
 
-          {importedCount === 0 && (
+          {/* Gated on isLoaded too: importedCount is 0 before storage answers, so without it
+              the banner flashes in and out on every visit that does have a bank. */}
+          {isLoaded && importedCount === 0 && (
             <div className="mt-4 flex flex-col gap-2 border-2 border-ink bg-merino-dark p-3 sm:flex-row sm:items-center sm:gap-3">
               <span className="w-fit border-2 border-ink bg-venice-blue px-2 py-0.5 text-[11px] font-semibold tracking-tight text-merino uppercase">
                 Demo set
@@ -121,7 +126,8 @@ export function HomePage() {
             </div>
           )}
         </>
-      )}
+        );
+      })()}
 
       <footer className="mt-10 border-t-2 border-ink pt-4 text-center text-[11px] font-semibold tracking-tight text-ink-soft uppercase">
         Made by Muhammad Salar Khan

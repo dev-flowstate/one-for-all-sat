@@ -36,6 +36,13 @@ body,
   height: 100%;
 }
 
+html {
+  /* Always reserve the scrollbar's width. Without this, a page that grows past one screen
+     makes the scrollbar appear, narrowing the viewport by ~9px and sliding every centred
+     container sideways — a layout shift on load with no content change behind it. */
+  scrollbar-gutter: stable;
+}
+
 body {
   background-color: var(--color-merino);
   /* A faint grid, so the page reads as graph paper rather than a blank slab. */
