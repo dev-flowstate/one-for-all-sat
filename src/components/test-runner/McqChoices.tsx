@@ -109,7 +109,7 @@ function ChoiceButton({ choice, crossed, disabled, isSelected, isCorrect, isWron
 
       {/* The choice's value is content, not chrome, so it reads in the serif like the stem. */}
       <span
-        className={`min-w-0 flex-1 font-serif text-[1.0625rem] leading-snug ${crossed ? 'line-through decoration-2' : ''}`}
+        className={`min-w-0 flex-1 prose-reading leading-snug ${crossed ? 'line-through decoration-2' : ''}`}
       >
         {choice.image ? (
           <img
