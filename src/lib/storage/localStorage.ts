@@ -12,6 +12,9 @@ const KEYS = {
   vocabProgress: 'ofa-sat:vocab-progress',
   activeTest: 'ofa-sat:active-test',
   testHistory: 'ofa-sat:test-history',
+  // The account this browser's data belongs to. Set while signed in, and what tells the next
+  // visit to load Firebase at all.
+  accountOwner: 'ofa-sat:account-owner',
 } as const;
 
 function read<T>(key: string, fallback: T): T {
@@ -31,6 +34,14 @@ function write<T>(key: string, value: T): void {
   }
 }
 
+function remove(key: string): void {
+  try {
+    localStorage.removeItem(key);
+  } catch {
+    // see write()
+  }
+}
+
 export const DEFAULT_STATS: ProfileStats = {
   points: 0,
   questionsAttempted: 0,
@@ -43,8 +54,9 @@ export function getProfile(): LocalProfile | null {
   return read<LocalProfile | null>(KEYS.profile, null);
 }
 
-export function setProfile(profile: LocalProfile): void {
-  write(KEYS.profile, profile);
+export function setProfile(profile: LocalProfile | null): void {
+  if (profile) write(KEYS.profile, profile);
+  else remove(KEYS.profile);
 }
 
 export function getProgress(): ProgressMap {
@@ -77,13 +89,7 @@ export function getActiveTest(): ActiveTest | null {
 
 export function setActiveTest(test: ActiveTest | null): void {
   if (test) write(KEYS.activeTest, test);
-  else {
-    try {
-      localStorage.removeItem(KEYS.activeTest);
-    } catch {
-      // see write()
-    }
-  }
+  else remove(KEYS.activeTest);
 }
 
 export function getTestHistory(): CompletedTest[] {
@@ -92,4 +98,13 @@ export function getTestHistory(): CompletedTest[] {
 
 export function setTestHistory(history: CompletedTest[]): void {
   write(KEYS.testHistory, history);
+}
+
+export function getAccountOwner(): string | null {
+  return read<string | null>(KEYS.accountOwner, null);
+}
+
+export function setAccountOwner(uid: string | null): void {
+  if (uid) write(KEYS.accountOwner, uid);
+  else remove(KEYS.accountOwner);
 }

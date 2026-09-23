@@ -3,13 +3,16 @@ import { Link } from 'react-router-dom';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { AvatarPicker } from '../components/profile/AvatarPicker';
+import { AccountCard } from '../components/profile/AccountCard';
 import { useSettingsStore } from '../store/useSettingsStore';
 import { useProgressStore } from '../store/useProgressStore';
+import { useAccountStore } from '../store/useAccountStore';
 import { DEFAULT_AVATARS } from '../types/settings';
 
 export function ProfileSettingsPage() {
   const profile = useSettingsStore((s) => s.profile);
   const saveProfile = useSettingsStore((s) => s.saveProfile);
+  const signedIn = useAccountStore((s) => s.user !== null);
   const { stats, bundledCount, importedCount, resetProgress } = useProgressStore();
 
   const [nickname, setNickname] = useState(profile?.nickname ?? '');
@@ -61,10 +64,13 @@ export function ProfileSettingsPage() {
         Profile & settings
       </h1>
 
-      <Card className="mb-4" title="Local profile">
+      <AccountCard />
+
+      <Card className="mb-4" title={signedIn ? 'Profile' : 'Local profile'}>
         <p className="mb-4 text-sm text-ink-soft">
-          Stored only in this browser — not a real account. No password, no server, no syncing across
-          devices. Clearing your browser data removes it.
+          {signedIn
+            ? 'Saved to your account along with your progress.'
+            : 'Stored only in this browser. Clearing your browser data removes it; sign in to keep it in your account instead.'}
         </p>
 
         <label className="mb-4 block">
