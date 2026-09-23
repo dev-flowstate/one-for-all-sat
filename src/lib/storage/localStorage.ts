@@ -1,6 +1,7 @@
 import type { ProgressMap, ProfileStats } from '../../types/progress';
 import type { LocalProfile } from '../../types/settings';
 import type { VocabProgressMap } from '../../types/vocab';
+import type { ActiveTest, CompletedTest } from '../../types/practiceTest';
 
 const KEYS = {
   profile: 'ofa-sat:profile',
@@ -9,6 +10,8 @@ const KEYS = {
   // Its own key: vocabulary is a separate section, and mixing the two maps would make
   // "reset my wrong questions" quietly wipe flashcard progress too.
   vocabProgress: 'ofa-sat:vocab-progress',
+  activeTest: 'ofa-sat:active-test',
+  testHistory: 'ofa-sat:test-history',
 } as const;
 
 function read<T>(key: string, fallback: T): T {
@@ -66,4 +69,27 @@ export function getVocabProgress(): VocabProgressMap {
 
 export function setVocabProgress(progress: VocabProgressMap): void {
   write(KEYS.vocabProgress, progress);
+}
+
+export function getActiveTest(): ActiveTest | null {
+  return read<ActiveTest | null>(KEYS.activeTest, null);
+}
+
+export function setActiveTest(test: ActiveTest | null): void {
+  if (test) write(KEYS.activeTest, test);
+  else {
+    try {
+      localStorage.removeItem(KEYS.activeTest);
+    } catch {
+      // see write()
+    }
+  }
+}
+
+export function getTestHistory(): CompletedTest[] {
+  return read<CompletedTest[]>(KEYS.testHistory, []);
+}
+
+export function setTestHistory(history: CompletedTest[]): void {
+  write(KEYS.testHistory, history);
 }

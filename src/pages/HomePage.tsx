@@ -1,12 +1,14 @@
 import { Link } from 'react-router-dom';
 import { useProgressStore } from '../store/useProgressStore';
 import { useSettingsStore } from '../store/useSettingsStore';
+import { usePracticeTestStore } from '../store/usePracticeTestStore';
 import { Button } from '../components/ui/Button';
 import { getMainPool, getWrongPool, getRightPool } from '../lib/pools';
 
 export function HomePage() {
   const { questions, progress, stats, isLoaded, bundledCount, importedCount } = useProgressStore();
   const profile = useSettingsStore((s) => s.profile);
+  const activeTest = usePracticeTestStore((s) => s.active);
 
   const mainCount = getMainPool(questions, progress).length;
   const wrongCount = getWrongPool(questions, progress).length;
@@ -93,6 +95,11 @@ export function HomePage() {
             <Link to="/setup" className="block">
               <Button variant="primary" className="w-full py-4 text-base sm:py-5 sm:text-lg">
                 Start practicing
+              </Button>
+            </Link>
+            <Link to="/tests" className="mt-3 block">
+              <Button variant="secondary" className="w-full py-4 text-base">
+                {activeTest ? `Resume Practice Test ${activeTest.number}` : 'Full-length practice test'}
               </Button>
             </Link>
             {/* Vocabulary is its own section with its own decks and progress, so it gets its

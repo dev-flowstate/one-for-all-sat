@@ -12,6 +12,18 @@ A personal SAT practice app styled after College Board's digital "Bluebook" app 
 - **Importing is additive.** The shipped bank is *merged* into whatever you already have: it never deletes questions you imported yourself, and never re-adds one that's already stored. Duplicates are matched by id and, for questions that arrived under a different id, by their wording. Progress is keyed by question id and lives in `localStorage`, so questions you've already answered stay in Wrong or Right and never reappear in the unattempted pool.
 - **Import your own question bank.** Under Import, you can load a JSON file matching the schema in `src/lib/schema.ts` (`{ "questions": [...] }`) to add your own questions. Importing is additive too: it never removes anything, questions already present are updated in place, and progress is kept. Imported content is stored only in your browser.
 
+## Full-length practice tests
+
+Under **Full-length practice test** on the home page: a complete digital SAT, laid out as the real one is.
+
+- **Reading and Writing, then Math**, each in two modules: 27 questions in 32 minutes, then 22 in 35. The domains follow College Board's shares, and the first module of each section is easy and medium questions while the second is medium and hard.
+- **A 10-minute break** between the sections, which you can skip. Math never starts on its own, so stepping away for the whole break doesn't cost you time.
+- **Answers stay open until the module ends.** Change them as often as you like, **mark questions for review**, and jump anywhere from the question grid. The end of each module shows what's blank and what's marked, and submitting early asks "Are you sure?" first. A module whose time runs out is submitted as it stands.
+- **Saved as you go.** Close the tab or reload and it resumes on the same question with the same answers and time left; the clock only runs while the test is open.
+- **Made from questions you haven't attempted.** When there aren't enough left, it asks before filling the gap with old ones.
+- **Scored like the SAT:** 200–800 per section and 400–1600 in total, always a multiple of 10, with hard questions worth three times an easy one and medium twice. The results show where the misses were by section and domain, and every wrong question with its explanation. Wrong answers (blanks included) go to the Wrong tab, right ones to Right.
+- Tests are numbered in order — Practice Test 1, 2, … — and past ones stay listed with their scores.
+
 ## Maths questions
 
 - **Equations are drawn as maths.** Question text marks equations as `\( … \)` in a small, fully-braced TeX subset — `\frac{a}{b}`, `\sqrt{x}`, `\sqrt[n]{x}`, `x^{2}`, `x_{1}`, `\overline{AB}` — and systems of equations as rows. `src/lib/math/` parses it and `src/components/math/` draws it: stacked fractions, radicals, raised exponents, italic variables, true minus signs. No TeX library; the renderer is smaller than one of a library's fonts. Text without the markup, including every English question, is shown exactly as before.

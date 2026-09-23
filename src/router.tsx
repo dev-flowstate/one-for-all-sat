@@ -10,6 +10,9 @@ import { ImportPage } from './pages/ImportPage';
 import { VocabPage } from './pages/VocabPage';
 import { VocabDrillPage } from './pages/VocabDrillPage';
 import { VocabReviewPage } from './pages/VocabReviewPage';
+import { PracticeTestsPage } from './pages/PracticeTestsPage';
+import { PracticeTestRunnerPage } from './pages/PracticeTestRunnerPage';
+import { PracticeTestResultsPage } from './pages/PracticeTestResultsPage';
 
 export function AppRouter() {
   return (
@@ -26,6 +29,9 @@ export function AppRouter() {
         <Route path="/vocab" element={<VocabPage />} />
         <Route path="/vocab/drill" element={<VocabDrillPage />} />
         <Route path="/vocab/review" element={<VocabReviewPage />} />
+        <Route path="/tests" element={<PracticeTestsPage />} />
+        <Route path="/tests/:number" element={<PracticeTestResultsPage />} />
+        <Route path="/test" element={<PracticeTestRunnerPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </HashRouter>
