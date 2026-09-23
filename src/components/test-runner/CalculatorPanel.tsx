@@ -1,4 +1,5 @@
-import { Suspense, lazy, useEffect, useState } from 'react';
+import { Component, Suspense, lazy, useEffect, useState, type ReactNode } from 'react';
+import { Button } from '../ui/Button';
 
 interface CalculatorPanelProps {
   open: boolean;
@@ -9,6 +10,36 @@ interface CalculatorPanelProps {
 const GraphingCalculator = lazy(async () => ({
   default: (await import('../calculator/GraphingCalculator')).GraphingCalculator,
 }));
+
+/**
+ * Catches the calculator failing to download. Uncaught, that failure unmounts the whole app
+ * and leaves a blank page that not even Back recovers from. The usual cause is a tab opened
+ * before the site was updated: each deploy replaces the calculator's file with one under a
+ * new name, so the file an older tab asks for is gone.
+ */
+class CalculatorLoadBoundary extends Component<{ children: ReactNode }, { failed: boolean }> {
+  state = { failed: false };
+
+  static getDerivedStateFromError() {
+    return { failed: true };
+  }
+
+  render() {
+    if (!this.state.failed) return this.props.children;
+    return (
+      <div className="flex flex-col items-start gap-3 p-4 text-sm">
+        <p className="font-semibold text-ink">The calculator couldn't load.</p>
+        <p className="text-ink-soft">
+          The site has probably been updated since you opened it. Finish this set, then reload the page to get the
+          latest version. Reloading now would lose your answers in this set.
+        </p>
+        <Button variant="secondary" onClick={() => window.location.reload()}>
+          Reload now
+        </Button>
+      </div>
+    );
+  }
+}
 
 /**
  * The calculator, filling whatever pane the test runner gives it. It used to float over the
@@ -47,9 +78,11 @@ export function CalculatorPanel({ open, onClose }: CalculatorPanelProps) {
       {/* Scrolls within the pane rather than resizing the calculator itself, so a short pane
           never squeezes the graph down to nothing. */}
       <div className="min-h-0 flex-1 overflow-y-auto">
-        <Suspense fallback={<p className="p-4 font-mono text-sm text-ink-soft">Loading calculator…</p>}>
-          <GraphingCalculator />
-        </Suspense>
+        <CalculatorLoadBoundary>
+          <Suspense fallback={<p className="p-4 font-mono text-sm text-ink-soft">Loading calculator…</p>}>
+            <GraphingCalculator />
+          </Suspense>
+        </CalculatorLoadBoundary>
       </div>
     </div>
   );
