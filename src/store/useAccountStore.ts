@@ -39,6 +39,8 @@ interface AccountState {
   user: AccountUser | null;
   error: string | null;
   init: () => void;
+  /** Starts downloading Firebase, so a later tap on "Sign in" doesn't have to wait for it. */
+  prepare: () => void;
   signIn: () => Promise<void>;
   signOut: () => Promise<void>;
   /** After an error: connects again, or saves again if already connected. */
@@ -51,6 +53,7 @@ type Client = typeof import('../lib/cloud/firebaseClient');
 const SAVE_INTERVAL_MS = 10_000;
 
 let clientPromise: Promise<Client> | null = null;
+let loadedClient: Client | null = null;
 /** Finished tests already in the account, by when they finished, with the number they have there. */
 let savedTests = new Map<string, number>();
 let saveTimer: ReturnType<typeof setTimeout> | null = null;
@@ -106,6 +109,7 @@ export const useAccountStore = create<AccountState>((set, get) => {
         if (user) void connect(user);
         else if (get().status === 'checking') set({ status: 'signed-out' });
       });
+      loadedClient = client;
       return client;
     });
     return clientPromise;
@@ -200,10 +204,18 @@ export const useAccountStore = create<AccountState>((set, get) => {
       void loadClient();
     },
 
+    prepare: () => {
+      if (cloudConfigured) void loadClient();
+    },
+
     signIn: async () => {
       set({ error: null });
       try {
-        const client = await loadClient();
+        // Phone browsers, Safari above all, only let a page open a window while the tap that
+        // asked for it is still being handled. Waiting on a download first uses that up and
+        // the sign-in window is blocked, so the window opens straight away whenever Firebase
+        // is already here, which prepare() sees to.
+        const client = loadedClient ?? (await loadClient());
         await client.signInWithGoogle();
         // The watcher picks the new user up and connects.
       } catch (err) {
@@ -212,7 +224,7 @@ export const useAccountStore = create<AccountState>((set, get) => {
         set({
           error:
             code === 'auth/popup-blocked'
-              ? 'Your browser blocked the sign-in window. Allow pop-ups for this site and try again.'
+              ? 'Your browser blocked the sign-in window. Tap Sign in with Google again. If it is blocked a second time, allow pop-ups for this site.'
               : "Couldn't sign in. Check your connection and try again.",
         });
       }

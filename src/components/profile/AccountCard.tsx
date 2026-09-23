@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useAccountStore } from '../../store/useAccountStore';
 import { Button } from '../ui/Button';
 import { Card } from '../ui/Card';
@@ -12,8 +12,13 @@ const STATUS_TEXT: Record<string, string> = {
 
 /** Signing in with Google, so progress follows you between devices. */
 export function AccountCard() {
-  const { status, user, error, signIn, signOut, retry } = useAccountStore();
+  const { status, user, error, signIn, signOut, retry, prepare } = useAccountStore();
   const [confirmSignOut, setConfirmSignOut] = useState(false);
+
+  // Fetched as soon as the card shows, so the sign-in window can open the moment it's tapped.
+  useEffect(() => {
+    if (!user) prepare();
+  }, [user, prepare]);
 
   if (status === 'off') return null;
 
