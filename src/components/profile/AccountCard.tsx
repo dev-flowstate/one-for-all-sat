@@ -12,7 +12,7 @@ const STATUS_TEXT: Record<string, string> = {
 
 /** Signing in with Google, so progress follows you between devices. */
 export function AccountCard() {
-  const { status, user, error, signIn, signOut, retry, prepare } = useAccountStore();
+  const { status, user, error, ready, signIn, signOut, retry, prepare } = useAccountStore();
   const [confirmSignOut, setConfirmSignOut] = useState(false);
 
   // Fetched as soon as the card shows, so the sign-in window can open the moment it's tapped.
@@ -61,13 +61,13 @@ export function AccountCard() {
             Sign in with Google to save your progress to your account, so it follows you to any device. Signing in is
             optional: without it, progress stays in this browser only.
           </p>
-          {status === 'checking' && (
+          {(status === 'checking' || !ready) && (
             <p className="mt-3 font-mono text-xs font-semibold tracking-tight text-ink-soft uppercase" role="status">
-              {STATUS_TEXT.checking}
+              {status === 'checking' ? STATUS_TEXT.checking : 'Getting sign-in ready…'}
             </p>
           )}
           {error && <p className="mt-3 text-sm font-semibold text-danger">{error}</p>}
-          <Button className="mt-4" onClick={() => void signIn()} disabled={status === 'checking'}>
+          <Button className="mt-4" onClick={() => void signIn()} disabled={status === 'checking' || !ready}>
             Sign in with Google
           </Button>
         </>

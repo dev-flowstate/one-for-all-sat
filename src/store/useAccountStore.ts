@@ -38,6 +38,8 @@ interface AccountState {
   status: AccountStatus;
   user: AccountUser | null;
   error: string | null;
+  /** Firebase has finished starting up, so a tap on "Sign in" can open the window at once. */
+  ready: boolean;
   init: () => void;
   /** Starts downloading Firebase, so a later tap on "Sign in" doesn't have to wait for it. */
   prepare: () => void;
@@ -106,6 +108,10 @@ export const useAccountStore = create<AccountState>((set, get) => {
   function loadClient(): Promise<Client> {
     clientPromise ??= import('../lib/cloud/firebaseClient').then((client) => {
       client.watchUser((user) => {
+        // The first call comes once Firebase has finished starting up. On phones and in Safari
+        // that includes loading the helper page the sign-in window needs; until it's loaded, a
+        // tap reaches the window too late and the browser blocks it as a pop-up.
+        if (!get().ready) set({ ready: true });
         if (user) void connect(user);
         else if (get().status === 'checking') set({ status: 'signed-out' });
       });
@@ -196,6 +202,7 @@ export const useAccountStore = create<AccountState>((set, get) => {
     status: cloudConfigured ? 'signed-out' : 'off',
     user: null,
     error: null,
+    ready: false,
 
     init: () => {
       // Firebase only loads for someone who signed in on this browser before.
