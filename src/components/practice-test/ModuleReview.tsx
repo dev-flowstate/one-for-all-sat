@@ -60,7 +60,12 @@ export function ModuleReview({ test, moduleIndex }: ModuleReviewProps) {
         onCancel={() => setConfirming(false)}
       >
         <p>
-          You still have <strong className="tabular-nums">{formatClock(test.secondsLeft)}</strong> left on this module.
+          {test.timed && (
+            <>
+              You still have <strong className="tabular-nums">{formatClock(test.secondsLeft)}</strong> left on this
+              module.{' '}
+            </>
+          )}
           Once you submit, you can&apos;t go back to its questions.
         </p>
         {unanswered > 0 && (

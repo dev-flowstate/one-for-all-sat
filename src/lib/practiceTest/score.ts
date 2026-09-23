@@ -68,6 +68,7 @@ export function gradeTest(
     number: test.number,
     createdAt: test.createdAt,
     completedAt: new Date().toISOString(),
+    timed: test.timed,
     readingWriting,
     math,
     total: readingWriting + math,

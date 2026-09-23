@@ -16,6 +16,7 @@ A personal SAT practice app styled after College Board's digital "Bluebook" app 
 
 Under **Full-length practice test** on the home page: a complete digital SAT, laid out as the real one is.
 
+- **Timed or untimed**, chosen when you start. Untimed tests have no clocks: each module is submitted when you're done with it.
 - **Reading and Writing, then Math**, each in two modules: 27 questions in 32 minutes, then 22 in 35. The domains follow College Board's shares, and the first module of each section is easy and medium questions while the second is medium and hard.
 - **A 10-minute break** between the sections, which you can skip. Math never starts on its own, so stepping away for the whole break doesn't cost you time.
 - **Answers stay open until the module ends.** Change them as often as you like, **mark questions for review**, and jump anywhere from the question grid. The end of each module shows what's blank and what's marked, and submitting early asks "Are you sure?" first. A module whose time runs out is submitted as it stands.

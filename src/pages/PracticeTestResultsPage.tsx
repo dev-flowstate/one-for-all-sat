@@ -26,6 +26,7 @@ export function PracticeTestResultsPage() {
         <div className="flex items-center gap-2 border-b-2 border-ink bg-ink px-3 py-1.5">
           <span className="flex-1 truncate text-[11px] font-semibold tracking-tight text-merino uppercase">
             Practice Test {result.number}
+            {!result.timed && ' · Untimed'}
           </span>
           <span className="text-[11px] font-semibold tracking-tight text-merino uppercase">
             {new Date(result.completedAt).toLocaleDateString()}

@@ -24,6 +24,8 @@ export type TestStage =
 export interface ActiveTest {
   number: number;
   createdAt: string;
+  /** Untimed tests have no module clocks and no break countdown. */
+  timed: boolean;
   modules: TestModule[];
   stage: TestStage;
   /** Position within the current module. */
@@ -32,7 +34,7 @@ export interface ActiveTest {
   /** Question ids flagged with "Mark for review". */
   marked: string[];
   /** What's left on the running clock, the module's or the break's. Stored as a count rather
-   *  than a deadline so the clock doesn't run while the site is closed. */
+   *  than a deadline so the clock doesn't run while the site is closed. Unused when untimed. */
   secondsLeft: number;
 }
 
@@ -47,6 +49,7 @@ export interface CompletedTest {
   number: number;
   createdAt: string;
   completedAt: string;
+  timed: boolean;
   readingWriting: number;
   math: number;
   total: number;

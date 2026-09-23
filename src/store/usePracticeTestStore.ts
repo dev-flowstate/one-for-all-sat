@@ -14,7 +14,7 @@ interface PracticeTestState {
   /** Set when a module's clock ran out and submitted it, so the runner can say why it moved on. */
   timedOut: boolean;
 
-  begin: (modules: TestModule[]) => void;
+  begin: (modules: TestModule[], timed: boolean) => void;
   respond: (questionId: string, response: TestResponse | null) => void;
   toggleMarked: (questionId: string) => void;
   goTo: (index: number) => void;
@@ -27,6 +27,10 @@ interface PracticeTestState {
   discard: () => void;
   dismissTimedOut: () => void;
 }
+
+// Tests saved before the untimed option existed were all timed.
+const savedTest = getActiveTest();
+const savedHistory = getTestHistory().map((t) => ({ ...t, timed: t.timed ?? true }));
 
 /** The section break sits between the last Reading and Writing module and the first Math one. */
 const MODULE_BEFORE_BREAK = 1;
@@ -70,12 +74,12 @@ export const usePracticeTestStore = create<PracticeTestState>((set, get) => {
   return {
     // Read straight away rather than from an effect: a reload lands on the runner, and for its
     // first render to find the test, the test has to be there before anything renders.
-    active: getActiveTest(),
-    history: getTestHistory(),
+    active: savedTest && { ...savedTest, timed: savedTest.timed ?? true },
+    history: savedHistory,
     justFinished: null,
     timedOut: false,
 
-    begin: (modules) => {
+    begin: (modules, timed) => {
       set({
         justFinished: null,
         timedOut: false,
@@ -83,6 +87,7 @@ export const usePracticeTestStore = create<PracticeTestState>((set, get) => {
           // Numbered by finished tests, so a discarded test doesn't leave a gap.
           number: get().history.length + 1,
           createdAt: new Date().toISOString(),
+          timed,
           modules,
           stage: { kind: 'module', module: 0, view: 'question' },
           currentIndex: 0,
@@ -125,7 +130,7 @@ export const usePracticeTestStore = create<PracticeTestState>((set, get) => {
 
     tick: (seconds) => {
       const { active } = get();
-      if (!active || active.secondsLeft === 0) return;
+      if (!active || !active.timed || active.secondsLeft === 0) return;
       const secondsLeft = Math.max(0, active.secondsLeft - seconds);
       update({ secondsLeft });
       if (secondsLeft === 0 && active.stage.kind === 'module') {

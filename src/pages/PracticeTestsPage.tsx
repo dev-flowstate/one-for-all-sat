@@ -20,13 +20,14 @@ export function PracticeTestsPage() {
   const progress = useProgressStore((s) => s.progress);
   const isLoaded = useProgressStore((s) => s.isLoaded);
   const [prompt, setPrompt] = useState<Prompt | null>(null);
+  const [timed, setTimed] = useState(true);
 
   const nextNumber = history.length + 1;
 
   function start(allowOld: boolean) {
     const built = buildTest(questions, progress, allowOld);
     if (built.shortBy === 0) {
-      begin(built.modules);
+      begin(built.modules, timed);
       navigate('/test');
       return;
     }
@@ -52,8 +53,10 @@ export function PracticeTestsPage() {
           <p className="text-sm">
             {active.stage.kind === 'break'
               ? 'You are on the break between Reading and Writing and Math.'
-              : `${moduleTitle(active.modules[active.stage.module])}, with ${formatClock(active.secondsLeft)} left.`}{' '}
-            Everything is saved. The clock only runs while the test is open.
+              : `${moduleTitle(active.modules[active.stage.module])}${
+                  active.timed ? `, with ${formatClock(active.secondsLeft)} left` : ''
+                }.`}{' '}
+            Everything is saved.{active.timed && ' The clock only runs while the test is open.'}
           </p>
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
             <Button className="w-full" onClick={() => navigate('/test')}>
@@ -104,6 +107,29 @@ export function PracticeTestsPage() {
             come from the ones you haven&apos;t attempted yet. Each section is scored from 200 to 800, and harder
             questions count for more.
           </p>
+          <div className="mt-5 flex border-2 border-ink bg-paper" role="group" aria-label="Timing">
+            {[
+              { value: true, label: 'Timed' },
+              { value: false, label: 'Untimed' },
+            ].map((opt, index) => (
+              <button
+                key={opt.label}
+                type="button"
+                aria-pressed={timed === opt.value}
+                onClick={() => setTimed(opt.value)}
+                className={`min-h-11 flex-1 px-3 py-2.5 text-xs font-semibold tracking-tight uppercase sm:text-sm ${
+                  index > 0 ? 'border-l-2 border-ink' : ''
+                } ${timed === opt.value ? 'bg-venice-blue text-merino' : 'text-ink hover:bg-merino-dark'}`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+          <p className="mt-2 text-xs text-ink-soft">
+            {timed
+              ? 'Each module has its own clock and is submitted when time runs out, as on test day.'
+              : 'No clocks: take as long as you need on each module, and submit it when you are done.'}
+          </p>
           <Button className="mt-5 w-full py-4 text-base" disabled={!isLoaded} onClick={() => start(false)}>
             Make Practice Test {nextNumber}
           </Button>
@@ -124,7 +150,10 @@ export function PracticeTestsPage() {
                   to={`/tests/${result.number}`}
                   className="panel press flex flex-wrap items-center gap-x-4 gap-y-1 px-4 py-3 hover:bg-merino-dark"
                 >
-                  <span className="flex-1 font-bold">Practice Test {result.number}</span>
+                  <span className="flex-1 font-bold">
+                    Practice Test {result.number}
+                    {!result.timed && <span className="ml-2 font-mono text-xs font-normal text-ink-soft">Untimed</span>}
+                  </span>
                   <span className="font-mono text-xs text-ink-soft">
                     {new Date(result.completedAt).toLocaleDateString()}
                   </span>

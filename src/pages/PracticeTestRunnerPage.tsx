@@ -59,7 +59,7 @@ export function PracticeTestRunnerPage() {
   const questionsById = useMemo(() => new Map<string, Question>(questions.map((q) => [q.id, q])), [questions]);
 
   // Held until the bank has loaded, so a module can't run out and be graded against nothing.
-  useTestClock(!!test && isLoaded);
+  useTestClock(!!test && test.timed && isLoaded);
 
   if (!test) return <Navigate to={justFinished ? `/tests/${justFinished}` : '/tests'} replace />;
 
@@ -78,7 +78,7 @@ export function PracticeTestRunnerPage() {
   if (test.stage.kind === 'break') {
     return (
       <>
-        <BreakScreen secondsLeft={test.secondsLeft} onStartMath={endBreak} onExit={exit} />
+        <BreakScreen timed={test.timed} secondsLeft={test.secondsLeft} onStartMath={endBreak} onExit={exit} />
         {timeUpNotice}
       </>
     );
@@ -106,15 +106,21 @@ export function PracticeTestRunnerPage() {
             <p className="min-w-0 flex-1 truncate font-mono text-xs font-bold tracking-tight uppercase">
               {moduleTitle(module)}
             </p>
-            <p
-              role="timer"
-              aria-label={`${formatClock(test.secondsLeft)} left in this module`}
-              className={`flex-none border-2 border-ink px-2 py-1.5 font-mono text-sm font-bold tabular-nums ${
-                lowOnTime ? 'bg-danger text-paper' : 'bg-paper text-ink'
-              }`}
-            >
-              {formatClock(test.secondsLeft)}
-            </p>
+            {test.timed ? (
+              <p
+                role="timer"
+                aria-label={`${formatClock(test.secondsLeft)} left in this module`}
+                className={`flex-none border-2 border-ink px-2 py-1.5 font-mono text-sm font-bold tabular-nums ${
+                  lowOnTime ? 'bg-danger text-paper' : 'bg-paper text-ink'
+                }`}
+              >
+                {formatClock(test.secondsLeft)}
+              </p>
+            ) : (
+              <p className="flex-none border-2 border-ink bg-paper px-2 py-1.5 font-mono text-xs font-bold uppercase">
+                Untimed
+              </p>
+            )}
           </div>
 
           <div className="mt-1.5 flex flex-wrap items-center gap-2 sm:mt-2">
