@@ -1,4 +1,5 @@
 import { Button } from '../ui/Button';
+import { GridInInput } from './GridInInput';
 
 interface SprInputProps {
   value: string;
@@ -7,26 +8,18 @@ interface SprInputProps {
   submitted: boolean;
 }
 
-/** Student-produced-response text input with a submit button (Enter also submits). */
+/** Student-produced-response answer box with its keypad; Enter also submits. */
 export function SprInput({ value, onChange, onSubmit, submitted }: SprInputProps) {
   return (
     <form
-      className="flex flex-col gap-3 sm:flex-row sm:items-center"
+      className="flex flex-col gap-3"
       onSubmit={(e) => {
         e.preventDefault();
         onSubmit();
       }}
     >
-      <input
-        type="text"
-        value={value}
-        disabled={submitted}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder="Enter your answer"
-        aria-label="Your answer"
-        className="min-h-11 flex-1 border-2 border-ink bg-paper px-3 py-2.5 font-mono text-base tabular-nums text-ink placeholder:text-ink-soft disabled:bg-merino-dark disabled:text-ink-soft"
-      />
-      <Button type="submit" disabled={submitted || !value.trim()}>
+      <GridInInput value={value} onChange={onChange} disabled={submitted} />
+      <Button type="submit" className="w-full" disabled={submitted || !value.trim() || value === '-'}>
         Submit
       </Button>
     </form>

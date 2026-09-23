@@ -5,6 +5,9 @@ import { Button } from '../ui/Button';
 import { useProgressStore } from '../../store/useProgressStore';
 import { checkMcqAnswer, checkSprAnswer } from '../../lib/scoring/answerChecking';
 import { pointsForAnswer } from '../../lib/scoring/points';
+import { MathText } from '../math/MathText';
+import { GridInInput } from '../test-runner/GridInInput';
+import { distinctAnswers } from '../../lib/scoring/answerDisplay';
 
 interface RetryFormProps {
   question: Question;
@@ -18,7 +21,7 @@ function correctAnswerLabel(question: Question): string {
     if (correct?.image) return correct.id;
     return correct ? `${correct.id}. ${correct.text}` : (question.correctChoice ?? '—');
   }
-  return (question.acceptableAnswers ?? []).join(' or ') || '—';
+  return distinctAnswers(question.acceptableAnswers ?? []).join(' or ') || '—';
 }
 
 /** Inline retry UI for a single question: answer it, submit, and commit the outcome to progress. */
@@ -100,20 +103,15 @@ export function RetryForm({ question, onCancel }: RetryFormProps) {
                   className="max-h-12 w-auto border-2 border-ink bg-white object-contain object-left"
                 />
               ) : (
-                <span>{choice.text}</span>
+                <span>
+                  <MathText text={choice.text} />
+                </span>
               )}
             </button>
           ))}
         </div>
       ) : (
-        <input
-          type="text"
-          value={sprInput}
-          onChange={(e) => setSprInput(e.target.value)}
-          disabled={showIncorrectFeedback}
-          placeholder="Enter your answer"
-          className="min-h-11 w-full border-2 border-ink bg-paper px-3 py-2 text-sm disabled:opacity-50"
-        />
+        <GridInInput value={sprInput} onChange={setSprInput} disabled={showIncorrectFeedback} />
       )}
 
       {showIncorrectFeedback && (
