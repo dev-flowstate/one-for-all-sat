@@ -8,7 +8,7 @@ A personal SAT practice app styled after College Board's digital "Bluebook" app 
 
 - **Everything runs client-side.** No login is required. Settings, points, streaks, and progress live in `localStorage`; the question bank lives in IndexedDB. Nothing is sent to a server.
 - **Local profile (optional).** You can set a nickname/avatar under Profile & Settings, but it's just a label saved in this browser — not a real account, no password, no sync across devices.
-- **Questions ship with the app.** `public/question-bank.json` holds the Reading & Writing bank and loads on first visit, so there is nothing to set up. A small demo set (`src/data/bundled-bank/`) covers both subjects underneath it.
+- **Questions ship with the app.** `public/question-bank.json` holds the full bank, Math and Reading & Writing, and loads on first visit, so there is nothing to set up. A small demo set (`src/data/bundled-bank/`) covers both subjects underneath it.
 - **Importing is additive.** The shipped bank is *merged* into whatever you already have: it never deletes questions you imported yourself, and never re-adds one that's already stored. Duplicates are matched by id and, for questions that arrived under a different id, by their wording. Progress is keyed by question id and lives in `localStorage`, so questions you've already answered stay in Wrong or Right and never reappear in the unattempted pool.
 - **Import your own question bank.** Under Import, you can load a JSON file matching the schema in `src/lib/schema.ts` (`{ "questions": [...] }`) to add your own questions. Importing is additive too: it never removes anything, questions already present are updated in place, and progress is kept. Imported content is stored only in your browser.
 
