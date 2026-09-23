@@ -5,7 +5,6 @@ import { DEFAULT_STATS, getProgress, setProgress, getStats, setStats } from '../
 import {
   ensureBundledSeeded,
   getAllQuestions,
-  replaceImportedQuestions,
   mergeQuestions,
   getQuestionCounts,
 } from '../lib/storage/db';
@@ -113,7 +112,10 @@ export const useProgressStore = create<ProgressStore>((set, get) => ({
   },
 
   importQuestions: async (qs, onProgress) => {
-    await replaceImportedQuestions(qs, onProgress);
+    // Merged, never replaced. The shipped bank is stored as imported too, so replacing the
+    // imported set on each import deleted it -- anyone importing the maths bank lost every
+    // English question until the next reload put them back.
+    await mergeQuestions(qs, onProgress, { updateExisting: true });
     const [questions, counts] = await Promise.all([getAllQuestions(), getQuestionCounts()]);
     set({ questions, bundledCount: counts.bundled, importedCount: counts.imported });
   },

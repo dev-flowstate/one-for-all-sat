@@ -25,7 +25,7 @@ function describeImportFailure(error: unknown): string[] {
     ];
   }
   const detail = error instanceof Error ? error.message : String(error);
-  return [`The import failed partway through: ${detail}`, 'Your previous question bank may have been cleared.'];
+  return [`The import failed partway through: ${detail}`, 'Questions written before it stopped were kept. Importing the same file again adds the rest.'];
 }
 
 export function ImportPage() {
@@ -92,8 +92,8 @@ export function ImportPage() {
       </h1>
       <p className="mb-5 text-sm text-ink-soft">
         Select a question bank JSON file to load your own questions into this browser. The file stays on this
-        device — nothing is uploaded anywhere. Importing replaces any previously imported question bank; the
-        built-in demo questions are unaffected.
+        device — nothing is uploaded anywhere. Importing adds these questions to the ones already here and
+        removes nothing; questions you already have are updated, and your progress on them is kept.
       </p>
 
       <Card className="mb-4" title="Choose a file">
