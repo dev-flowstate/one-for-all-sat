@@ -10,7 +10,14 @@ A personal SAT practice app styled after College Board's digital "Bluebook" app 
 - **Local profile (optional).** You can set a nickname/avatar under Profile & Settings, but it's just a label saved in this browser — not a real account, no password, no sync across devices.
 - **Questions ship with the app.** `public/question-bank.json` holds the Reading & Writing bank and loads on first visit, so there is nothing to set up. A small demo set (`src/data/bundled-bank/`) covers both subjects underneath it.
 - **Importing is additive.** The shipped bank is *merged* into whatever you already have: it never deletes questions you imported yourself, and never re-adds one that's already stored. Duplicates are matched by id and, for questions that arrived under a different id, by their wording. Progress is keyed by question id and lives in `localStorage`, so questions you've already answered stay in Wrong or Right and never reappear in the unattempted pool.
-- **Import your own question bank.** Under Import, you can load a JSON file matching the schema in `src/lib/schema.ts` (`{ "questions": [...] }`) to add your own questions. Imported content is stored only in your browser.
+- **Import your own question bank.** Under Import, you can load a JSON file matching the schema in `src/lib/schema.ts` (`{ "questions": [...] }`) to add your own questions. Importing is additive too: it never removes anything, questions already present are updated in place, and progress is kept. Imported content is stored only in your browser.
+
+## Maths questions
+
+- **Equations are drawn as maths.** Question text marks equations as `\( … \)` in a small, fully-braced TeX subset — `\frac{a}{b}`, `\sqrt{x}`, `\sqrt[n]{x}`, `x^{2}`, `x_{1}`, `\overline{AB}` — and systems of equations as rows. `src/lib/math/` parses it and `src/components/math/` draws it: stacked fractions, radicals, raised exponents, italic variables, true minus signs. No TeX library; the renderer is smaller than one of a library's fonts. Text without the markup, including every English question, is shown exactly as before.
+- **Tables are tables.** `\[table:<JSON rows>\]` marks a data table, in a question, an answer choice or an explanation; cells may hold equations of their own.
+- **Highlighting still lines up.** A drawn fraction leaves different text in the page than it has in the question, so each equation and table carries its source length and the highlighter steps over it as one block.
+- **Grid-in keypad.** Fill-in answers get a keypad with every character an answer can contain, since a phone's number pad has no fraction bar and, on iOS, no minus sign. It enforces the real answer box — 5 characters, 6 with a minus — and previews the answer as it will be read.
 
 ## Vocabulary flashcards
 

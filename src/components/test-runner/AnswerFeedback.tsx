@@ -1,4 +1,5 @@
 import type { AttemptOutcome } from '../../types/progress';
+import { MathText } from '../math/MathText';
 
 interface AnswerFeedbackProps {
   outcome: AttemptOutcome;
@@ -23,7 +24,9 @@ export function AnswerFeedback({ outcome, explanation }: AnswerFeedbackProps) {
         {correct ? 'Correct' : 'Incorrect'}
       </p>
       <div className="bg-paper px-3 py-3">
-        <p className="prose-reading max-w-[68ch] whitespace-pre-wrap">{explanation}</p>
+        <p className="prose-reading max-w-[68ch] whitespace-pre-wrap">
+          <MathText text={explanation} />
+        </p>
       </div>
     </div>
   );

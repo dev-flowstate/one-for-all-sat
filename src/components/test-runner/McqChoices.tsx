@@ -1,5 +1,6 @@
 import type { Choice, ChoiceId } from '../../types/question';
 import type { RevealMode } from '../../types/settings';
+import { MathText } from '../math/MathText';
 
 interface McqChoicesProps {
   choices: Choice[];
@@ -118,7 +119,7 @@ function ChoiceButton({ choice, crossed, disabled, isSelected, isCorrect, isWron
             className="max-h-12 w-auto border-2 border-ink bg-white object-contain object-left"
           />
         ) : (
-          choice.text
+          <MathText text={choice.text} />
         )}
       </span>
 

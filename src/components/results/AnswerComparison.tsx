@@ -1,5 +1,7 @@
 import type { Question } from '../../types/question';
 import type { SessionAnswer } from '../../types/progress';
+import { MathText } from '../math/MathText';
+import { distinctAnswers } from '../../lib/scoring/answerDisplay';
 
 interface AnswerComparisonProps {
   question: Question;
@@ -37,7 +39,9 @@ export function AnswerComparison({ question, answer }: AnswerComparisonProps) {
                     className="max-h-12 w-auto border-2 border-ink bg-white object-contain object-left"
                   />
                 ) : (
-                  <span className="min-w-0 flex-1 text-sm leading-relaxed">{choice.text}</span>
+                  <span className="min-w-0 flex-1 text-sm leading-relaxed">
+                    <MathText text={choice.text} />
+                  </span>
                 )}
                 {isCorrect && <span className={`${TAG_BASE} bg-success`}>Correct answer</span>}
                 {isYourAnswer && !isCorrect && <span className={`${TAG_BASE} bg-danger`}>Your answer</span>}
@@ -67,7 +71,7 @@ export function AnswerComparison({ question, answer }: AnswerComparisonProps) {
           Correct answer
         </div>
         <p className="px-3 py-2 text-sm font-semibold break-words">
-          {(question.acceptableAnswers ?? []).join(' or ') || '—'}
+          {distinctAnswers(question.acceptableAnswers ?? []).join(' or ') || '—'}
         </p>
       </div>
     </div>

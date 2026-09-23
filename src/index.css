@@ -72,6 +72,153 @@ body {
   letter-spacing: -0.003em;
 }
 
+/*
+ * Equations. Inline rather than inline-block, so a long equation can still wrap at its
+ * operators on a phone; the pieces that must never break apart — a fraction, a radical —
+ * are inline-flex and move as one.
+ */
+.math {
+  font-style: normal;
+  white-space: normal;
+}
+
+.math-var {
+  font-style: italic;
+  /* Italic letters lean into the next glyph; a hair of space keeps "xy" from touching. */
+  padding-right: 0.04em;
+}
+
+.math-op {
+  margin: 0 0.2em;
+}
+
+.math-frac {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: stretch;
+  margin: 0 0.12em;
+  font-size: 0.9em;
+  line-height: 1.15;
+  text-align: center;
+  /* Puts the bar on the text's centre line rather than its baseline. */
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.math-frac-num {
+  border-bottom: 1.5px solid currentColor;
+  padding: 0 0.2em 0.1em;
+}
+
+.math-frac-den {
+  padding: 0.1em 0.2em 0;
+}
+
+.math-sqrt {
+  display: inline-flex;
+  align-items: stretch;
+  white-space: nowrap;
+}
+
+.math-radical {
+  padding-right: 0.02em;
+}
+
+.math-radicand {
+  border-top: 1.5px solid currentColor;
+  padding: 0.05em 0.1em 0;
+}
+
+.math-root-index {
+  align-self: flex-start;
+  margin-right: -0.25em;
+  font-size: 0.6em;
+}
+
+.math-sup,
+.math-sub {
+  font-size: 0.72em;
+  line-height: 0;
+}
+
+.math-sup {
+  vertical-align: 0.6em;
+}
+
+/* A fraction in an exponent, x^(a/b), would otherwise shrink twice — once for the exponent
+   and again for the fraction — and end up too small to read. */
+.math-sup .math-frac,
+.math-sub .math-frac {
+  font-size: 1em;
+}
+
+.math-sub {
+  vertical-align: -0.25em;
+}
+
+.math-overline {
+  border-top: 1.5px solid currentColor;
+  padding-top: 0.05em;
+  white-space: nowrap;
+}
+
+/* A system of equations, aligned on the equals sign the way it's printed on the test. */
+.math-rows {
+  display: inline-grid;
+  column-gap: 0;
+  row-gap: 0.15em;
+  margin: 0.2em 0;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.math-cell-first {
+  text-align: right;
+}
+
+.math-cell {
+  text-align: left;
+}
+
+/*
+ * Data tables inside questions. Spans laid out with `display: table`, since they appear in
+ * places a <table> can't legally go; the wrapper scrolls sideways on a phone rather than
+ * letting a wide table push the page past the screen edge.
+ */
+.qtable-scroll {
+  display: block;
+  max-width: 100%;
+  margin: 0.5em 0;
+  overflow-x: auto;
+  white-space: normal;
+}
+
+.qtable {
+  display: table;
+  border-collapse: collapse;
+  border: 2px solid var(--color-ink);
+  background-color: var(--color-paper);
+}
+
+.qtable-row {
+  display: table-row;
+}
+
+.qtable-head,
+.qtable-cell {
+  display: table-cell;
+  border: 1.5px solid var(--color-ink);
+  padding: 0.3em 0.75em;
+  text-align: center;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.qtable-head {
+  background-color: var(--color-merino-dark);
+  font-weight: 600;
+}
+
 mark.highlight {
   background-color: #f6dd7a;
   color: inherit;

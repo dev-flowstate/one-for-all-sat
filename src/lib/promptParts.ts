@@ -1,3 +1,5 @@
+import { splitSegments } from './math/segments';
+
 export interface PromptParts {
   /** The text being asked about, or null when the prompt is only a question. */
   stimulus: string | null;
@@ -28,10 +30,17 @@ export function splitPrompt(prompt: string): PromptParts {
   // The question sentence is last, so a prompt not ending in "?" has nothing to split on.
   if (!text.endsWith('?')) return { stimulus: null, stem: text };
 
+  // A decimal point inside an equation or a table can look like a sentence end, and cutting
+  // there would split one across the two panes, leaving each half unrenderable.
+  const blocks = splitSegments(text).filter((s) => s.kind !== 'text');
+  const insideMath = (index: number) => blocks.some((s) => index > s.start && index < s.end);
+
   let lastBoundary = -1;
   SENTENCE_BOUNDARY.lastIndex = 0;
   let match: RegExpExecArray | null;
-  while ((match = SENTENCE_BOUNDARY.exec(text)) !== null) lastBoundary = match.index;
+  while ((match = SENTENCE_BOUNDARY.exec(text)) !== null) {
+    if (!insideMath(match.index)) lastBoundary = match.index;
+  }
   if (lastBoundary === -1) return { stimulus: null, stem: text };
 
   const stimulus = text.slice(0, lastBoundary + 1).trim();

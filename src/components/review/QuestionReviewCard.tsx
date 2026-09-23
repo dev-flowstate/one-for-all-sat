@@ -4,6 +4,7 @@ import type { Question } from '../../types/question';
 import { Card } from '../ui/Card';
 import { Badge } from '../ui/Badge';
 import { Toggle } from '../ui/Toggle';
+import { MathText } from '../math/MathText';
 
 /** Difficulty keeps its semantics (Easy/Medium/Hard) but reads as a solid block, not a tint. */
 const DIFFICULTY_CLASSES: Record<Question['difficulty'], string> = {
@@ -49,7 +50,9 @@ export function QuestionReviewCard({ question, actions, answerSummary, children 
             Passage
           </div>
           {/* Long-form: serif, not mono. */}
-          <p className="prose-reading px-3 py-3 whitespace-pre-wrap">{question.passage}</p>
+          <p className="prose-reading px-3 py-3 whitespace-pre-wrap">
+            <MathText text={question.passage} />
+          </p>
         </div>
       )}
 
@@ -66,7 +69,9 @@ export function QuestionReviewCard({ question, actions, answerSummary, children 
 
       {/* Skip a prompt that lost graphic-only content — the image carries the real question. */}
       {!(question.promptIsPartial && question.images?.length) && (
-        <p className="prose-reading mb-4 whitespace-pre-wrap">{question.prompt}</p>
+        <p className="prose-reading mb-4 whitespace-pre-wrap">
+          <MathText text={question.prompt} />
+        </p>
       )}
 
       {answerSummary && <div className="mb-4">{answerSummary}</div>}
@@ -82,7 +87,9 @@ export function QuestionReviewCard({ question, actions, answerSummary, children 
             <div className="border-b-2 border-ink bg-venice-blue px-3 py-1 font-mono text-[11px] font-semibold tracking-tight text-merino uppercase">
               Explanation
             </div>
-            <p className="prose-reading px-3 py-3 whitespace-pre-wrap">{question.explanation}</p>
+            <p className="prose-reading px-3 py-3 whitespace-pre-wrap">
+              <MathText text={question.explanation} />
+            </p>
           </div>
         )}
       </div>
