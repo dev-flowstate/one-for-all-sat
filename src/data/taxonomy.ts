@@ -86,7 +86,3 @@ export const DIFFICULTIES = ['Easy', 'Medium', 'Hard'] as const;
 export function domainsForSubject(subject: Subject): Domain[] {
   return DOMAINS.filter((d) => d.subject === subject);
 }
-
-export function findDomain(name: string): Domain | undefined {
-  return DOMAINS.find((d) => d.name === name);
-}

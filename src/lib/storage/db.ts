@@ -123,14 +123,3 @@ export async function getQuestionCounts(): Promise<{ bundled: number; imported: 
   ]);
   return { bundled, imported };
 }
-
-export async function clearImportedQuestions(): Promise<void> {
-  const db = await getDB();
-  const tx = db.transaction('questions', 'readwrite');
-  let cursor = await tx.store.index('by-source').openCursor(IDBKeyRange.only('imported'));
-  while (cursor) {
-    await cursor.delete();
-    cursor = await cursor.continue();
-  }
-  await tx.done;
-}
