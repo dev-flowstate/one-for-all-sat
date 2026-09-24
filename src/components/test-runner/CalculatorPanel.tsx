@@ -6,6 +6,24 @@ interface CalculatorPanelProps {
   onClose: () => void;
 }
 
+/**
+ * Desmos's College Board version: the calculator built into the digital SAT itself. Desmos
+ * lets its calculator pages be embedded, so it needs no API key; it does need a connection,
+ * which is why the built-in calculator stays as the other choice.
+ */
+const DESMOS_URL = 'https://www.desmos.com/testing/collegeboard/graphing';
+
+type Engine = 'desmos' | 'builtin';
+const ENGINE_KEY = 'ofa-sat:calculator';
+
+function savedEngine(): Engine {
+  try {
+    return localStorage.getItem(ENGINE_KEY) === 'builtin' ? 'builtin' : 'desmos';
+  } catch {
+    return 'desmos';
+  }
+}
+
 /** The math engine is ~100 kB gzipped, so it only downloads once a calculator is opened. */
 const GraphingCalculator = lazy(async () => ({
   default: (await import('../calculator/GraphingCalculator')).GraphingCalculator,
@@ -52,6 +70,19 @@ class CalculatorLoadBoundary extends Component<{ children: ReactNode }, { failed
  */
 export function CalculatorPanel({ open, onClose }: CalculatorPanelProps) {
   const [everOpened, setEverOpened] = useState(false);
+  const [engine, setEngine] = useState<Engine>(savedEngine);
+  // Each stays mounted once shown, so switching back doesn't wipe what was typed into it.
+  const [shown, setShown] = useState<Set<Engine>>(() => new Set([savedEngine()]));
+
+  function choose(next: Engine) {
+    setEngine(next);
+    setShown((prev) => new Set(prev).add(next));
+    try {
+      localStorage.setItem(ENGINE_KEY, next);
+    } catch {
+      // Only a convenience: without storage the choice lasts until the page is left.
+    }
+  }
 
   useEffect(() => {
     if (open) setEverOpened(true);
@@ -65,6 +96,26 @@ export function CalculatorPanel({ open, onClose }: CalculatorPanelProps) {
           furniture as the question beside it. */}
       <div className="flex flex-none items-center justify-between gap-2 border-y-2 border-ink bg-venice-blue py-0.5 pr-0.5 pl-3 lg:border-t-0">
         <p className="font-mono text-xs font-bold tracking-tight text-merino uppercase">Graphing calculator</p>
+        <div className="ml-auto flex border-2 border-merino" role="group" aria-label="Calculator">
+          {(
+            [
+              ['desmos', 'Desmos'],
+              ['builtin', 'Built-in'],
+            ] as const
+          ).map(([value, label]) => (
+            <button
+              key={value}
+              type="button"
+              aria-pressed={engine === value}
+              onClick={() => choose(value)}
+              className={`min-h-8 px-2 font-mono text-[11px] font-semibold tracking-tight uppercase ${
+                engine === value ? 'bg-merino text-venice-blue-dark' : 'text-merino hover:bg-venice-blue-dark'
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
         <button
           type="button"
           onClick={onClose}
@@ -77,13 +128,22 @@ export function CalculatorPanel({ open, onClose }: CalculatorPanelProps) {
 
       {/* Scrolls within the pane rather than resizing the calculator itself, so a short pane
           never squeezes the graph down to nothing. */}
-      <div className="min-h-0 flex-1 overflow-y-auto">
-        <CalculatorLoadBoundary>
-          <Suspense fallback={<p className="p-4 font-mono text-sm text-ink-soft">Loading calculator…</p>}>
-            <GraphingCalculator />
-          </Suspense>
-        </CalculatorLoadBoundary>
-      </div>
+      {shown.has('desmos') && (
+        <iframe
+          src={DESMOS_URL}
+          title="Desmos graphing calculator"
+          className={`min-h-0 w-full flex-1 border-0 bg-white ${engine === 'desmos' ? '' : 'hidden'}`}
+        />
+      )}
+      {shown.has('builtin') && (
+        <div className={`min-h-0 flex-1 overflow-y-auto ${engine === 'builtin' ? '' : 'hidden'}`}>
+          <CalculatorLoadBoundary>
+            <Suspense fallback={<p className="p-4 font-mono text-sm text-ink-soft">Loading calculator…</p>}>
+              <GraphingCalculator />
+            </Suspense>
+          </CalculatorLoadBoundary>
+        </div>
+      )}
     </div>
   );
 }
