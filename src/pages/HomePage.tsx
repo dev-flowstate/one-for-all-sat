@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useProgressStore } from '../store/useProgressStore';
 import { useSettingsStore } from '../store/useSettingsStore';
@@ -5,6 +6,9 @@ import { usePracticeTestStore } from '../store/usePracticeTestStore';
 import { useAccountStore } from '../store/useAccountStore';
 import { Button } from '../components/ui/Button';
 import { getMainPool, getWrongPool, getRightPool } from '../lib/pools';
+import { MIN_ANSWERED, rankWeakest, skillStats } from '../lib/topicStats';
+import { Card } from '../components/ui/Card';
+import { TopicRow } from '../components/topics/TopicRow';
 
 export function HomePage() {
   const { questions, progress, stats, isLoaded, bundledCount, importedCount } = useProgressStore();
@@ -16,6 +20,7 @@ export function HomePage() {
   const mainCount = getMainPool(questions, progress).length;
   const wrongCount = getWrongPool(questions, progress).length;
   const rightCount = getRightPool(questions, progress).length;
+  const weakest = useMemo(() => rankWeakest(skillStats(questions, progress)).slice(0, 3), [questions, progress]);
 
   /* The three pools are what a returning user scans first, so they get the loudest
      treatment on the page: a solid colour-coded cap over an oversized figure. */
@@ -133,6 +138,30 @@ export function HomePage() {
               </Link>
             </div>
           </div>
+
+          {isLoaded && (
+            <Card
+              className="mt-6"
+              title="Weakest topics"
+              titleRight={
+                <Link to="/topics" className="font-mono text-[11px] font-semibold text-merino underline underline-offset-2">
+                  All topics
+                </Link>
+              }
+            >
+              {weakest.length === 0 ? (
+                <p className="text-sm text-ink-soft">
+                  Answer {MIN_ANSWERED} questions in a subtopic and it shows up here, ranked from weakest to strongest.
+                </p>
+              ) : (
+                <ol>
+                  {weakest.map((stat, i) => (
+                    <TopicRow key={stat.skill} stat={stat} rank={i + 1} />
+                  ))}
+                </ol>
+              )}
+            </Card>
+          )}
 
           {/* Gated on isLoaded too: importedCount is 0 before storage answers, so without it
               the banner flashes in and out on every visit that does have a bank. */}

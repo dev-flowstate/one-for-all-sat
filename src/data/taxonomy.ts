@@ -42,11 +42,11 @@ export const DOMAINS: Domain[] = [
     skills: [
       'Ratios, rates, proportional relationships, and units',
       'Percentages',
-      'One-variable data: distributions and measures of center and spread',
-      'Two-variable data: models and scatterplots',
+      'One-variable data: Distributions and measures of center and spread',
+      'Two-variable data: Models and scatterplots',
       'Probability and conditional probability',
       'Inference from sample statistics and margin of error',
-      'Evaluating statistical claims: observational studies and experiments',
+      'Evaluating statistical claims: Observational studies and experiments',
     ],
   },
   {

@@ -1,14 +1,15 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
-import { DomainPicker } from '../components/setup/DomainPicker';
+import { TopicPicker } from '../components/setup/TopicPicker';
 import { DifficultyPicker } from '../components/setup/DifficultyPicker';
 import { RevealModePicker } from '../components/setup/RevealModePicker';
 import { TimerModePicker } from '../components/setup/TimerModePicker';
 import { useProgressStore } from '../store/useProgressStore';
 import { useSessionStore } from '../store/useSessionStore';
 import { getMainPool } from '../lib/pools';
+import { sameSkill, skillStats } from '../lib/topicStats';
 import { DOMAINS } from '../data/taxonomy';
 import type { Difficulty, Subject } from '../types/question';
 import type { RevealMode, TimerMode, SessionConfig } from '../types/settings';
@@ -28,8 +29,10 @@ function shuffle<T>(items: T[]): T[] {
 export function SetupPage() {
   const { questions, progress, stats, isLoaded } = useProgressStore();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
-  const [selectedDomains, setSelectedDomains] = useState<string[]>([]);
+  // A link from the topics page arrives with the subtopic it's about already chosen.
+  const [selectedSkills, setSelectedSkills] = useState<string[]>(() => searchParams.getAll('skill'));
   const [selectedDifficulties, setSelectedDifficulties] = useState<Difficulty[]>([]);
   const [questionCount, setQuestionCount] = useState(DEFAULT_QUESTION_COUNT);
   const [revealMode, setRevealMode] = useState<RevealMode>('immediate');
@@ -40,10 +43,12 @@ export function SetupPage() {
     const mainPool = getMainPool(questions, progress);
     return mainPool.filter(
       (q) =>
-        (selectedDomains.length === 0 || selectedDomains.includes(q.domain)) &&
+        (selectedSkills.length === 0 || selectedSkills.some((s) => sameSkill(s, q.skill))) &&
         (selectedDifficulties.length === 0 || selectedDifficulties.includes(q.difficulty)),
     );
-  }, [questions, progress, selectedDomains, selectedDifficulties]);
+  }, [questions, progress, selectedSkills, selectedDifficulties]);
+
+  const topicStats = useMemo(() => skillStats(questions, progress), [questions, progress]);
 
   const availableCount = filteredPool.length;
 
@@ -51,12 +56,6 @@ export function SetupPage() {
   useEffect(() => {
     setQuestionCount((prev) => (availableCount === 0 ? prev : Math.min(Math.max(prev, 1), availableCount)));
   }, [availableCount]);
-
-  function toggleDomain(domainName: string) {
-    setSelectedDomains((prev) =>
-      prev.includes(domainName) ? prev.filter((d) => d !== domainName) : [...prev, domainName],
-    );
-  }
 
   function toggleDifficulty(difficulty: Difficulty) {
     setSelectedDifficulties((prev) =>
@@ -73,16 +72,16 @@ export function SetupPage() {
   function handleStart() {
     if (availableCount === 0) return;
 
-    const selectedDomainObjects = DOMAINS.filter((d) => selectedDomains.includes(d.name));
+    const selectedDomainObjects = DOMAINS.filter((d) => d.skills.some((s) => selectedSkills.includes(s)));
     const subjects: Subject[] =
-      selectedDomains.length === 0
+      selectedSkills.length === 0
         ? ['math', 'reading-writing']
         : Array.from(new Set(selectedDomainObjects.map((d) => d.subject)));
 
     const config: SessionConfig = {
       subjects,
-      domains: selectedDomains,
-      skills: [],
+      domains: selectedDomainObjects.map((d) => d.name),
+      skills: selectedSkills,
       difficulties: selectedDifficulties,
       questionCount,
       revealMode,
@@ -128,8 +127,12 @@ export function SetupPage() {
       </h1>
 
       <div className="flex flex-col gap-4">
-        <Card title="Subjects & domains">
-          <DomainPicker selected={selectedDomains} onToggle={toggleDomain} />
+        <Card title="Topics">
+          <p className="mb-3 text-sm text-ink-soft">
+            Pick whole domains or single subtopics; leave everything unticked to practise from all of them. Beside
+            each subtopic: how many you&apos;ve done, and how many of those you got right.
+          </p>
+          <TopicPicker selected={selectedSkills} onChange={setSelectedSkills} stats={topicStats} />
         </Card>
 
         {/* Difficulty and count are small controls, so they share a row rather than each

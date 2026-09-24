@@ -13,6 +13,11 @@ A personal SAT practice app styled after College Board's digital "Bluebook" app 
 - **Importing is additive.** The shipped bank is *merged* into whatever you already have: it never deletes questions you imported yourself, and never re-adds one that's already stored. Duplicates are matched by id and, for questions that arrived under a different id, by their wording. Progress is keyed by question id and lives in `localStorage`, so questions you've already answered stay in Wrong or Right and never reappear in the unattempted pool. Corrections to questions already shipped go out by raising the file's `revision`: a browser that last loaded an older revision rewrites its stored copies once, keeping the same ids, so progress is untouched.
 - **Import your own question bank.** Under Import, you can load a JSON file matching the schema in `src/lib/schema.ts` (`{ "questions": [...] }`) to add your own questions. Importing is additive too: it never removes anything, questions already present are updated in place, and progress is kept. Imported content is stored only in your browser.
 
+## Topics
+
+- **Practise by subtopic.** The setup page lists every domain with its subtopics (the 29 College Board uses). Tick whole domains or single subtopics; each shows how many you've done out of the total, the share you got right, and a **Weak** tag once it's low.
+- **Weakest topics on the home screen,** with a page ranking every subtopic from weakest to strongest by the share answered wrong. A subtopic needs 5 answers before it's ranked, so one unlucky miss can't put it at the bottom. Each links straight to a practice set on just that subtopic.
+
 ## Full-length practice tests
 
 Under **Full-length practice test** on the home page: a complete digital SAT, laid out as the real one is.

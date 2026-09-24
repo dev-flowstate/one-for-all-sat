@@ -13,6 +13,7 @@ import { VocabReviewPage } from './pages/VocabReviewPage';
 import { PracticeTestsPage } from './pages/PracticeTestsPage';
 import { PracticeTestRunnerPage } from './pages/PracticeTestRunnerPage';
 import { PracticeTestResultsPage } from './pages/PracticeTestResultsPage';
+import { TopicsPage } from './pages/TopicsPage';
 
 export function AppRouter() {
   return (
@@ -32,6 +33,7 @@ export function AppRouter() {
         <Route path="/tests" element={<PracticeTestsPage />} />
         <Route path="/tests/:number" element={<PracticeTestResultsPage />} />
         <Route path="/test" element={<PracticeTestRunnerPage />} />
+        <Route path="/topics" element={<TopicsPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </HashRouter>

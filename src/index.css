@@ -24,6 +24,8 @@
   --color-success-bg: #dcebdf;
   --color-danger: #a8392a;
   --color-danger-bg: #f6e2dd;
+  /* Between the two, for a middling score: amber reads as "not yet" without alarm. */
+  --color-caution: #b7791f;
 
   --font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
   /* Question and passage text. A neutral grotesque rather than the mono used for chrome —
