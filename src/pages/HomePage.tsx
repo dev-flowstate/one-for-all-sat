@@ -3,19 +3,17 @@ import { Link } from 'react-router-dom';
 import { useProgressStore } from '../store/useProgressStore';
 import { useSettingsStore } from '../store/useSettingsStore';
 import { usePracticeTestStore } from '../store/usePracticeTestStore';
-import { useAccountStore } from '../store/useAccountStore';
 import { Button } from '../components/ui/Button';
 import { getMainPool, getWrongPool, getRightPool } from '../lib/pools';
 import { MIN_ANSWERED, rankWeakest, skillStats } from '../lib/topicStats';
 import { Card } from '../components/ui/Card';
 import { TopicRow } from '../components/topics/TopicRow';
+import { SignInBanner } from '../components/profile/SignInBanner';
 
 export function HomePage() {
   const { questions, progress, stats, isLoaded, bundledCount, importedCount } = useProgressStore();
   const profile = useSettingsStore((s) => s.profile);
   const activeTest = usePracticeTestStore((s) => s.active);
-  const accountStatus = useAccountStore((s) => s.status);
-  const signedIn = useAccountStore((s) => s.user !== null);
 
   const mainCount = getMainPool(questions, progress).length;
   const wrongCount = getWrongPool(questions, progress).length;
@@ -55,16 +53,10 @@ export function HomePage() {
           <p className="mt-4 text-sm text-ink-soft">
             {profile ? `Welcome back, ${profile.avatar} ${profile.nickname}` : 'Your personal SAT practice space'}
           </p>
-          {accountStatus !== 'off' && accountStatus !== 'checking' && !signedIn && (
-            <p className="mt-2 text-sm">
-              <Link to="/profile" className="font-semibold text-venice-blue underline underline-offset-2">
-                Sign in with Google
-              </Link>{' '}
-              to keep your progress on every device.
-            </p>
-          )}
         </div>
       </header>
+
+      <SignInBanner />
 
       {/* Rendered whether or not storage has answered yet, with placeholders standing in for
           the numbers. Swapping a short "loading" block for the full layout grew the page by
