@@ -221,6 +221,12 @@ body {
   font-weight: 600;
 }
 
+/* While the question/calculator divider is dragged, an embedded page mustn't take the
+   pointer, or the drag stops as soon as it crosses the calculator. */
+body[data-resizing] iframe {
+  pointer-events: none;
+}
+
 /* With the highlighter on, a selection being dragged already looks like the highlight it
    will become. */
 .highlighter-on ::selection {

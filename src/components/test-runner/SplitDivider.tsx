@@ -8,6 +8,7 @@ interface SplitDividerProps {
   /** Percentage of the container given to the first pane. */
   value: number;
   onChange: (value: number) => void;
+  className?: string;
 }
 
 /** Neither pane may be squeezed below this share of the container. */
@@ -22,8 +23,14 @@ const STEP = 4;
  * calculator takes half the screen, and someone who can't drag still needs to be able to give
  * the question more room.
  */
-export function SplitDivider({ containerRef, horizontal, value, onChange }: SplitDividerProps) {
+export function SplitDivider({ containerRef, horizontal, value, onChange, className = '' }: SplitDividerProps) {
   const draggingRef = useRef(false);
+  // Read through a ref so a new callback each render doesn't re-bind the listeners below:
+  // re-binding runs their cleanup, which ends the drag after its first step.
+  const onChangeRef = useRef(onChange);
+  useEffect(() => {
+    onChangeRef.current = onChange;
+  });
 
   const positionFrom = useCallback(
     (clientX: number, clientY: number) => {
@@ -44,11 +51,12 @@ export function SplitDivider({ containerRef, horizontal, value, onChange }: Spli
       if (!draggingRef.current) return;
       event.preventDefault();
       const next = positionFrom(event.clientX, event.clientY);
-      if (next !== null) onChange(next);
+      if (next !== null) onChangeRef.current(next);
     }
     function stop() {
       draggingRef.current = false;
       document.body.style.userSelect = '';
+      delete document.body.dataset.resizing;
     }
     window.addEventListener('pointermove', move, { passive: false });
     window.addEventListener('pointerup', stop);
@@ -59,7 +67,7 @@ export function SplitDivider({ containerRef, horizontal, value, onChange }: Spli
       window.removeEventListener('pointercancel', stop);
       stop();
     };
-  }, [positionFrom, onChange]);
+  }, [positionFrom]);
 
   function handleKeyDown(event: React.KeyboardEvent) {
     const back = horizontal ? 'ArrowLeft' : 'ArrowUp';
@@ -83,12 +91,15 @@ export function SplitDivider({ containerRef, horizontal, value, onChange }: Spli
         draggingRef.current = true;
         // Without this a drag selects the question text it passes over.
         document.body.style.userSelect = 'none';
+        // Desmos is another site's page in an iframe, and it swallows pointer events passing
+        // over it, which would stall a drag towards the calculator. See index.css.
+        document.body.dataset.resizing = 'true';
         event.preventDefault();
       }}
       onKeyDown={handleKeyDown}
       className={`group flex flex-none items-center justify-center border-ink bg-merino-dark hover:bg-rock-blue ${
         horizontal ? 'w-3 cursor-col-resize border-x-2' : 'h-3 cursor-row-resize border-y-2'
-      }`}
+      } ${className}`}
     >
       {/* A grip, so the seam reads as something you can pull rather than a border. */}
       <span

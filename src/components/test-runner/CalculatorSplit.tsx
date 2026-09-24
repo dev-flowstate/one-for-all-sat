@@ -26,8 +26,13 @@ interface CalculatorSplitProps {
 
 /**
  * The question and the calculator side by side (stacked on a phone), with a draggable
- * divider between them, as on the real test. The caller makes its page a fixed-height column
- * while the calculator is open, so each pane scrolls itself.
+ * divider between them, as on the real test: the calculator on the left, as Bluebook puts it.
+ * On a phone it goes below the question instead, which would otherwise be pushed off screen.
+ * The caller makes its page a fixed-height column while the calculator is open, so each pane
+ * scrolls itself.
+ *
+ * The sides swap with CSS `order`, not by moving elements: moving the calculator would reload
+ * Desmos and lose whatever was typed into it.
  */
 export function CalculatorSplit({ calculatorOpen, onCloseCalculator, children }: CalculatorSplitProps) {
   /** Percentage of the split given to the question. Above half, because the question is what
@@ -39,19 +44,26 @@ export function CalculatorSplit({ calculatorOpen, onCloseCalculator, children }:
   return (
     <div ref={splitRef} className={calculatorOpen ? 'flex min-h-0 flex-1 flex-col lg:flex-row' : ''}>
       <div
-        className={calculatorOpen ? 'min-h-0 overflow-y-auto' : ''}
+        className={calculatorOpen ? 'min-h-0 overflow-y-auto lg:order-3' : ''}
         style={calculatorOpen ? { flexBasis: `${questionShare}%`, flexGrow: 0, flexShrink: 0 } : undefined}
       >
         {children}
       </div>
 
       {calculatorOpen && (
-        <SplitDivider containerRef={splitRef} horizontal={isWide} value={questionShare} onChange={setQuestionShare} />
+        // The divider measures from the leading edge, which side by side is the calculator's.
+        <SplitDivider
+          containerRef={splitRef}
+          horizontal={isWide}
+          value={isWide ? 100 - questionShare : questionShare}
+          onChange={(v) => setQuestionShare(isWide ? 100 - v : v)}
+          className="lg:order-2"
+        />
       )}
 
       {/* Hidden rather than unmounted, so closing the calculator doesn't wipe what's
           typed into it. */}
-      <div className={calculatorOpen ? 'min-h-0 flex-1' : 'hidden'}>
+      <div className={calculatorOpen ? 'min-h-0 flex-1 lg:order-1' : 'hidden'}>
         <CalculatorPanel open={calculatorOpen} onClose={onCloseCalculator} />
       </div>
     </div>
