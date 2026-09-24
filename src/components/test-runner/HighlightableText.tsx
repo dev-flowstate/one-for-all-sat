@@ -9,6 +9,8 @@ interface HighlightableTextProps {
   /** Store key, e.g. `${question.id}:passage` or `${question.id}:prompt`. */
   rangeKey: string;
   className?: string;
+  /** Parts of `text` shown underlined, for questions that ask about an underlined portion. */
+  underlines?: HighlightRange[];
 }
 
 interface PopoverState {
@@ -55,7 +57,7 @@ function caretAt(x: number, y: number): { node: Node; offset: number } | null {
  *   selected text (Edge's, for one) from covering the passage.
  * - With it off: select text, and a floating "Highlight"/"Remove highlight" button appears.
  */
-export function HighlightableText({ text, rangeKey, className = '' }: HighlightableTextProps) {
+export function HighlightableText({ text, rangeKey, className = '', underlines }: HighlightableTextProps) {
   const ranges = useSessionStore((s) => s.highlights[rangeKey] ?? EMPTY_RANGES);
   const setHighlights = useSessionStore((s) => s.setHighlights);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -163,7 +165,7 @@ export function HighlightableText({ text, rangeKey, className = '' }: Highlighta
         onTouchEnd={handleSelectionEnd}
         onClick={handleClick}
       >
-        {renderHighlighted(text, ranges)}
+        {renderHighlighted(text, ranges, underlines)}
       </div>
       {popover && (
         <button

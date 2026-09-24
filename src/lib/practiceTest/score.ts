@@ -1,6 +1,6 @@
 import type { Difficulty, Question } from '../../types/question';
 import type { SessionAnswer } from '../../types/progress';
-import type { ActiveTest, CompletedTest, DomainTally } from '../../types/practiceTest';
+import type { ActiveTest, CompletedTest, DomainTally, TestResponse } from '../../types/practiceTest';
 import { checkMcqAnswer, checkSprAnswer } from '../scoring/answerChecking';
 import { pointsForAnswer } from '../scoring/points';
 import { SECTIONS } from './buildTest';
@@ -19,6 +19,13 @@ export function sectionScore(graded: { question: Question; correct: boolean }[])
   return 200 + Math.round((60 * earned) / possible) * 10;
 }
 
+/** Whether an entered answer is right. A blank never is. */
+export function isCorrect(question: Question, response: TestResponse | undefined): boolean {
+  return question.type === 'mcq'
+    ? checkMcqAnswer(response?.choice, question.correctChoice)
+    : checkSprAnswer(response?.text ?? '', question.acceptableAnswers ?? []);
+}
+
 export function gradeTest(
   test: ActiveTest,
   questionsById: Map<string, Question>,
@@ -33,10 +40,7 @@ export function gradeTest(
       const question = questionsById.get(id);
       if (!question) continue;
       const response = test.responses[id];
-      const correct =
-        question.type === 'mcq'
-          ? checkMcqAnswer(response?.choice, question.correctChoice)
-          : checkSprAnswer(response?.text ?? '', question.acceptableAnswers ?? []);
+      const correct = isCorrect(question, response);
       answers.push({
         questionId: id,
         outcome: correct ? 'correct' : 'incorrect',
@@ -62,16 +66,24 @@ export function gradeTest(
     }
   }
 
-  const readingWriting = sectionScore(graded.filter((g) => g.question.subject === 'reading-writing'));
-  const math = sectionScore(graded.filter((g) => g.question.subject === 'math'));
+  // A section the test didn't include has no score, rather than the 200 an empty one would get.
+  const scoreFor = (subject: string) => {
+    const inSection = graded.filter((g) => g.question.subject === subject);
+    return inSection.length > 0 ? sectionScore(inSection) : null;
+  };
+  const readingWriting = scoreFor('reading-writing');
+  const math = scoreFor('math');
   return {
     number: test.number,
+    name: test.name,
+    presetId: test.presetId,
+    routedEasier: test.routing?.routedEasier,
     createdAt: test.createdAt,
     completedAt: new Date().toISOString(),
     timed: test.timed,
     readingWriting,
     math,
-    total: readingWriting + math,
+    total: readingWriting !== null && math !== null ? readingWriting + math : null,
     answers,
     domains,
   };

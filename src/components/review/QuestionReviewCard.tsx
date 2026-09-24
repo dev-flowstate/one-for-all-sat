@@ -5,6 +5,7 @@ import { Card } from '../ui/Card';
 import { Badge } from '../ui/Badge';
 import { Toggle } from '../ui/Toggle';
 import { MathText } from '../math/MathText';
+import { renderHighlighted } from '../../lib/highlighter/renderHighlighted';
 
 /** Difficulty keeps its semantics (Easy/Medium/Hard) but reads as a solid block, not a tint. */
 const DIFFICULTY_CLASSES: Record<Question['difficulty'], string> = {
@@ -51,7 +52,11 @@ export function QuestionReviewCard({ question, actions, answerSummary, children 
           </div>
           {/* Long-form: serif, not mono. */}
           <p className="prose-reading px-3 py-3 whitespace-pre-wrap">
-            <MathText text={question.passage} />
+            {question.underlines?.length ? (
+              renderHighlighted(question.passage, [], question.underlines)
+            ) : (
+              <MathText text={question.passage} />
+            )}
           </p>
         </div>
       )}

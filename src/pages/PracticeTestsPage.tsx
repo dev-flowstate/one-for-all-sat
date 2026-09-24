@@ -3,7 +3,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { usePracticeTestStore } from '../store/usePracticeTestStore';
 import { useProgressStore } from '../store/useProgressStore';
 import { BREAK_MINUTES, SECTIONS, buildTest, sectionSize } from '../lib/practiceTest/buildTest';
-import { formatClock, moduleTitle } from '../lib/practiceTest/format';
+import { formatClock, moduleTitle, testName } from '../lib/practiceTest/format';
+import { PRESET_TESTS, type PresetTest } from '../data/presetTests';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { ConfirmDialog } from '../components/ui/ConfirmDialog';
@@ -22,7 +23,14 @@ export function PracticeTestsPage() {
   const [prompt, setPrompt] = useState<Prompt | null>(null);
   const [timed, setTimed] = useState(true);
 
-  const nextNumber = history.length + 1;
+  // Named tests don't take a place in the "Practice Test N" sequence.
+  const nextNumber = history.filter((t) => !t.presetId).length + 1;
+  const storedIds = new Set(questions.map((q) => q.id));
+
+  function startPreset(preset: PresetTest) {
+    begin(preset.modules, timed, { id: preset.id, name: preset.name, routing: preset.routing });
+    navigate('/test');
+  }
 
   function start(allowOld: boolean) {
     const built = buildTest(questions, progress, allowOld);
@@ -49,7 +57,7 @@ export function PracticeTestsPage() {
       <h1 className="mt-3 mb-5 text-2xl leading-none font-bold tracking-tight uppercase sm:text-3xl">Practice tests</h1>
 
       {active ? (
-        <Card title={`Practice Test ${active.number} · In progress`}>
+        <Card title={`${testName(active)} · In progress`}>
           <p className="text-sm">
             {active.stage.kind === 'break'
               ? 'You are on the break between Reading and Writing and Math.'
@@ -68,46 +76,9 @@ export function PracticeTestsPage() {
           </div>
         </Card>
       ) : (
-        <Card title="Full-length test">
-          <table className="w-full border-2 border-ink text-left text-sm">
-            <thead className="bg-merino-dark font-mono text-[11px] tracking-tight uppercase">
-              <tr>
-                <th className="px-3 py-2 font-semibold">Part</th>
-                <th className="px-3 py-2 font-semibold">Time</th>
-                <th className="px-3 py-2 text-right font-semibold">Questions</th>
-              </tr>
-            </thead>
-            <tbody className="tabular-nums [&_tr]:border-t-2 [&_tr]:border-ink">
-              <tr>
-                <th className="px-3 py-2">{SECTIONS[0].title}</th>
-                <td className="px-3 py-2">2 × {SECTIONS[0].minutes} min</td>
-                <td className="px-3 py-2 text-right">{sectionSize(SECTIONS[0])}</td>
-              </tr>
-              <tr className="text-ink-soft">
-                <th className="px-3 py-2 font-normal">Break (you can skip it)</th>
-                <td className="px-3 py-2">{BREAK_MINUTES} min</td>
-                <td />
-              </tr>
-              <tr>
-                <th className="px-3 py-2">{SECTIONS[1].title}</th>
-                <td className="px-3 py-2">2 × {SECTIONS[1].minutes} min</td>
-                <td className="px-3 py-2 text-right">{sectionSize(SECTIONS[1])}</td>
-              </tr>
-              <tr className="bg-merino font-bold">
-                <th className="px-3 py-2">Total</th>
-                <td className="px-3 py-2">
-                  {Math.floor(totalMinutes / 60)} h {totalMinutes % 60} min
-                </td>
-                <td className="px-3 py-2 text-right">{SECTIONS.reduce((sum, s) => sum + sectionSize(s), 0)}</td>
-              </tr>
-            </tbody>
-          </table>
-          <p className="mt-4 text-sm text-ink-soft">
-            The first module of each section mixes easy and medium questions; the second is medium and hard. Questions
-            come from the ones you haven&apos;t attempted yet. Each section is scored from 200 to 800, and harder
-            questions count for more.
-          </p>
-          <div className="mt-5 flex border-2 border-ink bg-paper" role="group" aria-label="Timing">
+        <>
+          <section aria-label="Timing" className="mb-4">
+          <div className="flex border-2 border-ink bg-paper" role="group" aria-label="Timing">
             {[
               { value: true, label: 'Timed' },
               { value: false, label: 'Untimed' },
@@ -130,10 +101,80 @@ export function PracticeTestsPage() {
               ? 'Each module has its own clock and is submitted when time runs out, as on test day.'
               : 'No clocks: take as long as you need on each module, and submit it when you are done.'}
           </p>
-          <Button className="mt-5 w-full py-4 text-base" disabled={!isLoaded} onClick={() => start(false)}>
-            Make Practice Test {nextNumber}
-          </Button>
-        </Card>
+          </section>
+
+          <Card title="Full-length test">
+            <table className="w-full border-2 border-ink text-left text-sm">
+              <thead className="bg-merino-dark font-mono text-[11px] tracking-tight uppercase">
+                <tr>
+                  <th className="px-3 py-2 font-semibold">Part</th>
+                  <th className="px-3 py-2 font-semibold">Time</th>
+                  <th className="px-3 py-2 text-right font-semibold">Questions</th>
+                </tr>
+              </thead>
+              <tbody className="tabular-nums [&_tr]:border-t-2 [&_tr]:border-ink">
+                <tr>
+                  <th className="px-3 py-2">{SECTIONS[0].title}</th>
+                  <td className="px-3 py-2">2 × {SECTIONS[0].minutes} min</td>
+                  <td className="px-3 py-2 text-right">{sectionSize(SECTIONS[0])}</td>
+                </tr>
+                <tr className="text-ink-soft">
+                  <th className="px-3 py-2 font-normal">Break (you can skip it)</th>
+                  <td className="px-3 py-2">{BREAK_MINUTES} min</td>
+                  <td />
+                </tr>
+                <tr>
+                  <th className="px-3 py-2">{SECTIONS[1].title}</th>
+                  <td className="px-3 py-2">2 × {SECTIONS[1].minutes} min</td>
+                  <td className="px-3 py-2 text-right">{sectionSize(SECTIONS[1])}</td>
+                </tr>
+                <tr className="bg-merino font-bold">
+                  <th className="px-3 py-2">Total</th>
+                  <td className="px-3 py-2">
+                    {Math.floor(totalMinutes / 60)} h {totalMinutes % 60} min
+                  </td>
+                  <td className="px-3 py-2 text-right">{SECTIONS.reduce((sum, s) => sum + sectionSize(s), 0)}</td>
+                </tr>
+              </tbody>
+            </table>
+            <p className="mt-4 text-sm text-ink-soft">
+              The first module of each section mixes easy and medium questions; the second is medium and hard. Questions
+              come from the ones you haven&apos;t attempted yet. Each section is scored from 200 to 800, and harder
+              questions count for more.
+            </p>
+            <Button className="mt-5 w-full py-4 text-base" disabled={!isLoaded} onClick={() => start(false)}>
+              Make Practice Test {nextNumber}
+            </Button>
+          </Card>
+
+          {PRESET_TESTS.length > 0 && (
+            <Card className="mt-4" title="Named tests">
+              <ul className="flex flex-col gap-4">
+                {PRESET_TESTS.map((preset) => {
+                  const count = preset.modules.reduce((sum, m) => sum + m.questionIds.length, 0);
+                const allIds = [...preset.modules.flatMap((m) => m.questionIds), ...(preset.routing?.easierIds ?? [])];
+                  const minutes = preset.modules.reduce((sum, m) => sum + m.minutes, 0);
+                  const ready = isLoaded && allIds.every((id) => storedIds.has(id));
+                  const taken = history.filter((t) => t.presetId === preset.id).length;
+                  return (
+                    <li key={preset.id} className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                      <div className="min-w-0 flex-1">
+                        <p className="font-bold">{preset.name}</p>
+                        <p className="mt-1 text-sm text-ink-soft">
+                          {preset.description} {count} questions, {minutes} minutes.
+                          {taken > 0 && ` Taken ${taken === 1 ? 'once' : `${taken} times`}.`}
+                        </p>
+                      </div>
+                      <Button className="flex-none" disabled={!ready} onClick={() => startPreset(preset)}>
+                        {ready ? 'Start' : 'Loading…'}
+                      </Button>
+                    </li>
+                  );
+                })}
+              </ul>
+            </Card>
+          )}
+        </>
       )}
 
       <section className="mt-8">
@@ -151,16 +192,25 @@ export function PracticeTestsPage() {
                   className="panel press flex flex-wrap items-center gap-x-4 gap-y-1 px-4 py-3 hover:bg-merino-dark"
                 >
                   <span className="flex-1 font-bold">
-                    Practice Test {result.number}
+                    {testName(result)}
                     {!result.timed && <span className="ml-2 font-mono text-xs font-normal text-ink-soft">Untimed</span>}
                   </span>
                   <span className="font-mono text-xs text-ink-soft">
                     {new Date(result.completedAt).toLocaleDateString()}
                   </span>
-                  <span className="font-mono text-xs text-ink-soft tabular-nums">
-                    R&amp;W {result.readingWriting} · Math {result.math}
-                  </span>
-                  <span className="text-2xl font-bold tabular-nums">{result.total}</span>
+                  {result.total !== null ? (
+                    <>
+                      <span className="font-mono text-xs text-ink-soft tabular-nums">
+                        R&amp;W {result.readingWriting} · Math {result.math}
+                      </span>
+                      <span className="text-2xl font-bold tabular-nums">{result.total}</span>
+                    </>
+                  ) : (
+                    <span className="flex items-baseline gap-1.5">
+                      <span className="font-mono text-xs text-ink-soft">{result.math === null ? 'R&W' : 'Math'}</span>
+                      <span className="text-2xl font-bold tabular-nums">{result.readingWriting ?? result.math}</span>
+                    </span>
+                  )}
                 </Link>
               </li>
             ))}
@@ -200,7 +250,7 @@ export function PracticeTestsPage() {
 
       <ConfirmDialog
         open={prompt?.kind === 'discard'}
-        title={`Discard Practice Test ${active?.number ?? ''}?`}
+        title={`Discard ${active ? testName(active) : 'this test'}?`}
         confirmLabel="Discard"
         cancelLabel="Keep it"
         onConfirm={() => {

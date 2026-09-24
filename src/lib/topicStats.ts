@@ -55,8 +55,11 @@ export function skillStats(questions: Question[], progress: ProgressMap): SkillS
   for (const q of questions) {
     const stat = stats.get(`${q.domain}|${q.skill.toLowerCase()}`);
     if (!stat) continue;
-    stat.total++;
     const status = statusOf(progress, q.id);
+    // A named test's questions can't be practised on their own, so they only count once
+    // they've been answered in the test.
+    if (q.testOnly && status === 'unattempted') continue;
+    stat.total++;
     if (status === 'correct') stat.correct++;
     if (status === 'incorrect') stat.wrong++;
   }

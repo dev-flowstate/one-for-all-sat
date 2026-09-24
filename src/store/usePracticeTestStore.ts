@@ -1,9 +1,9 @@
 import { create } from 'zustand';
 import type { Question } from '../types/question';
-import type { ActiveTest, CompletedTest, TestModule, TestResponse } from '../types/practiceTest';
+import type { ActiveTest, CompletedTest, TestModule, TestResponse, TestRouting } from '../types/practiceTest';
 import { getActiveTest, getTestHistory, setActiveTest, setTestHistory } from '../lib/storage/localStorage';
 import { BREAK_MINUTES } from '../lib/practiceTest/buildTest';
-import { gradeTest } from '../lib/practiceTest/score';
+import { gradeTest, isCorrect } from '../lib/practiceTest/score';
 import { useProgressStore } from './useProgressStore';
 
 interface PracticeTestState {
@@ -14,7 +14,12 @@ interface PracticeTestState {
   /** Set when a module's clock ran out and submitted it, so the runner can say why it moved on. */
   timedOut: boolean;
 
-  begin: (modules: TestModule[], timed: boolean) => void;
+  /** Starts a test: a generated one, or a named test's fixed modules when `preset` is given. */
+  begin: (
+    modules: TestModule[],
+    timed: boolean,
+    preset?: { id: string; name: string; routing?: TestRouting },
+  ) => void;
   respond: (questionId: string, response: TestResponse | null) => void;
   toggleMarked: (questionId: string) => void;
   goTo: (index: number) => void;
@@ -79,13 +84,18 @@ export const usePracticeTestStore = create<PracticeTestState>((set, get) => {
     justFinished: null,
     timedOut: false,
 
-    begin: (modules, timed) => {
+    begin: (modules, timed, preset) => {
+      const { history } = get();
       set({
         justFinished: null,
         timedOut: false,
         active: {
-          // Numbered by finished tests, so a discarded test doesn't leave a gap.
-          number: get().history.length + 1,
+          // Numbered by finished tests, so a discarded test doesn't leave a gap. Named tests
+          // don't take a place in the "Practice Test N" sequence.
+          number: history.length + 1,
+          name: preset?.name ?? `Practice Test ${history.filter((t) => !t.presetId).length + 1}`,
+          presetId: preset?.id,
+          routing: preset?.routing,
           createdAt: new Date().toISOString(),
           timed,
           modules,
@@ -143,6 +153,21 @@ export const usePracticeTestStore = create<PracticeTestState>((set, get) => {
       const { active } = get();
       if (!active || active.stage.kind !== 'module') return;
       const next = active.stage.module + 1;
+      const { routing } = active;
+      if (routing && routing.afterModule === active.stage.module && next < active.modules.length) {
+        const byId = new Map(useProgressStore.getState().questions.map((q) => [q.id, q]));
+        const right = active.modules[active.stage.module].questionIds.filter((id) => {
+          const question = byId.get(id);
+          return question !== undefined && isCorrect(question, active.responses[id]);
+        }).length;
+        const routedEasier = right < routing.minCorrect;
+        update({
+          routing: { ...routing, routedEasier },
+          modules: routedEasier
+            ? active.modules.map((m, i) => (i === next ? { ...m, questionIds: routing.easierIds } : m))
+            : active.modules,
+        });
+      }
       if (next >= active.modules.length) finish();
       else if (active.stage.module === MODULE_BEFORE_BREAK) {
         update({ stage: { kind: 'break' }, secondsLeft: BREAK_MINUTES * 60 });

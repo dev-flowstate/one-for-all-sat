@@ -4,9 +4,16 @@ import { hasMarkup, splitSegments } from '../math/segments';
 import { MathInline } from '../../components/math/MathInline';
 import { QuestionTable } from '../../components/math/MathText';
 
-/** Pure string-slicing render — never dangerouslySetInnerHTML, so question content is never parsed as markup. */
-export function renderHighlighted(text: string, ranges: HighlightRange[]): ReactNode[] {
-  if (!hasMarkup(text)) return highlightSlice(text, 0, text.length, ranges, 'h');
+/**
+ * Pure string-slicing render — never dangerouslySetInnerHTML, so question content is never parsed as markup.
+ * `underlines` are drawn under the text without changing it, so highlight offsets still line up.
+ */
+export function renderHighlighted(
+  text: string,
+  ranges: HighlightRange[],
+  underlines: HighlightRange[] = [],
+): ReactNode[] {
+  if (!hasMarkup(text)) return highlightSlice(text, 0, text.length, ranges, underlines, 'h');
 
   // Equations are atomic: a highlight touching any part of one covers all of it, because
   // half a fraction isn't a thing anyone means to mark. Tables are atomic too, and are never
@@ -14,7 +21,7 @@ export function renderHighlighted(text: string, ranges: HighlightRange[]): React
   const out: ReactNode[] = [];
   splitSegments(text).forEach((segment, index) => {
     if (segment.kind === 'text') {
-      out.push(...highlightSlice(text, segment.start, segment.end, ranges, `h${index}`));
+      out.push(...highlightSlice(text, segment.start, segment.end, ranges, underlines, `h${index}`));
       return;
     }
     if (segment.kind === 'table') {
@@ -36,14 +43,19 @@ export function renderHighlighted(text: string, ranges: HighlightRange[]): React
   return out;
 }
 
-/** Renders `text[from, to)` with the parts inside `ranges` wrapped in <mark>. */
+/** Renders `text[from, to)` with the parts inside `ranges` wrapped in <mark>, and the parts
+ *  inside `underlines` in <u>. */
 function highlightSlice(
   text: string,
   from: number,
   to: number,
   ranges: HighlightRange[],
+  underlines: HighlightRange[],
   prefix: string,
 ): ReactNode[] {
+  if (underlines.some((u) => u.start < to && from < u.end)) {
+    return decoratedSlice(text, from, to, ranges, underlines, prefix);
+  }
   const clipped = ranges
     .map((r) => ({ start: Math.max(r.start, from), end: Math.min(r.end, to) }))
     .filter((r) => r.end > r.start)
@@ -66,5 +78,48 @@ function highlightSlice(
     cursor = Math.max(cursor, end);
   });
   if (cursor < to) out.push(text.slice(cursor, to));
+  return out;
+}
+
+/**
+ * The general case, with underlines as well as highlights: the slice is cut at every edge of
+ * either, and each piece wrapped in whichever of the two covers it.
+ */
+function decoratedSlice(
+  text: string,
+  from: number,
+  to: number,
+  ranges: HighlightRange[],
+  underlines: HighlightRange[],
+  prefix: string,
+): ReactNode[] {
+  const cuts = new Set([from, to]);
+  for (const r of [...ranges, ...underlines]) {
+    if (r.start > from && r.start < to) cuts.add(r.start);
+    if (r.end > from && r.end < to) cuts.add(r.end);
+  }
+  const edges = [...cuts].sort((a, b) => a - b);
+  const covers = (list: HighlightRange[], a: number, b: number) => list.some((r) => r.start <= a && b <= r.end);
+
+  const out: ReactNode[] = [];
+  for (let i = 0; i < edges.length - 1; i++) {
+    const [a, b] = [edges[i], edges[i + 1]];
+    let piece: ReactNode = text.slice(a, b);
+    if (covers(underlines, a, b)) {
+      piece = (
+        <u key={`${prefix}-u${i}`} className="decoration-1 underline-offset-[3px]">
+          {piece}
+        </u>
+      );
+    }
+    if (covers(ranges, a, b)) {
+      piece = (
+        <mark key={`${prefix}-m${i}`} className="highlight">
+          {piece}
+        </mark>
+      );
+    }
+    out.push(piece);
+  }
   return out;
 }

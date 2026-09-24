@@ -5,8 +5,9 @@ export function statusOf(progress: ProgressMap, questionId: string): 'unattempte
   return progress[questionId]?.status ?? 'unattempted';
 }
 
+/** Unattempted questions, leaving out ones kept back for a named practice test. */
 export function getMainPool(questions: Question[], progress: ProgressMap): Question[] {
-  return questions.filter((q) => statusOf(progress, q.id) === 'unattempted');
+  return questions.filter((q) => !q.testOnly && statusOf(progress, q.id) === 'unattempted');
 }
 
 export function getWrongPool(questions: Question[], progress: ProgressMap): Question[] {

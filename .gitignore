@@ -41,3 +41,5 @@ _*.ts
 # Question-repair working data — never commit question content
 /repair_work/
 /Backups/
+/tools/bbpt1/
+/*.pdf

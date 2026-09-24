@@ -30,6 +30,7 @@ Under **Full-length practice test** on the home page: a complete digital SAT, la
 - **Made from questions you haven't attempted.** When there aren't enough left, it asks before filling the gap with old ones.
 - **Scored like the SAT:** 200–800 per section and 400–1600 in total, always a multiple of 10, with hard questions worth three times an easy one and medium twice. The results show where the misses were by section and domain, and every wrong question with its explanation. Wrong answers (blanks included) go to the Wrong tab, right ones to Right.
 - Tests are numbered in order — Practice Test 1, 2, … — and past ones stay listed with their scores.
+- **Named tests** have fixed questions, such as *Practice Test #1 for Hina* (Reading and Writing from Bluebook Practice Test 1). They're adaptive like the real test: 17 or more right in Module 1 gives the harder Module 2, fewer the easier one. Their questions are kept out of practice sets and generated tests, and a test covering one section is scored on that section alone. They're defined in `src/data/presetTests.ts`.
 
 ## Maths questions
 
@@ -59,6 +60,10 @@ npm run preview  # preview the production build locally
 ```
 
 ### Graphing calculator
+
+The calculator pane opens Desmos's College Board version — the graphing calculator built into the digital SAT — embedded from desmos.com, on the left of the question as in Bluebook. A switch in its title bar changes to the built-in calculator below, which works offline.
+
+#### Built-in calculator
 
 The calculator is built into the app (`src/components/calculator/`, `src/lib/calculator/`) using [mathjs](https://mathjs.org/) for expression parsing and a canvas renderer for plotting — no API key, no external service, and it works offline. It's lazy-loaded, so its chunk only downloads the first time you open it.
 

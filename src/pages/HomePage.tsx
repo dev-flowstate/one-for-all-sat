@@ -4,6 +4,7 @@ import { useProgressStore } from '../store/useProgressStore';
 import { useSettingsStore } from '../store/useSettingsStore';
 import { usePracticeTestStore } from '../store/usePracticeTestStore';
 import { Button } from '../components/ui/Button';
+import { testName } from '../lib/practiceTest/format';
 import { getMainPool, getWrongPool, getRightPool } from '../lib/pools';
 import { MIN_ANSWERED, rankWeakest, skillStats } from '../lib/topicStats';
 import { Card } from '../components/ui/Card';
@@ -107,7 +108,7 @@ export function HomePage() {
             </Link>
             <Link to="/tests" className="mt-3 block">
               <Button variant="secondary" className="w-full py-4 text-base">
-                {activeTest ? `Resume Practice Test ${activeTest.number}` : 'Full-length practice test'}
+                {activeTest ? `Resume ${testName(activeTest)}` : 'Full-length practice test'}
               </Button>
             </Link>
             {/* Vocabulary is its own section with its own decks and progress, so it gets its

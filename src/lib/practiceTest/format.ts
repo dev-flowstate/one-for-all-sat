@@ -7,6 +7,11 @@ export function moduleTitle(module: TestModule): string {
   return `Section ${section}, Module ${module.number}: ${sectionTitle(module.subject)}`;
 }
 
+/** What to call a test, including older saved ones that were only numbered. */
+export function testName(test: { name?: string; number: number }): string {
+  return test.name ?? `Practice Test ${test.number}`;
+}
+
 /** 1834 → "30:34" */
 export function formatClock(totalSeconds: number): string {
   const seconds = Math.max(0, Math.floor(totalSeconds));

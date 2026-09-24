@@ -80,8 +80,10 @@ export interface BuiltTest {
  */
 export function buildTest(questions: Question[], progress: ProgressMap, allowOld: boolean): BuiltTest {
   const used = new Set<string>();
-  const fresh = shuffle(questions.filter((q) => statusOf(progress, q.id) === 'unattempted'));
-  const old = allowOld ? shuffle(questions.filter((q) => statusOf(progress, q.id) !== 'unattempted')) : [];
+  // Questions kept back for a named test stay out of generated ones.
+  const eligible = questions.filter((q) => !q.testOnly);
+  const fresh = shuffle(eligible.filter((q) => statusOf(progress, q.id) === 'unattempted'));
+  const old = allowOld ? shuffle(eligible.filter((q) => statusOf(progress, q.id) !== 'unattempted')) : [];
 
   function take(subject: Subject, domain: string, difficulties: Difficulty[], count: number): Question[] {
     const picked: Question[] = [];

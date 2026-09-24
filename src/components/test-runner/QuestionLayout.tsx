@@ -31,13 +31,28 @@ export function QuestionLayout({ question, children }: QuestionLayoutProps) {
   // because moving it would leave that pane empty.
   const stemGoesRight = !!stimulus;
 
+  // Reading and Writing puts a graph above the text that discusses it, as the test does; in
+  // Math the figure follows the words that introduce it.
+  const figuresFirst = question.subject === 'reading-writing';
+  const figures = question.images && question.images.length > 0 && (
+    <div className={`flex flex-col gap-3 ${figuresFirst ? 'mb-4' : 'mt-4'}`}>
+      {/* White-background PNGs, so they need a border to sit on the cream paper
+          rather than float in it. */}
+      {question.images.map((img, i) => (
+        <img key={i} src={img.src} alt={img.alt ?? ''} className="max-w-full self-start border-2 border-ink bg-white" />
+      ))}
+    </div>
+  );
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 lg:divide-x-2 lg:divide-ink">
       <div className="min-w-0 lg:pr-6">
+        {figuresFirst && figures}
         {stimulus && (
           <HighlightableText
             text={stimulus}
             rangeKey={`${question.id}:stimulus`}
+            underlines={question.underlines}
             className="prose-reading"
           />
         )}
@@ -47,20 +62,7 @@ export function QuestionLayout({ question, children }: QuestionLayoutProps) {
           <HighlightableText text={stem} rangeKey={`${question.id}:prompt`} className="prose-reading" />
         )}
 
-        {question.images && question.images.length > 0 && (
-          <div className="mt-4 flex flex-col gap-3">
-            {/* White-background PNGs, so they need a border to sit on the cream paper
-                rather than float in it. */}
-            {question.images.map((img, i) => (
-              <img
-                key={i}
-                src={img.src}
-                alt={img.alt ?? ''}
-                className="max-w-full self-start border-2 border-ink bg-white"
-              />
-            ))}
-          </div>
-        )}
+        {!figuresFirst && figures}
       </div>
 
       {/* Below lg the columns stack, so the rule has to move to the top edge. */}

@@ -41,5 +41,12 @@ export interface Question {
    *  text alone reads broken ("what is the value of ?"). Render the image instead. */
   promptIsPartial?: boolean;
   images?: QuestionImage[];
+  /** Character ranges of the passage shown underlined, for questions that ask about "the
+   *  underlined sentence". Kept apart from the text so the text stays plain and highlight
+   *  offsets are unaffected. Relative to `passage`, or to the stimulus split from `prompt`. */
+  underlines?: { start: number; end: number }[];
+  /** Belongs to a named practice test, so it's kept out of practice sets and generated tests
+   *  until it's been answered there. */
+  testOnly?: boolean;
   source: 'bundled' | 'imported';
 }

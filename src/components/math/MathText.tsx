@@ -43,8 +43,10 @@ interface QuestionTableProps {
 export function QuestionTable({ rows, sourceLength }: QuestionTableProps) {
   const columns = Math.max(1, ...rows.map((row) => row.length));
   // Tall tables label their columns across the top; wide ones label their rows down the
-  // side — "x | 1 | 2 | 3" over "y | 5 | 7 | 9" — so that's where the header goes.
-  const headerIsColumn = columns > rows.length;
+  // side — "x | 1 | 2 | 3" over "y | 5 | 7 | 9" — so that's where the header goes. A wide
+  // table whose first row is all words ("Element | SPC | AST | …") still labels its columns.
+  const firstRowHasData = (rows[0] ?? []).slice(1).some((cell) => /^\s*(\\\(|[-−+]?[\d.])/.test(cell));
+  const headerIsColumn = columns > rows.length && firstRowHasData;
   return (
     <span className="qtable-scroll" data-math-len={sourceLength}>
       <span className="qtable" role="table">
