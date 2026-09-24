@@ -1,7 +1,6 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { useSessionStore } from '../store/useSessionStore';
-import { useProgressStore } from '../store/useProgressStore';
 import { Card } from '../components/ui/Card';
 import { TestRunnerToolbar } from '../components/test-runner/TestRunnerToolbar';
 import { TestRunnerLayout } from '../components/test-runner/TestRunnerLayout';
@@ -26,23 +25,28 @@ export function TestRunnerPage() {
   const goToIndex = useSessionStore((s) => s.goToIndex);
 
   const [calculatorOpen, setCalculatorOpen] = useState(false);
+  /** Set when leaving for home on purpose. Navigating is applied after the session is cleared,
+   *  and without this the empty session would bounce the page to the last results instead. */
+  const leavingRef = useRef(false);
 
   function finishFlow() {
-    const result = useSessionStore.getState().finishSession();
-    useProgressStore.getState().applySessionResult(result);
+    useSessionStore.getState().finishSession();
     useSessionStore.getState().clearSession();
     navigate('/results');
   }
 
-  /** Abandons the session without calling applySessionResult, so answered questions stay
-   *  unattempted in the main pool. */
+  /** Ends the set early. Answers are saved as they're given, so leaving keeps them; with any
+   *  answered, it ends on the results for those, like finishing does. */
   function handleExit() {
-    const hasAnswers = Object.keys(useSessionStore.getState().answers).length > 0;
-    if (hasAnswers && !window.confirm('Exit this session? Your answers so far will be discarded.')) {
+    const answered = Object.keys(useSessionStore.getState().answers).length;
+    if (answered === 0) {
+      leavingRef.current = true;
+      useSessionStore.getState().clearSession();
+      navigate('/');
       return;
     }
-    useSessionStore.getState().clearSession();
-    navigate('/');
+    const kept = answered === 1 ? 'The question you answered is' : `The ${answered} questions you answered are`;
+    if (window.confirm(`End this practice now? ${kept} saved; the rest stay unattempted.`)) finishFlow();
   }
 
   function handleNext() {
@@ -59,7 +63,7 @@ export function TestRunnerPage() {
   const fallback = lastResult ? '/results' : '/setup';
 
   if (queue.length === 0 || !config) {
-    return <Navigate to={fallback} replace />;
+    return leavingRef.current ? null : <Navigate to={fallback} replace />;
   }
 
   const question = queue[currentIndex];

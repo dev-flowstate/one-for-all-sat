@@ -4,6 +4,7 @@ import type { SessionConfig } from '../types/settings';
 import type { AttemptOutcome, SessionAnswer, SessionResult } from '../types/progress';
 import type { HighlightRange } from '../lib/highlighter/ranges';
 import { pointsForAnswer } from '../lib/scoring/points';
+import { useProgressStore } from './useProgressStore';
 
 interface SessionState {
   config: SessionConfig | null;
@@ -26,8 +27,8 @@ interface SessionState {
   toggleCrosser: () => void;
   toggleCrossedChoice: (questionId: string, choiceId: ChoiceId) => void;
   setHighlights: (key: string, ranges: HighlightRange[]) => void;
-  /** Computes the result, stores it as lastResult, and returns it. Does NOT call
-   *  useProgressStore.applySessionResult() itself — the caller (TestRunnerPage) must do that. */
+  /** Computes the result for the results screen, stores it as lastResult, and returns it.
+   *  Progress is already saved by then: answerCurrent() records each answer as it's given. */
   finishSession: () => SessionResult;
   clearSession: () => void;
 }
@@ -64,12 +65,16 @@ export const useSessionStore = create<SessionState>((set, get) => ({
     if (!question) return;
     const pointsEarned = pointsForAnswer(question.difficulty, outcome === 'correct', streak);
     const nextStreak = outcome === 'correct' ? streak + 1 : 0;
-    set({
-      answers: {
-        ...answers,
-        [question.id]: { questionId: question.id, outcome, selectedChoice, submittedAnswer, pointsEarned },
-      },
-      streak: nextStreak,
+    const answer: SessionAnswer = { questionId: question.id, outcome, selectedChoice, submittedAnswer, pointsEarned };
+    set({ answers: { ...answers, [question.id]: answer }, streak: nextStreak });
+    // Saved the moment it's answered, not when the set is finished, so leaving partway
+    // through (Exit, a closed tab, a reload) keeps every question answered so far.
+    useProgressStore.getState().applySessionResult({
+      completedAt: new Date().toISOString(),
+      answers: [answer],
+      totalPoints: pointsEarned,
+      correctCount: outcome === 'correct' ? 1 : 0,
+      incorrectCount: outcome === 'incorrect' ? 1 : 0,
     });
   },
 
