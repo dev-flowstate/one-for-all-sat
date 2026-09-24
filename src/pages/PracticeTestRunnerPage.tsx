@@ -51,6 +51,8 @@ export function PracticeTestRunnerPage() {
   const isLoaded = useProgressStore((s) => s.isLoaded);
   const crosserActive = useSessionStore((s) => s.crosserActive);
   const toggleCrosser = useSessionStore((s) => s.toggleCrosser);
+  const highlighterActive = useSessionStore((s) => s.highlighterActive);
+  const toggleHighlighter = useSessionStore((s) => s.toggleHighlighter);
 
   const [calculatorOpen, setCalculatorOpen] = useState(false);
   /** Which module's navigator is open. Tied to the module, so it closes when time moves it on. */
@@ -131,6 +133,7 @@ export function PracticeTestRunnerPage() {
                 label="Mark for review"
               />
             )}
+            <Toggle active={highlighterActive} onToggle={toggleHighlighter} label="Highlighter" />
             <Toggle active={crosserActive} onToggle={toggleCrosser} label="Answer Eliminator" />
             {isMath && (
               <Toggle active={calculatorOpen} onToggle={() => setCalculatorOpen((v) => !v)} label="Calculator" />

@@ -22,6 +22,8 @@ export function TestRunnerPage() {
   const currentIndex = useSessionStore((s) => s.currentIndex);
   const crosserActive = useSessionStore((s) => s.crosserActive);
   const toggleCrosser = useSessionStore((s) => s.toggleCrosser);
+  const highlighterActive = useSessionStore((s) => s.highlighterActive);
+  const toggleHighlighter = useSessionStore((s) => s.toggleHighlighter);
   const goToIndex = useSessionStore((s) => s.goToIndex);
 
   const [calculatorOpen, setCalculatorOpen] = useState(false);
@@ -83,6 +85,8 @@ export function TestRunnerPage() {
         onExit={handleExit}
         crosserActive={crosserActive}
         onToggleCrosser={toggleCrosser}
+        highlighterActive={highlighterActive}
+        onToggleHighlighter={toggleHighlighter}
         showCalculatorToggle={question.subject === 'math'}
         calculatorOpen={calculatorOpen}
         onToggleCalculator={() => setCalculatorOpen((v) => !v)}

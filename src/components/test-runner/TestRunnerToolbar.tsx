@@ -11,6 +11,8 @@ interface TestRunnerToolbarProps {
   onExit: () => void;
   crosserActive: boolean;
   onToggleCrosser: () => void;
+  highlighterActive: boolean;
+  onToggleHighlighter: () => void;
   showCalculatorToggle: boolean;
   calculatorOpen: boolean;
   onToggleCalculator: () => void;
@@ -30,6 +32,8 @@ export function TestRunnerToolbar({
   onExit,
   crosserActive,
   onToggleCrosser,
+  highlighterActive,
+  onToggleHighlighter,
   showCalculatorToggle,
   calculatorOpen,
   onToggleCalculator,
@@ -67,6 +71,7 @@ export function TestRunnerToolbar({
         </div>
 
         <div className="mt-1.5 flex flex-wrap items-center gap-2 sm:mt-2">
+          <Toggle active={highlighterActive} onToggle={onToggleHighlighter} label="Highlighter" />
           <Toggle active={crosserActive} onToggle={onToggleCrosser} label="Answer Eliminator" />
           {showCalculatorToggle && <Toggle active={calculatorOpen} onToggle={onToggleCalculator} label="Calculator" />}
         </div>

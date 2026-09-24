@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type MouseEvent as ReactMouseEvent } from 'react';
 import { useSessionStore } from '../../store/useSessionStore';
-import { getSelectionOffsets, anyOverlap, mergeRanges, subtractRange } from '../../lib/highlighter/ranges';
+import { getSelectionOffsets, getTextOffset, anyOverlap, mergeRanges, subtractRange } from '../../lib/highlighter/ranges';
 import type { HighlightRange } from '../../lib/highlighter/ranges';
 import { renderHighlighted } from '../../lib/highlighter/renderHighlighted';
 
@@ -23,10 +23,37 @@ interface PopoverState {
 // think the snapshot always changed, causing an infinite render loop.
 const EMPTY_RANGES: HighlightRange[] = [];
 
+/** Letters, digits and the joiners inside words ("don't", "well-known"). */
+const WORD_CHAR = /[\p{L}\p{N}'’-]/u;
+
+/** The whole word around a position in the source text, or null if it isn't in one. */
+function wordAt(text: string, offset: number): HighlightRange | null {
+  let start = offset;
+  let end = offset;
+  while (start > 0 && WORD_CHAR.test(text[start - 1])) start--;
+  while (end < text.length && WORD_CHAR.test(text[end])) end++;
+  return end > start ? { start, end } : null;
+}
+
+/** Where in the text a click landed. */
+function caretAt(x: number, y: number): { node: Node; offset: number } | null {
+  if (document.caretPositionFromPoint) {
+    const position = document.caretPositionFromPoint(x, y);
+    return position && { node: position.offsetNode, offset: position.offset };
+  }
+  // Safari before 18.4 only has the older, non-standard version.
+  const range = document.caretRangeFromPoint?.(x, y);
+  return range ? { node: range.startContainer, offset: range.startOffset } : null;
+}
+
 /**
- * Renders plain text with highlight marks and the select-to-highlight interaction:
- * select text -> a floating "Highlight"/"Remove highlight" button appears near the
- * selection -> clicking it commits the change to the session store.
+ * Renders plain text with highlight marks, highlighted one of two ways:
+ *
+ * - With the Highlighter tool on, as on the real test: selecting text highlights it the moment
+ *   the selection ends, clicking a word highlights that word, and clicking a highlight removes
+ *   it. The selection is cleared straight away, which also keeps browser menus that attach to
+ *   selected text (Edge's, for one) from covering the passage.
+ * - With it off: select text, and a floating "Highlight"/"Remove highlight" button appears.
  */
 export function HighlightableText({ text, rangeKey, className = '' }: HighlightableTextProps) {
   const ranges = useSessionStore((s) => s.highlights[rangeKey] ?? EMPTY_RANGES);
@@ -34,8 +61,47 @@ export function HighlightableText({ text, rangeKey, className = '' }: Highlighta
   const containerRef = useRef<HTMLDivElement>(null);
   const popoverRef = useRef<HTMLButtonElement>(null);
   const [popover, setPopover] = useState<PopoverState | null>(null);
+  const highlighterActive = useSessionStore((s) => s.highlighterActive);
+  /** A drag ends in a click as well; that click mustn't highlight the word it ended on. */
+  const justSelected = useRef(false);
+
+  function highlightSelection() {
+    const container = containerRef.current;
+    const selection = window.getSelection();
+    if (!container || !selection || selection.isCollapsed || selection.rangeCount === 0) return;
+    const domRange = selection.getRangeAt(0);
+    if (!container.contains(domRange.commonAncestorContainer)) return;
+    const offsets = getSelectionOffsets(container, domRange);
+    selection.removeAllRanges();
+    if (offsets.end <= offsets.start) return;
+    justSelected.current = true;
+    setHighlights(rangeKey, mergeRanges([...ranges, offsets]));
+  }
+
+  function handleClick(e: ReactMouseEvent) {
+    if (!highlighterActive) return;
+    if (justSelected.current) {
+      justSelected.current = false;
+      return;
+    }
+    const container = containerRef.current;
+    const caret = caretAt(e.clientX, e.clientY);
+    if (!container || !caret || !container.contains(caret.node)) return;
+    const offset = getTextOffset(container, caret.node, caret.offset);
+    const hit = ranges.find((r) => offset >= r.start && offset <= r.end);
+    if (hit) {
+      setHighlights(rangeKey, ranges.filter((r) => r !== hit));
+      return;
+    }
+    const word = wordAt(text, offset);
+    if (word) setHighlights(rangeKey, mergeRanges([...ranges, word]));
+  }
 
   function handleSelectionEnd() {
+    if (highlighterActive) {
+      highlightSelection();
+      return;
+    }
     const container = containerRef.current;
     const selection = window.getSelection();
     if (!container || !selection || selection.isCollapsed || selection.rangeCount === 0) {
@@ -92,9 +158,10 @@ export function HighlightableText({ text, rangeKey, className = '' }: Highlighta
     <>
       <div
         ref={containerRef}
-        className={`select-text whitespace-pre-wrap ${className}`}
+        className={`select-text whitespace-pre-wrap ${highlighterActive ? 'highlighter-on cursor-text' : ''} ${className}`}
         onMouseUp={handleSelectionEnd}
         onTouchEnd={handleSelectionEnd}
+        onClick={handleClick}
       >
         {renderHighlighted(text, ranges)}
       </div>

@@ -12,6 +12,8 @@ interface SessionState {
   currentIndex: number;
   answers: Record<string, SessionAnswer>;
   crosserActive: boolean;
+  /** Highlighter tool: selecting text or clicking a word highlights it straight away. */
+  highlighterActive: boolean;
   crossedChoices: Record<string, ChoiceId[]>;
   /** Keyed by `${questionId}:${field}` so passage and prompt highlights don't collide. */
   highlights: Record<string, HighlightRange[]>;
@@ -25,6 +27,7 @@ interface SessionState {
   answerCurrent: (outcome: AttemptOutcome, selectedChoice?: string, submittedAnswer?: string) => void;
   goToIndex: (index: number) => void;
   toggleCrosser: () => void;
+  toggleHighlighter: () => void;
   toggleCrossedChoice: (questionId: string, choiceId: ChoiceId) => void;
   setHighlights: (key: string, ranges: HighlightRange[]) => void;
   /** Computes the result for the results screen, stores it as lastResult, and returns it.
@@ -39,6 +42,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
   currentIndex: 0,
   answers: {},
   crosserActive: false,
+  highlighterActive: false,
   crossedChoices: {},
   highlights: {},
   streak: 0,
@@ -52,6 +56,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
       currentIndex: 0,
       answers: {},
       crosserActive: false,
+      highlighterActive: false,
       crossedChoices: {},
       highlights: {},
       streak: initialStreak,
@@ -85,6 +90,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
   },
 
   toggleCrosser: () => set((s) => ({ crosserActive: !s.crosserActive })),
+  toggleHighlighter: () => set((s) => ({ highlighterActive: !s.highlighterActive })),
 
   toggleCrossedChoice: (questionId, choiceId) => {
     const crossed = { ...get().crossedChoices };
@@ -119,6 +125,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
       currentIndex: 0,
       answers: {},
       crosserActive: false,
+      highlighterActive: false,
       crossedChoices: {},
       highlights: {},
       streak: 0,

@@ -221,6 +221,12 @@ body {
   font-weight: 600;
 }
 
+/* With the highlighter on, a selection being dragged already looks like the highlight it
+   will become. */
+.highlighter-on ::selection {
+  background-color: #f6dd7a;
+}
+
 mark.highlight {
   background-color: #f6dd7a;
   color: inherit;
