@@ -37,6 +37,9 @@ export const questionSchema = z
   });
 
 export const questionBankFileSchema = z.object({
+  /** Raised when questions already in the bank are corrected, so browsers holding the old
+   *  copies know to rewrite them. Files without one are revision 0. */
+  revision: z.number().int().nonnegative().optional(),
   questions: z.array(questionSchema),
 });
 

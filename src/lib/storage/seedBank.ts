@@ -5,7 +5,7 @@ import type { Question } from '../../types/question';
 const BANK_URL = `${import.meta.env.BASE_URL}question-bank.json`;
 
 export type BankLoadResult =
-  | { status: 'loaded'; questions: Question[] }
+  | { status: 'loaded'; revision: number; questions: Question[] }
   | { status: 'absent' }
   | { status: 'invalid'; issues: string[] };
 
@@ -39,6 +39,7 @@ export async function fetchShippedBank(): Promise<BankLoadResult> {
   // imported bank and can be replaced wholesale later.
   return {
     status: 'loaded',
+    revision: parsed.data.revision ?? 0,
     questions: parsed.data.questions.map((q) => ({ ...q, source: 'imported' as const })),
   };
 }

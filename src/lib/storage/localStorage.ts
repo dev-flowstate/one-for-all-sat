@@ -15,6 +15,8 @@ const KEYS = {
   // The account this browser's data belongs to. Set while signed in, and what tells the next
   // visit to load Firebase at all.
   accountOwner: 'ofa-sat:account-owner',
+  // The shipped bank's revision this browser last stored. Per device, like the bank itself.
+  bankRevision: 'ofa-sat:bank-revision',
 } as const;
 
 function read<T>(key: string, fallback: T): T {
@@ -107,4 +109,12 @@ export function getAccountOwner(): string | null {
 export function setAccountOwner(uid: string | null): void {
   if (uid) write(KEYS.accountOwner, uid);
   else remove(KEYS.accountOwner);
+}
+
+export function getBankRevision(): number {
+  return read<number>(KEYS.bankRevision, 0);
+}
+
+export function setBankRevision(revision: number): void {
+  write(KEYS.bankRevision, revision);
 }

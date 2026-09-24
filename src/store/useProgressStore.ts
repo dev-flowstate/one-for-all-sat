@@ -1,7 +1,15 @@
 import { create } from 'zustand';
 import type { Question } from '../types/question';
 import type { ProgressMap, ProfileStats, SessionResult } from '../types/progress';
-import { DEFAULT_STATS, getProgress, setProgress, getStats, setStats } from '../lib/storage/localStorage';
+import {
+  DEFAULT_STATS,
+  getBankRevision,
+  getProgress,
+  getStats,
+  setBankRevision,
+  setProgress,
+  setStats,
+} from '../lib/storage/localStorage';
 import {
   ensureBundledSeeded,
   getAllQuestions,
@@ -63,8 +71,13 @@ export const useProgressStore = create<ProgressStore>((set, get) => ({
 
     // Merged rather than imported: importQuestions replaces the whole imported set, which
     // would delete questions someone had imported and left this bank out of.
-    const { added } = await mergeQuestions(result.questions);
-    if (added === 0) return;
+    // Questions already stored are left alone, except once after the bank's revision goes up:
+    // then they're rewritten, so a corrected explanation reaches people who already have the
+    // question. Progress is keyed by id, which a correction never changes, so it's untouched.
+    const corrected = result.revision > getBankRevision();
+    const { added, updated } = await mergeQuestions(result.questions, undefined, { updateExisting: corrected });
+    if (corrected) setBankRevision(result.revision);
+    if (added === 0 && updated === 0) return;
 
     const [questions, counts] = await Promise.all([getAllQuestions(), getQuestionCounts()]);
     set({ questions, bundledCount: counts.bundled, importedCount: counts.imported });
