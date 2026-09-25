@@ -14,6 +14,9 @@ interface SessionState {
   crosserActive: boolean;
   /** Highlighter tool: selecting text or clicking a word highlights it straight away. */
   highlighterActive: boolean;
+  /** Answers already saved to progress. With answers revealed at the end, the current
+   *  question's answer can still change, so it's only saved on moving past it. */
+  committed: Record<string, true>;
   crossedChoices: Record<string, ChoiceId[]>;
   /** Keyed by `${questionId}:${field}` so passage and prompt highlights don't collide. */
   highlights: Record<string, HighlightRange[]>;
@@ -26,6 +29,8 @@ interface SessionState {
   startSession: (config: SessionConfig, queue: Question[], initialStreak: number) => void;
   answerCurrent: (outcome: AttemptOutcome, selectedChoice?: string, submittedAnswer?: string) => void;
   goToIndex: (index: number) => void;
+  /** Saves any answer not yet saved: on moving on, finishing, leaving, or the page closing. */
+  commitPending: () => void;
   toggleCrosser: () => void;
   toggleHighlighter: () => void;
   toggleCrossedChoice: (questionId: string, choiceId: ChoiceId) => void;
@@ -43,6 +48,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
   answers: {},
   crosserActive: false,
   highlighterActive: false,
+  committed: {},
   crossedChoices: {},
   highlights: {},
   streak: 0,
@@ -57,6 +63,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
       answers: {},
       crosserActive: false,
       highlighterActive: false,
+      committed: {},
       crossedChoices: {},
       highlights: {},
       streak: initialStreak,
@@ -65,27 +72,45 @@ export const useSessionStore = create<SessionState>((set, get) => ({
   },
 
   answerCurrent: (outcome, selectedChoice, submittedAnswer) => {
-    const { queue, currentIndex, streak, answers } = get();
+    const { queue, currentIndex, answers, committed, config } = get();
     const question = queue[currentIndex];
-    if (!question) return;
-    const pointsEarned = pointsForAnswer(question.difficulty, outcome === 'correct', streak);
-    const nextStreak = outcome === 'correct' ? streak + 1 : 0;
-    const answer: SessionAnswer = { questionId: question.id, outcome, selectedChoice, submittedAnswer, pointsEarned };
-    set({ answers: { ...answers, [question.id]: answer }, streak: nextStreak });
-    // Saved the moment it's answered, not when the set is finished, so leaving partway
-    // through (Exit, a closed tab, a reload) keeps every question answered so far.
-    useProgressStore.getState().applySessionResult({
-      completedAt: new Date().toISOString(),
-      answers: [answer],
-      totalPoints: pointsEarned,
-      correctCount: outcome === 'correct' ? 1 : 0,
-      incorrectCount: outcome === 'incorrect' ? 1 : 0,
-    });
+    if (!question || committed[question.id]) return;
+    // Points are worked out when the answer is saved, so a changed answer can't earn twice.
+    const answer: SessionAnswer = { questionId: question.id, outcome, selectedChoice, submittedAnswer, pointsEarned: 0 };
+    set({ answers: { ...answers, [question.id]: answer } });
+    // Shown right or wrong straight away, the answer is final, so it's saved now. Revealed
+    // at the end, it can still change until the next question.
+    if (config?.revealMode !== 'end') get().commitPending();
+  },
+
+  commitPending: () => {
+    for (const question of get().queue) {
+      const { answers, committed, streak } = get();
+      const answer = answers[question.id];
+      if (!answer || committed[question.id]) continue;
+      const correct = answer.outcome === 'correct';
+      const saved: SessionAnswer = { ...answer, pointsEarned: pointsForAnswer(question.difficulty, correct, streak) };
+      set({
+        answers: { ...answers, [question.id]: saved },
+        committed: { ...committed, [question.id]: true },
+        streak: correct ? streak + 1 : 0,
+      });
+      // Saved per answer, not when the set is finished, so leaving partway through (Exit, a
+      // closed tab, a reload) keeps every question answered so far.
+      useProgressStore.getState().applySessionResult({
+        completedAt: new Date().toISOString(),
+        answers: [saved],
+        totalPoints: saved.pointsEarned,
+        correctCount: correct ? 1 : 0,
+        incorrectCount: correct ? 0 : 1,
+      });
+    }
   },
 
   goToIndex: (index) => {
     const { queue } = get();
     if (index < 0 || index >= queue.length) return;
+    get().commitPending();
     set({ currentIndex: index });
   },
 
@@ -106,6 +131,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
   },
 
   finishSession: () => {
+    get().commitPending();
     const list = Object.values(get().answers);
     const result: SessionResult = {
       completedAt: new Date().toISOString(),
@@ -126,6 +152,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
       answers: {},
       crosserActive: false,
       highlighterActive: false,
+      committed: {},
       crossedChoices: {},
       highlights: {},
       streak: 0,

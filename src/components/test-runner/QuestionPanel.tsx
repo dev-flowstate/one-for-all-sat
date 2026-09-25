@@ -35,6 +35,8 @@ export function QuestionPanel({ question, revealMode, isLast, onNext }: Question
   const answerCurrent = useSessionStore((s) => s.answerCurrent);
   const toggleCrossedChoice = useSessionStore((s) => s.toggleCrossedChoice);
   const submitted = !!answered;
+  // Revealed straight away, an answer is final. Revealed at the end, it can change until Next.
+  const locked = submitted && revealMode === 'immediate';
 
   function handleChoiceClick(choiceId: ChoiceId) {
     const crossed = crossedIds.includes(choiceId);
@@ -43,7 +45,7 @@ export function QuestionPanel({ question, revealMode, isLast, onNext }: Question
       toggleCrossedChoice(question.id, choiceId);
       return;
     }
-    if (submitted) return;
+    if (locked) return;
     if (crosserActive) {
       toggleCrossedChoice(question.id, choiceId);
       return;
@@ -53,7 +55,7 @@ export function QuestionPanel({ question, revealMode, isLast, onNext }: Question
   }
 
   function handleSprSubmit() {
-    if (submitted || !sprValue.trim()) return;
+    if (locked || !sprValue.trim()) return;
     const outcome: AttemptOutcome = checkSprAnswer(sprValue, question.acceptableAnswers ?? []) ? 'correct' : 'incorrect';
     answerCurrent(outcome, undefined, sprValue);
   }
@@ -64,14 +66,14 @@ export function QuestionPanel({ question, revealMode, isLast, onNext }: Question
         <McqChoices
           choices={question.choices ?? []}
           crossedIds={crossedIds}
-          submitted={submitted}
+          submitted={locked}
           selectedChoice={answered?.selectedChoice}
           correctChoice={question.correctChoice}
           revealMode={revealMode}
           onChoiceClick={handleChoiceClick}
         />
       ) : (
-        <SprInput value={sprValue} onChange={setSprValue} onSubmit={handleSprSubmit} submitted={submitted} />
+        <SprInput value={sprValue} onChange={setSprValue} onSubmit={handleSprSubmit} submitted={locked} />
       )}
 
       {submitted && answered && (

@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { useSessionStore } from '../store/useSessionStore';
 import { Card } from '../components/ui/Card';
@@ -29,7 +29,15 @@ export function TestRunnerPage() {
   const [calculatorOpen, setCalculatorOpen] = useState(false);
   /** Set when leaving for home on purpose. Navigating is applied after the session is cleared,
    *  and without this the empty session would bounce the page to the last results instead. */
-  const leavingRef = useRef(false);
+  const [leaving, setLeaving] = useState(false);
+
+  // An answer that can still change is only saved on moving on; closing or reloading the page
+  // is moving on too.
+  useEffect(() => {
+    const save = () => useSessionStore.getState().commitPending();
+    window.addEventListener('pagehide', save);
+    return () => window.removeEventListener('pagehide', save);
+  }, []);
 
   function finishFlow() {
     useSessionStore.getState().finishSession();
@@ -42,7 +50,7 @@ export function TestRunnerPage() {
   function handleExit() {
     const answered = Object.keys(useSessionStore.getState().answers).length;
     if (answered === 0) {
-      leavingRef.current = true;
+      setLeaving(true);
       useSessionStore.getState().clearSession();
       navigate('/');
       return;
@@ -65,7 +73,7 @@ export function TestRunnerPage() {
   const fallback = lastResult ? '/results' : '/setup';
 
   if (queue.length === 0 || !config) {
-    return leavingRef.current ? null : <Navigate to={fallback} replace />;
+    return leaving ? null : <Navigate to={fallback} replace />;
   }
 
   const question = queue[currentIndex];
