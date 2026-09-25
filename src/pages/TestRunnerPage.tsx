@@ -31,12 +31,17 @@ export function TestRunnerPage() {
    *  and without this the empty session would bounce the page to the last results instead. */
   const [leaving, setLeaving] = useState(false);
 
-  // An answer that can still change is only saved on moving on; closing or reloading the page
-  // is moving on too.
+  // Answers that can still change are saved when the set ends. Leaving the page, or switching
+  // away from it, saves them too, so nothing answered is lost; any changed later are corrected.
   useEffect(() => {
     const save = () => useSessionStore.getState().commitPending();
+    const onHide = () => document.visibilityState === 'hidden' && save();
     window.addEventListener('pagehide', save);
-    return () => window.removeEventListener('pagehide', save);
+    document.addEventListener('visibilitychange', onHide);
+    return () => {
+      window.removeEventListener('pagehide', save);
+      document.removeEventListener('visibilitychange', onHide);
+    };
   }, []);
 
   function finishFlow() {
@@ -112,6 +117,7 @@ export function TestRunnerPage() {
               revealMode={config.revealMode}
               isLast={isLast}
               onNext={handleNext}
+              onBack={config.revealMode === 'end' && currentIndex > 0 ? () => goToIndex(currentIndex - 1) : undefined}
             />
           </Card>
         </TestRunnerLayout>

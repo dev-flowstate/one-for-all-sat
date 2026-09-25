@@ -15,6 +15,8 @@ interface QuestionPanelProps {
   revealMode: RevealMode;
   isLast: boolean;
   onNext: () => void;
+  /** Back to the previous question; only when answers can still change. */
+  onBack?: () => void;
 }
 
 // Stable reference so the Zustand selector below doesn't return a fresh `[]` on every
@@ -27,8 +29,11 @@ const EMPTY_CHOICE_IDS: ChoiceId[] = [];
  *
  * Mount this keyed by question.id so all local per-question UI state resets on navigation.
  */
-export function QuestionPanel({ question, revealMode, isLast, onNext }: QuestionPanelProps) {
-  const [sprValue, setSprValue] = useState('');
+export function QuestionPanel({ question, revealMode, isLast, onNext, onBack }: QuestionPanelProps) {
+  // Coming back to a question shows the answer entered before.
+  const [sprValue, setSprValue] = useState(
+    () => useSessionStore.getState().answers[question.id]?.submittedAnswer ?? '',
+  );
   const crosserActive = useSessionStore((s) => s.crosserActive);
   const crossedIds = useSessionStore((s) => s.crossedChoices[question.id] ?? EMPTY_CHOICE_IDS);
   const answered = useSessionStore((s) => s.answers[question.id]);
@@ -76,12 +81,23 @@ export function QuestionPanel({ question, revealMode, isLast, onNext }: Question
         <SprInput value={sprValue} onChange={setSprValue} onSubmit={handleSprSubmit} submitted={locked} />
       )}
 
-      {submitted && answered && (
+      {submitted && answered && revealMode === 'immediate' && (
         <div className="mt-5">
-          {revealMode === 'immediate' && <AnswerFeedback outcome={answered.outcome} explanation={question.explanation} />}
-          <Button className="mt-4 w-full" onClick={onNext}>
-            {isLast ? 'Finish' : 'Next'}
-          </Button>
+          <AnswerFeedback outcome={answered.outcome} explanation={question.explanation} />
+        </div>
+      )}
+      {(onBack || (submitted && answered)) && (
+        <div className="mt-5 flex gap-3">
+          {onBack && (
+            <Button variant="secondary" className="flex-none" onClick={onBack}>
+              Back
+            </Button>
+          )}
+          {submitted && answered && (
+            <Button className="flex-1" onClick={onNext}>
+              {isLast ? 'Finish' : 'Next'}
+            </Button>
+          )}
         </div>
       )}
     </QuestionLayout>

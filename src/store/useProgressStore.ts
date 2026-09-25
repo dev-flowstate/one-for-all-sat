@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import type { Question } from '../types/question';
-import type { ProgressMap, ProfileStats, SessionResult } from '../types/progress';
+import type { AttemptOutcome, ProgressMap, ProfileStats, SessionResult } from '../types/progress';
 import {
   DEFAULT_STATS,
   getBankRevision,
@@ -34,6 +34,9 @@ interface ProgressStore {
    *  questions can't reappear in the unattempted pool. */
   loadShippedBank: () => Promise<void>;
   applySessionResult: (result: SessionResult) => void;
+  /** Corrects an answer already recorded in this session, when it's changed before the set
+   *  ends: the question's status and the points move, but it isn't counted as a new attempt. */
+  amendAnswer: (questionId: string, outcome: AttemptOutcome, pointsDelta: number) => void;
   /** Pass 'all' or a list of question ids to return to the unattempted main pool. */
   resetProgress: (questionIds: string[] | 'all') => void;
   importQuestions: (qs: Question[], onProgress?: (written: number, total: number) => void) => Promise<void>;
@@ -110,6 +113,18 @@ export const useProgressStore = create<ProgressStore>((set, get) => ({
     }
     setStats(stats);
 
+    set({ progress, stats });
+  },
+
+  amendAnswer: (questionId, outcome, pointsDelta) => {
+    const prev = get().progress[questionId];
+    if (!prev || prev.status === outcome) return;
+    const progress = { ...get().progress, [questionId]: { ...prev, status: outcome, lastOutcome: outcome } };
+    setProgress(progress);
+    const stats = { ...get().stats };
+    stats.correctCount += outcome === 'correct' ? 1 : -1;
+    stats.points = Math.max(0, stats.points + pointsDelta);
+    setStats(stats);
     set({ progress, stats });
   },
 
