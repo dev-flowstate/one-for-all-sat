@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useAccountStore } from '../../store/useAccountStore';
+import { useSettingsStore } from '../../store/useSettingsStore';
+import { Toggle } from '../ui/Toggle';
 import { Button } from '../ui/Button';
 import { Card } from '../ui/Card';
 import { ConfirmDialog } from '../ui/ConfirmDialog';
@@ -14,6 +16,8 @@ const STATUS_TEXT: Record<string, string> = {
 export function AccountCard() {
   const { status, user, error, ready, signIn, signOut, retry, prepare } = useAccountStore();
   const [confirmSignOut, setConfirmSignOut] = useState(false);
+  const hidden = useSettingsStore((s) => s.profile?.hideFromLeaderboard === true);
+  const setHideFromLeaderboard = useSettingsStore((s) => s.setHideFromLeaderboard);
 
   // Fetched as soon as the card shows, so the sign-in window can open the moment it's tapped.
   useEffect(() => {
@@ -51,6 +55,16 @@ export function AccountCard() {
               </button>
             </p>
           )}
+          <div className="mt-4 border-t-2 border-merino-dark pt-4">
+            <Toggle
+              active={!hidden}
+              onToggle={() => setHideFromLeaderboard(!hidden)}
+              label="Show me on the leaderboard"
+            />
+            <p className="mt-2 text-xs text-ink-soft">
+              The leaderboard shows your nickname, avatar and how many questions you&apos;ve answered. Never your email.
+            </p>
+          </div>
           <Button variant="ghost" className="mt-3" onClick={() => setConfirmSignOut(true)}>
             Sign out
           </Button>

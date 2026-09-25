@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import type { CompletedTest } from '../types/practiceTest';
-import type { AccountUser } from '../lib/cloud/firebaseClient';
+import type { AccountUser, LeaderboardEntry } from '../lib/cloud/firebaseClient';
 import { cloudConfigured } from '../lib/cloud/config';
 import { mergeAccountData, type AccountData } from '../lib/cloud/merge';
 import {
@@ -47,6 +47,8 @@ interface AccountState {
   signOut: () => Promise<void>;
   /** After an error: connects again, or saves again if already connected. */
   retry: () => void;
+  /** The top of the leaderboard. Anyone can read it, signed in or not. */
+  fetchLeaderboard: (count: number) => Promise<(LeaderboardEntry & { uid: string })[]>;
 }
 
 type Client = typeof import('../lib/cloud/firebaseClient');
@@ -63,6 +65,8 @@ let stopWatchingStores: (() => void) | null = null;
 /** The account this session has merged with and is saving to. */
 let connectedUid: string | null = null;
 let connectingUid: string | null = null;
+/** The leaderboard entry last sent, so an unchanged one isn't written again. */
+let sentLeaderboard: string | null = null;
 
 /** Everything this browser holds, read from storage rather than the stores, which may not have
  *  loaded yet when a saved sign-in is restored. */
@@ -100,6 +104,21 @@ const EMPTY: AccountData = {
   history: [],
 };
 
+/** What the leaderboard shows of someone: their nickname and avatar, and how many questions
+ *  they've answered. Null when they've chosen to stay off it. */
+function leaderboardEntry(data: AccountData, user: AccountUser): LeaderboardEntry | null {
+  if (data.profile?.hideFromLeaderboard) return null;
+  const statuses = Object.values(data.progress);
+  const name = (data.profile?.nickname || user.name?.split(' ')[0] || '').trim().slice(0, 40) || 'Student';
+  return {
+    name,
+    avatar: (data.profile?.avatar || DEFAULT_AVATARS[0]).slice(0, 16),
+    answered: statuses.filter((s) => s.status !== 'unattempted').length,
+    correct: statuses.filter((s) => s.status === 'correct').length,
+    updatedAt: new Date().toISOString(),
+  };
+}
+
 function testsToSave(history: CompletedTest[]): CompletedTest[] {
   return history.filter((t) => savedTests.get(t.completedAt) !== t.number);
 }
@@ -121,6 +140,20 @@ export const useAccountStore = create<AccountState>((set, get) => {
     return clientPromise;
   }
 
+  /** Kept apart from the account save: a refused leaderboard write (rules not yet published,
+   *  say) must never stop someone's progress from being saved. It's retried on the next save. */
+  async function syncLeaderboard(client: Client, user: AccountUser, data: AccountData) {
+    const entry = leaderboardEntry(data, user);
+    const key = entry ? JSON.stringify({ ...entry, updatedAt: '' }) : 'hidden';
+    if (key === sentLeaderboard) return;
+    try {
+      await client.writeLeaderboardEntry(user.uid, entry);
+      sentLeaderboard = key;
+    } catch {
+      // Left for the next save.
+    }
+  }
+
   async function save() {
     saveTimer = null;
     const { user } = get();
@@ -133,6 +166,7 @@ export const useAccountStore = create<AccountState>((set, get) => {
       await client.writeAccount(user.uid, data, tests);
       for (const t of tests) savedTests.set(t.completedAt, t.number);
       set({ status: 'synced', error: null });
+      void syncLeaderboard(client, user, data);
     } catch {
       // Tried again with the next change.
       set({ status: 'error', error: "Couldn't save to your account. It will try again with your next answer." });
@@ -191,6 +225,7 @@ export const useAccountStore = create<AccountState>((set, get) => {
       watchStores();
       connectedUid = user.uid;
       set({ status: 'synced' });
+      void syncLeaderboard(client, user, merged);
     } catch {
       set({ status: 'error', error: "Couldn't reach your account. Your progress is still saved in this browser." });
     } finally {
@@ -247,12 +282,19 @@ export const useAccountStore = create<AccountState>((set, get) => {
       stopWatchingStores?.();
       stopWatchingStores = null;
       connectedUid = null;
+      sentLeaderboard = null;
       savedTests = new Map();
       // The progress is safe in the account. Leaving it here would hand it to whoever signs in
       // on this browser next.
       writeLocal({ ...EMPTY });
       setAccountOwner(null);
       set({ user: null, status: 'signed-out', error: null });
+    },
+
+    fetchLeaderboard: async (count) => {
+      if (!cloudConfigured) return [];
+      const client = await loadClient();
+      return client.readLeaderboard(count);
     },
 
     retry: () => {

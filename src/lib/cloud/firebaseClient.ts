@@ -18,10 +18,15 @@ import {
 import {
   collection,
   connectFirestoreEmulator,
+  deleteDoc,
   doc,
   getDoc,
   getDocs,
   getFirestore,
+  limit,
+  orderBy,
+  query,
+  setDoc,
   writeBatch,
 } from 'firebase/firestore/lite';
 import type { CompletedTest } from '../../types/practiceTest';
@@ -95,3 +100,24 @@ export async function writeAccount(uid: string, data: AccountData, testsToWrite:
   await batch.commit();
 }
 
+/** A person's public leaderboard entry: a nickname and avatar, never their email or name. */
+export interface LeaderboardEntry {
+  name: string;
+  avatar: string;
+  answered: number;
+  correct: number;
+  updatedAt: string;
+}
+
+/** Puts a person on the leaderboard, updates their entry, or with `null` takes them off. */
+export async function writeLeaderboardEntry(uid: string, entry: LeaderboardEntry | null): Promise<void> {
+  const ref = doc(db, 'leaderboard', uid);
+  if (entry) await setDoc(ref, entry);
+  else await deleteDoc(ref);
+}
+
+/** The top of the leaderboard, most questions answered first. */
+export async function readLeaderboard(count: number): Promise<(LeaderboardEntry & { uid: string })[]> {
+  const snapshot = await getDocs(query(collection(db, 'leaderboard'), orderBy('answered', 'desc'), limit(count)));
+  return snapshot.docs.map((d) => ({ uid: d.id, ...(d.data() as LeaderboardEntry) }));
+}

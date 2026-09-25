@@ -18,6 +18,8 @@ export interface LocalProfile {
   nickname: string;
   avatar: string;
   createdAt: string;
+  /** Signed-in users are on the leaderboard unless they turn this on. */
+  hideFromLeaderboard?: boolean;
 }
 
 export const DEFAULT_AVATARS = ['🦉', '📘', '🧮', '✏️', '🎯', '⭐', '🚀', '🧠'] as const;

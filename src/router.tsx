@@ -14,6 +14,7 @@ import { PracticeTestsPage } from './pages/PracticeTestsPage';
 import { PracticeTestRunnerPage } from './pages/PracticeTestRunnerPage';
 import { PracticeTestResultsPage } from './pages/PracticeTestResultsPage';
 import { TopicsPage } from './pages/TopicsPage';
+import { LeaderboardPage } from './pages/LeaderboardPage';
 
 export function AppRouter() {
   return (
@@ -34,6 +35,7 @@ export function AppRouter() {
         <Route path="/tests/:number" element={<PracticeTestResultsPage />} />
         <Route path="/test" element={<PracticeTestRunnerPage />} />
         <Route path="/topics" element={<TopicsPage />} />
+        <Route path="/leaderboard" element={<LeaderboardPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </HashRouter>
