@@ -42,7 +42,8 @@ export interface ActiveTest {
   name?: string;
   /** Set for a named test with fixed questions, e.g. one made for a particular student. */
   presetId?: string;
-  routing?: TestRouting;
+  /** One entry per routed module: a full test routes both sections' second modules. */
+  routing?: TestRouting[];
   createdAt: string;
   /** Untimed tests have no module clocks and no break countdown. */
   timed: boolean;
@@ -69,8 +70,9 @@ export interface CompletedTest {
   number: number;
   name?: string;
   presetId?: string;
-  /** For an adaptive test: whether the easier version of the routed module was given. */
-  routedEasier?: boolean;
+  /** For an adaptive test: for each routed module in order, whether its easier version was
+   *  given. (Tests saved before a test could route twice hold a single boolean here.) */
+  routedEasier?: boolean[];
   createdAt: string;
   completedAt: string;
   timed: boolean;

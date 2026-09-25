@@ -77,7 +77,7 @@ export function gradeTest(
     number: test.number,
     name: test.name,
     presetId: test.presetId,
-    routedEasier: test.routing?.routedEasier,
+    routedEasier: test.routing?.map((r) => r.routedEasier ?? false),
     createdAt: test.createdAt,
     completedAt: new Date().toISOString(),
     timed: test.timed,

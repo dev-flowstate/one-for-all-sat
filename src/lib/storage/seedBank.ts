@@ -2,7 +2,7 @@ import { questionBankFileSchema } from '../schema';
 import type { Question } from '../../types/question';
 
 /** Where the shipped bank lives, relative to the app's base path. */
-const BANK_URL = `${import.meta.env.BASE_URL}question-bank.json`;
+const BANK_FILE = 'question-bank.json';
 
 export type BankLoadResult =
   | { status: 'loaded'; revision: number; questions: Question[] }
@@ -16,10 +16,15 @@ export type BankLoadResult =
  * set rather than erroring, so a missing or half-copied file degrades to "fewer questions"
  * instead of a broken app.
  */
-export async function fetchShippedBank(): Promise<BankLoadResult> {
+export function fetchShippedBank(): Promise<BankLoadResult> {
+  return fetchQuestionFile(BANK_FILE);
+}
+
+/** Loads a question file shipped with the app: the bank, or a named test's questions. */
+export async function fetchQuestionFile(file: string): Promise<BankLoadResult> {
   let payload: unknown;
   try {
-    const response = await fetch(BANK_URL);
+    const response = await fetch(`${import.meta.env.BASE_URL}${file}`);
     if (!response.ok) return { status: 'absent' };
     payload = await response.json();
   } catch {

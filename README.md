@@ -31,7 +31,7 @@ Under **Full-length practice test** on the home page: a complete digital SAT, la
 - **Made from questions you haven't attempted.** When there aren't enough left, it asks before filling the gap with old ones.
 - **Scored like the SAT:** 200–800 per section and 400–1600 in total, always a multiple of 10, with hard questions worth three times an easy one and medium twice. The results show where the misses were by section and domain, and every wrong question with its explanation. Wrong answers (blanks included) go to the Wrong tab, right ones to Right.
 - Tests are numbered in order — Practice Test 1, 2, … — and past ones stay listed with their scores.
-- **Named tests** have fixed questions, such as *Practice Test #1 for Hina* (Reading and Writing from Bluebook Practice Test 1). They're adaptive like the real test: 17 or more right in Module 1 gives the harder Module 2, fewer the easier one. Their questions are kept out of practice sets and generated tests, and a test covering one section is scored on that section alone. They're defined in `src/data/presetTests.ts`.
+- **Named tests** have fixed questions, such as *Practice Test #1 for Hina* (all of Bluebook Practice Test 1: Reading and Writing, the break, then Math). They're adaptive like the real test: in each section, 17 of 27 (Reading and Writing) or 14 of 22 (Math) right in Module 1 gives the harder Module 2, fewer the easier one. A test covering one section is scored on that section alone. They're defined in `src/data/presetTests.ts`, and their questions live in a file of their own under `public/tests/`, loaded when the Practice tests page opens. They're not in the shipped bank, so they never count towards it or turn up in practice sets or generated tests.
 
 ## Maths questions
 

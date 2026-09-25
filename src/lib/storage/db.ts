@@ -116,11 +116,14 @@ export async function getAllQuestions(): Promise<Question[]> {
   return db.getAll('questions');
 }
 
-export async function getQuestionCounts(): Promise<{ bundled: number; imported: number }> {
+/**
+ * Writes questions as they are, replacing any stored under the same ids. For a named test's
+ * questions, which have to be there by exactly the ids the test lists: the duplicate check
+ * mergeQuestions makes would drop one whose wording matches a question already in the bank.
+ */
+export async function putQuestions(questions: Question[]): Promise<void> {
   const db = await getDB();
-  const [bundled, imported] = await Promise.all([
-    db.countFromIndex('questions', 'by-source', 'bundled'),
-    db.countFromIndex('questions', 'by-source', 'imported'),
-  ]);
-  return { bundled, imported };
+  const tx = db.transaction('questions', 'readwrite');
+  await Promise.all(questions.map((q) => tx.store.put(q)));
+  await tx.done;
 }

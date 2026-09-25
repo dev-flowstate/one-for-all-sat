@@ -10,13 +10,8 @@ import {
   setProgress,
   setStats,
 } from '../lib/storage/localStorage';
-import {
-  ensureBundledSeeded,
-  getAllQuestions,
-  mergeQuestions,
-  getQuestionCounts,
-} from '../lib/storage/db';
-import { fetchShippedBank } from '../lib/storage/seedBank';
+import { ensureBundledSeeded, getAllQuestions, mergeQuestions, putQuestions } from '../lib/storage/db';
+import { fetchQuestionFile, fetchShippedBank } from '../lib/storage/seedBank';
 
 interface ProgressStore {
   questions: Question[];
@@ -33,6 +28,8 @@ interface ProgressStore {
    *  question someone imported themselves, and never re-adds one already present, so answered
    *  questions can't reappear in the unattempted pool. */
   loadShippedBank: () => Promise<void>;
+  /** Stores a named test's questions from its own file, so the test can start. */
+  loadTestQuestions: (file: string) => Promise<void>;
   applySessionResult: (result: SessionResult) => void;
   /** Corrects an answer already recorded in this session, when it's changed before the set
    *  ends: the question's status and the points move, but it isn't counted as a new attempt. */
@@ -40,6 +37,19 @@ interface ProgressStore {
   /** Pass 'all' or a list of question ids to return to the unattempted main pool. */
   resetProgress: (questionIds: string[] | 'all') => void;
   importQuestions: (qs: Question[], onProgress?: (written: number, total: number) => void) => Promise<void>;
+}
+
+/** How many practice questions there are of each kind. A named test's questions aren't part of
+ *  the bank, so they aren't counted. */
+function bankCounts(questions: Question[]): { bundledCount: number; importedCount: number } {
+  let bundledCount = 0;
+  let importedCount = 0;
+  for (const q of questions) {
+    if (q.testOnly) continue;
+    if (q.source === 'bundled') bundledCount += 1;
+    else importedCount += 1;
+  }
+  return { bundledCount, importedCount };
 }
 
 export const useProgressStore = create<ProgressStore>((set, get) => ({
@@ -52,15 +62,8 @@ export const useProgressStore = create<ProgressStore>((set, get) => ({
 
   loadAll: async (bundled) => {
     await ensureBundledSeeded(bundled);
-    const [questions, counts] = await Promise.all([getAllQuestions(), getQuestionCounts()]);
-    set({
-      questions,
-      progress: getProgress(),
-      stats: getStats(),
-      isLoaded: true,
-      bundledCount: counts.bundled,
-      importedCount: counts.imported,
-    });
+    const questions = await getAllQuestions();
+    set({ questions, progress: getProgress(), stats: getStats(), isLoaded: true, ...bankCounts(questions) });
   },
 
   loadShippedBank: async () => {
@@ -82,8 +85,25 @@ export const useProgressStore = create<ProgressStore>((set, get) => ({
     if (corrected) setBankRevision(result.revision);
     if (added === 0 && updated === 0) return;
 
-    const [questions, counts] = await Promise.all([getAllQuestions(), getQuestionCounts()]);
-    set({ questions, bundledCount: counts.bundled, importedCount: counts.imported });
+    const questions = await getAllQuestions();
+    set({ questions, ...bankCounts(questions) });
+  },
+
+  loadTestQuestions: async (file) => {
+    const result = await fetchQuestionFile(file);
+    if (result.status !== 'loaded') {
+      if (result.status === 'invalid') console.error(`${file} failed validation:`, result.issues);
+      return;
+    }
+    // Written only when something differs from what's stored, which after the first visit is
+    // only when the file has been corrected. Kept out of practice whatever the file says.
+    const incoming = result.questions.map((q) => ({ ...q, testOnly: true }));
+    const stored = new Map(get().questions.map((q) => [q.id, q]));
+    const changed = incoming.filter((q) => JSON.stringify(q) !== JSON.stringify(stored.get(q.id)));
+    if (changed.length === 0) return;
+    await putQuestions(changed);
+    const ids = new Set(changed.map((q) => q.id));
+    set({ questions: [...get().questions.filter((q) => !ids.has(q.id)), ...changed] });
   },
 
   applySessionResult: (result) => {
@@ -144,7 +164,7 @@ export const useProgressStore = create<ProgressStore>((set, get) => ({
     // imported set on each import deleted it -- anyone importing the maths bank lost every
     // English question until the next reload put them back.
     await mergeQuestions(qs, onProgress, { updateExisting: true });
-    const [questions, counts] = await Promise.all([getAllQuestions(), getQuestionCounts()]);
-    set({ questions, bundledCount: counts.bundled, importedCount: counts.imported });
+    const questions = await getAllQuestions();
+    set({ questions, ...bankCounts(questions) });
   },
 }));

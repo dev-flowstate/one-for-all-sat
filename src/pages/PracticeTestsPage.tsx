@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { usePracticeTestStore } from '../store/usePracticeTestStore';
 import { useProgressStore } from '../store/useProgressStore';
@@ -26,6 +26,21 @@ export function PracticeTestsPage() {
   // Named tests don't take a place in the "Practice Test N" sequence.
   const nextNumber = history.filter((t) => !t.presetId).length + 1;
   const storedIds = new Set(questions.map((q) => q.id));
+  const presetReady = (preset: PresetTest) =>
+    isLoaded &&
+    [...preset.modules.flatMap((m) => m.questionIds), ...(preset.routing ?? []).flatMap((r) => r.easierIds)].every(
+      (id) => storedIds.has(id),
+    );
+  const readyKey = PRESET_TESTS.map(presetReady).join();
+
+  // A named test's questions live in a file of their own. Fetched on each visit, which picks up
+  // a corrected file, and again if they go missing, which they can if the shipped bank's first
+  // load finishes after them and replaces the question list with what it read before they were
+  // stored.
+  useEffect(() => {
+    if (!isLoaded) return;
+    for (const preset of PRESET_TESTS) void useProgressStore.getState().loadTestQuestions(preset.file);
+  }, [isLoaded, readyKey]);
 
   function startPreset(preset: PresetTest) {
     begin(preset.modules, timed, { id: preset.id, name: preset.name, routing: preset.routing });
@@ -152,9 +167,8 @@ export function PracticeTestsPage() {
               <ul className="flex flex-col gap-4">
                 {PRESET_TESTS.map((preset) => {
                   const count = preset.modules.reduce((sum, m) => sum + m.questionIds.length, 0);
-                const allIds = [...preset.modules.flatMap((m) => m.questionIds), ...(preset.routing?.easierIds ?? [])];
                   const minutes = preset.modules.reduce((sum, m) => sum + m.minutes, 0);
-                  const ready = isLoaded && allIds.every((id) => storedIds.has(id));
+                  const ready = presetReady(preset);
                   const taken = history.filter((t) => t.presetId === preset.id).length;
                   return (
                     <li key={preset.id} className="flex flex-col gap-3 sm:flex-row sm:items-center">

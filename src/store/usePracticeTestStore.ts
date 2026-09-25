@@ -18,7 +18,7 @@ interface PracticeTestState {
   begin: (
     modules: TestModule[],
     timed: boolean,
-    preset?: { id: string; name: string; routing?: TestRouting },
+    preset?: { id: string; name: string; routing?: TestRouting[] },
   ) => void;
   respond: (questionId: string, response: TestResponse | null) => void;
   toggleMarked: (questionId: string) => void;
@@ -33,8 +33,10 @@ interface PracticeTestState {
   dismissTimedOut: () => void;
 }
 
-// Tests saved before the untimed option existed were all timed.
+// Tests saved before the untimed option existed were all timed, and ones saved before a test
+// could route twice hold their one routing on its own rather than in a list.
 const savedTest = getActiveTest();
+const savedRouting = savedTest?.routing as TestRouting | TestRouting[] | undefined;
 const savedHistory = getTestHistory().map((t) => ({ ...t, timed: t.timed ?? true }));
 
 /** The section break sits between the last Reading and Writing module and the first Math one. */
@@ -79,7 +81,11 @@ export const usePracticeTestStore = create<PracticeTestState>((set, get) => {
   return {
     // Read straight away rather than from an effect: a reload lands on the runner, and for its
     // first render to find the test, the test has to be there before anything renders.
-    active: savedTest && { ...savedTest, timed: savedTest.timed ?? true },
+    active: savedTest && {
+      ...savedTest,
+      timed: savedTest.timed ?? true,
+      routing: savedRouting && (Array.isArray(savedRouting) ? savedRouting : [savedRouting]),
+    },
     history: savedHistory,
     justFinished: null,
     timedOut: false,
@@ -152,9 +158,10 @@ export const usePracticeTestStore = create<PracticeTestState>((set, get) => {
     submitModule: () => {
       const { active } = get();
       if (!active || active.stage.kind !== 'module') return;
-      const next = active.stage.module + 1;
-      const { routing } = active;
-      if (routing && routing.afterModule === active.stage.module && next < active.modules.length) {
+      const current = active.stage.module;
+      const next = current + 1;
+      const routing = active.routing?.find((r) => r.afterModule === current);
+      if (routing && next < active.modules.length) {
         const byId = new Map(useProgressStore.getState().questions.map((q) => [q.id, q]));
         const right = active.modules[active.stage.module].questionIds.filter((id) => {
           const question = byId.get(id);
@@ -162,7 +169,7 @@ export const usePracticeTestStore = create<PracticeTestState>((set, get) => {
         }).length;
         const routedEasier = right < routing.minCorrect;
         update({
-          routing: { ...routing, routedEasier },
+          routing: active.routing?.map((r) => (r === routing ? { ...r, routedEasier } : r)),
           modules: routedEasier
             ? active.modules.map((m, i) => (i === next ? { ...m, questionIds: routing.easierIds } : m))
             : active.modules,
