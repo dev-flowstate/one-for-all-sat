@@ -6,7 +6,7 @@
     "skill": "Boundaries",
     "difficulty": "Easy",
     "type": "mcq",
-    "passage": "The city council approved the new park budget _______ construction on the playground is expected to begin next spring.",
+    "passage": "The city council approved the new park _______ on the playground is expected to begin next spring.",
     "prompt": "Which choice correctly completes the text?",
     "choices": [
       {"id": "A", "text": "budget, construction"},
@@ -15,7 +15,7 @@
       {"id": "D", "text": "budget construction"}
     ],
     "correctChoice": "B",
-    "explanation": "The two ideas on either side of the blank are both independent clauses, so they must be joined with a semicolon, a period, or a comma plus a coordinating conjunction. Only choice B, with the semicolon, punctuates this correctly. Choice A creates a comma splice, and choice D creates a run-on sentence with no punctuation at all.",
+    "explanation": "The two ideas on either side of the blank are both independent clauses, so they must be joined with a semicolon, a period, or a comma plus a coordinating conjunction. Only choice B, with the semicolon, punctuates this correctly. Choice A creates a comma splice, choice C adds a comma after \"and\" that doesn't belong there, and choice D creates a run-on sentence with no punctuation at all.",
     "source": "bundled"
   },
   {

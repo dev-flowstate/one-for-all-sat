@@ -27,14 +27,15 @@ function getDB(): Promise<IDBPDatabase<SatDB>> {
   return dbPromise;
 }
 
-/** Seeds the bundled demo set on first run only — never overwrites an existing bundled set. */
+/**
+ * Writes the bundled demo set on every start. It ships with the code and is only a few dozen
+ * questions, so rewriting it is cheap, and it's how a corrected demo question reaches browsers
+ * that stored the old one. Ids don't change, so progress on them is untouched.
+ */
 export async function ensureBundledSeeded(bundled: Question[]): Promise<void> {
   const db = await getDB();
   const tx = db.transaction('questions', 'readwrite');
-  const existing = await tx.store.index('by-source').count('bundled');
-  if (existing === 0) {
-    await Promise.all(bundled.map((q) => tx.store.put(q)));
-  }
+  await Promise.all(bundled.map((q) => tx.store.put(q)));
   await tx.done;
 }
 
