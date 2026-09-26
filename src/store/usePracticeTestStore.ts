@@ -1,20 +1,31 @@
 import { create } from 'zustand';
 import type { Question } from '../types/question';
 import type { ActiveTest, CompletedTest, TestModule, TestResponse, TestRouting } from '../types/practiceTest';
-import { getActiveTest, getTestHistory, setActiveTest, setTestHistory } from '../lib/storage/localStorage';
+import {
+  getActiveTest,
+  getPausedTests,
+  getTestHistory,
+  setActiveTest,
+  setPausedTests,
+  setTestHistory,
+} from '../lib/storage/localStorage';
 import { BREAK_MINUTES } from '../lib/practiceTest/buildTest';
 import { gradeTest, isCorrect } from '../lib/practiceTest/score';
 import { useProgressStore } from './useProgressStore';
 
 interface PracticeTestState {
+  /** The test that's open: the one the runner shows. */
   active: ActiveTest | null;
+  /** Every other test in progress, saved to come back to. Each is known by when it began. */
+  paused: ActiveTest[];
   history: CompletedTest[];
   /** The number of the test that just ended, so the runner knows whose results to open. */
   justFinished: number | null;
   /** Set when a module's clock ran out and submitted it, so the runner can say why it moved on. */
   timedOut: boolean;
 
-  /** Starts a test: a generated one, or a named test's fixed modules when `preset` is given. */
+  /** Starts a test: a generated one, or a named test's fixed modules when `preset` is given.
+   *  A test already open is kept, with the saved ones. */
   begin: (
     modules: TestModule[],
     timed: boolean,
@@ -29,7 +40,10 @@ interface PracticeTestState {
   /** Ends the current module and moves on: to module 2, the break, Math, or the results. */
   submitModule: () => void;
   endBreak: () => void;
-  discard: () => void;
+  /** Opens a saved test, keeping whichever was open with the saved ones. */
+  resume: (createdAt: string) => void;
+  /** Deletes a test in progress, open or saved. */
+  discard: (createdAt: string) => void;
   dismissTimedOut: () => void;
 }
 
@@ -53,6 +67,7 @@ export function upgradeSavedHistory(history: CompletedTest[]): CompletedTest[] {
 }
 
 const savedTest = upgradeSavedTest(getActiveTest());
+const savedPaused = getPausedTests().map((t) => upgradeSavedTest(t) as ActiveTest);
 const savedHistory = upgradeSavedHistory(getTestHistory());
 
 /** The section break sits between the last Reading and Writing module and the first Math one. */
@@ -82,7 +97,8 @@ export const usePracticeTestStore = create<PracticeTestState>((set, get) => {
     // backstop against grading every question as missing.
     if (!progress.isLoaded) return;
     const byId = new Map<string, Question>(progress.questions.map((q) => [q.id, q]));
-    const result = gradeTest(active, byId, progress.stats.currentStreak);
+    // Numbered when it's finished, since several can be in progress at once.
+    const result = gradeTest({ ...active, number: history.length + 1 }, byId, progress.stats.currentStreak);
     // The same bookkeeping a drill does: wrong answers move to the Wrong tab, right ones to Right.
     progress.applySessionResult({
       completedAt: result.completedAt,
@@ -98,20 +114,23 @@ export const usePracticeTestStore = create<PracticeTestState>((set, get) => {
     // Read straight away rather than from an effect: a reload lands on the runner, and for its
     // first render to find the test, the test has to be there before anything renders.
     active: savedTest,
+    paused: savedPaused,
     history: savedHistory,
     justFinished: null,
     timedOut: false,
 
     begin: (modules, timed, preset) => {
-      const { history } = get();
+      const { history, active, paused } = get();
+      const inProgress = active ? [active, ...paused] : paused;
+      // Named tests don't take a place in the "Practice Test N" sequence; ones still in progress do.
+      const generated = [...history, ...inProgress].filter((t) => !t.presetId).length;
       set({
         justFinished: null,
         timedOut: false,
+        paused: inProgress,
         active: {
-          // Numbered by finished tests, so a discarded test doesn't leave a gap. Named tests
-          // don't take a place in the "Practice Test N" sequence.
           number: history.length + 1,
-          name: preset?.name ?? `Practice Test ${history.filter((t) => !t.presetId).length + 1}`,
+          name: preset?.name ?? `Practice Test ${generated + 1}`,
           presetId: preset?.id,
           routing: preset?.routing,
           createdAt: new Date().toISOString(),
@@ -195,7 +214,22 @@ export const usePracticeTestStore = create<PracticeTestState>((set, get) => {
 
     endBreak: () => startModule(MODULE_BEFORE_BREAK + 1),
 
-    discard: () => set({ active: null }),
+    resume: (createdAt) => {
+      const { active, paused } = get();
+      if (active?.createdAt === createdAt) return;
+      const chosen = paused.find((t) => t.createdAt === createdAt);
+      if (!chosen) return;
+      const rest = paused.filter((t) => t !== chosen);
+      set({ active: chosen, paused: active ? [active, ...rest] : rest, timedOut: false });
+    },
+
+    discard: (createdAt) => {
+      const { active, paused } = get();
+      set({
+        active: active?.createdAt === createdAt ? null : active,
+        paused: paused.filter((t) => t.createdAt !== createdAt),
+      });
+    },
 
     dismissTimedOut: () => set({ timedOut: false }),
   };
@@ -205,5 +239,6 @@ export const usePracticeTestStore = create<PracticeTestState>((set, get) => {
 // the same question with the same answers and time left.
 usePracticeTestStore.subscribe((state, previous) => {
   if (state.active !== previous.active) setActiveTest(state.active);
+  if (state.paused !== previous.paused) setPausedTests(state.paused);
   if (state.history !== previous.history) setTestHistory(state.history);
 });

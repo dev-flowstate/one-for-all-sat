@@ -13,6 +13,9 @@ export interface AccountData {
   vocabProgress: VocabProgressMap;
   profile: LocalProfile | null;
   activeTest: ActiveTest | null;
+  /** Tests in progress besides the open one. Missing from accounts saved before there could
+   *  be more than one. */
+  pausedTests?: ActiveTest[];
   history: CompletedTest[];
 }
 
@@ -22,9 +25,20 @@ export interface AccountData {
  */
 export function mergeAccountData(local: AccountData, cloud: AccountData): AccountData {
   const history = mergeHistory(local.history, cloud.history);
-  const newest = newerOf(local.activeTest, cloud.activeTest, (t) => t.createdAt);
-  // Finished on another device while this one still had it open.
-  const activeTest = newest && history.some((t) => t.createdAt === newest.createdAt) ? null : newest;
+  // Every test in progress on either side is kept. The same test on both is known by when it
+  // began, and the copy further along wins. One finished on another device is dropped.
+  const byStart = new Map<string, ActiveTest>();
+  const all = [local.activeTest, ...(local.pausedTests ?? []), cloud.activeTest, ...(cloud.pausedTests ?? [])];
+  for (const test of all) {
+    if (!test || history.some((t) => t.createdAt === test.createdAt)) continue;
+    byStart.set(test.createdAt, furtherAlong(byStart.get(test.createdAt) ?? null, test) as ActiveTest);
+  }
+  // The test open in this browser stays open; everything else is listed to go back to.
+  const openHere = local.activeTest?.createdAt;
+  const activeTest = (openHere && byStart.get(openHere)) || null;
+  const pausedTests = [...byStart.values()]
+    .filter((t) => t !== activeTest)
+    .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
   return {
     email: local.email ?? cloud.email,
     progress: mergeByLatest(local.progress, cloud.progress, (s) => s.lastAttemptedAt, (s) => s.attempts),
@@ -39,8 +53,8 @@ export function mergeAccountData(local: AccountData, cloud: AccountData): Accoun
     },
     vocabProgress: mergeByLatest(local.vocabProgress, cloud.vocabProgress, (s) => s.lastReviewedAt, (s) => s.reviews),
     profile: local.profile ?? cloud.profile,
-    // A test in progress takes the number after the finished ones, which may have grown.
-    activeTest: activeTest && { ...activeTest, number: history.length + 1 },
+    activeTest,
+    pausedTests,
     history,
   };
 }
@@ -74,7 +88,17 @@ function mergeHistory(a: CompletedTest[], b: CompletedTest[]): CompletedTest[] {
     .map((test, index) => ({ ...test, number: index + 1 }));
 }
 
-function newerOf<T>(a: T | null, b: T | null, when: (value: T) => string): T | null {
+/** Of two copies of a test in progress, the one further along: the later module, then more
+ *  answers, then the one saved from the test started more recently. */
+function furtherAlong(a: ActiveTest | null, b: ActiveTest | null): ActiveTest | null {
   if (!a || !b) return a ?? b;
-  return when(b) > when(a) ? b : a;
+  const progress = (t: ActiveTest) => [
+    // The break sits after module 2 (index 1), before Math.
+    t.stage.kind === 'break' ? 1.5 : t.stage.module,
+    Object.keys(t.responses).length,
+  ];
+  const [x, y] = [progress(a), progress(b)];
+  if (x[0] !== y[0]) return y[0] > x[0] ? b : a;
+  if (x[1] !== y[1]) return y[1] > x[1] ? b : a;
+  return b.createdAt > a.createdAt ? b : a;
 }

@@ -5,26 +5,33 @@ import { useProgressStore } from '../store/useProgressStore';
 import { BREAK_MINUTES, SECTIONS, buildTest, sectionSize } from '../lib/practiceTest/buildTest';
 import { formatClock, moduleTitle, testName } from '../lib/practiceTest/format';
 import { PRESET_TESTS, type PresetTest } from '../data/presetTests';
+import type { ActiveTest } from '../types/practiceTest';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { ConfirmDialog } from '../components/ui/ConfirmDialog';
 
-type Prompt = { kind: 'use-old'; shortBy: number } | { kind: 'too-few'; shortBy: number } | { kind: 'discard' };
+type Prompt =
+  | { kind: 'use-old'; shortBy: number }
+  | { kind: 'too-few'; shortBy: number }
+  | { kind: 'discard'; test: ActiveTest };
 
 /** Starting, resuming and looking back over full-length practice tests. */
 export function PracticeTestsPage() {
   const navigate = useNavigate();
   const active = usePracticeTestStore((s) => s.active);
+  const paused = usePracticeTestStore((s) => s.paused);
   const history = usePracticeTestStore((s) => s.history);
-  const { begin, discard } = usePracticeTestStore.getState();
+  const { begin, discard, resume } = usePracticeTestStore.getState();
+  // The one last open first, then the rest, newest first.
+  const inProgress = active ? [active, ...paused] : paused;
   const questions = useProgressStore((s) => s.questions);
   const progress = useProgressStore((s) => s.progress);
   const isLoaded = useProgressStore((s) => s.isLoaded);
   const [prompt, setPrompt] = useState<Prompt | null>(null);
   const [timed, setTimed] = useState(true);
 
-  // Named tests don't take a place in the "Practice Test N" sequence.
-  const nextNumber = history.filter((t) => !t.presetId).length + 1;
+  // Named tests don't take a place in the "Practice Test N" sequence; ones still in progress do.
+  const nextNumber = [...history, ...inProgress].filter((t) => !t.presetId).length + 1;
   const storedIds = new Set(questions.map((q) => q.id));
   const presetReady = (preset: PresetTest) =>
     isLoaded &&
@@ -71,26 +78,44 @@ export function PracticeTestsPage() {
       </Link>
       <h1 className="mt-3 mb-5 text-2xl leading-none font-bold tracking-tight uppercase sm:text-3xl">Practice tests</h1>
 
-      {active ? (
-        <Card title={`${testName(active)} · In progress`}>
-          <p className="text-sm">
-            {active.stage.kind === 'break'
-              ? 'You are on the break between Reading and Writing and Math.'
-              : `${moduleTitle(active.modules[active.stage.module])}${
-                  active.timed ? `, with ${formatClock(active.secondsLeft)} left` : ''
-                }.`}{' '}
-            Everything is saved.{active.timed && ' The clock only runs while the test is open.'}
+      {inProgress.length > 0 && (
+        <Card className="mb-4" title={inProgress.length === 1 ? 'Saved test' : `Saved tests (${inProgress.length})`}>
+          <ul className="flex flex-col gap-4">
+            {inProgress.map((test) => (
+              <li key={test.createdAt} className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                <div className="min-w-0 flex-1">
+                  <p className="font-bold">{testName(test)}</p>
+                  <p className="mt-1 text-sm text-ink-soft">
+                    {test.stage.kind === 'break'
+                      ? 'On the break between Reading and Writing and Math.'
+                      : `${moduleTitle(test.modules[test.stage.module])}${
+                          test.timed ? `, with ${formatClock(test.secondsLeft)} left` : ''
+                        }.`}{' '}
+                    Started {new Date(test.createdAt).toLocaleDateString()}.
+                  </p>
+                </div>
+                <div className="flex flex-none gap-2">
+                  <Button
+                    onClick={() => {
+                      resume(test.createdAt);
+                      navigate('/test');
+                    }}
+                  >
+                    Resume
+                  </Button>
+                  <Button variant="ghost" onClick={() => setPrompt({ kind: 'discard', test })}>
+                    Discard
+                  </Button>
+                </div>
+              </li>
+            ))}
+          </ul>
+          <p className="mt-4 text-xs text-ink-soft">
+            Everything is saved. A timed test&apos;s clock only runs while it&apos;s open.
           </p>
-          <div className="mt-4 grid gap-3 sm:grid-cols-2">
-            <Button className="w-full" onClick={() => navigate('/test')}>
-              Resume test
-            </Button>
-            <Button variant="ghost" className="w-full" onClick={() => setPrompt({ kind: 'discard' })}>
-              Discard test
-            </Button>
-          </div>
         </Card>
-      ) : (
+      )}
+
         <>
           <section aria-label="Timing" className="mb-4">
           <div className="flex border-2 border-ink bg-paper" role="group" aria-label="Timing">
@@ -189,7 +214,6 @@ export function PracticeTestsPage() {
             </Card>
           )}
         </>
-      )}
 
       <section className="mt-8">
         <h2 className="mb-3 border-2 border-ink bg-ink px-3 py-1.5 text-xs font-semibold tracking-tight text-merino uppercase">
@@ -264,12 +288,12 @@ export function PracticeTestsPage() {
 
       <ConfirmDialog
         open={prompt?.kind === 'discard'}
-        title={`Discard ${active ? testName(active) : 'this test'}?`}
+        title={`Discard ${prompt?.kind === 'discard' ? testName(prompt.test) : 'this test'}?`}
         confirmLabel="Discard"
         cancelLabel="Keep it"
         onConfirm={() => {
+          if (prompt?.kind === 'discard') discard(prompt.test.createdAt);
           setPrompt(null);
-          discard();
         }}
         onCancel={() => setPrompt(null)}
       >

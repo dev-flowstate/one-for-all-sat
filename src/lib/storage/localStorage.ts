@@ -11,6 +11,7 @@ const KEYS = {
   // "reset my wrong questions" quietly wipe flashcard progress too.
   vocabProgress: 'ofa-sat:vocab-progress',
   activeTest: 'ofa-sat:active-test',
+  pausedTests: 'ofa-sat:paused-tests',
   testHistory: 'ofa-sat:test-history',
   // The account this browser's data belongs to. Set while signed in, and what tells the next
   // visit to load Firebase at all.
@@ -92,6 +93,15 @@ export function getActiveTest(): ActiveTest | null {
 export function setActiveTest(test: ActiveTest | null): void {
   if (test) write(KEYS.activeTest, test);
   else remove(KEYS.activeTest);
+}
+
+export function getPausedTests(): ActiveTest[] {
+  return read<ActiveTest[]>(KEYS.pausedTests, []);
+}
+
+export function setPausedTests(tests: ActiveTest[]): void {
+  if (tests.length > 0) write(KEYS.pausedTests, tests);
+  else remove(KEYS.pausedTests);
 }
 
 export function getTestHistory(): CompletedTest[] {

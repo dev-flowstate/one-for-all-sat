@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { CompletedTest } from '../types/practiceTest';
+import type { ActiveTest, CompletedTest } from '../types/practiceTest';
 import type { AccountUser, LeaderboardEntry } from '../lib/cloud/firebaseClient';
 import { cloudConfigured } from '../lib/cloud/config';
 import { mergeAccountData, type AccountData } from '../lib/cloud/merge';
@@ -7,6 +7,7 @@ import {
   DEFAULT_STATS,
   getAccountOwner,
   getActiveTest,
+  getPausedTests,
   getProfile,
   getProgress,
   getStats,
@@ -78,6 +79,7 @@ function readLocal(email: string | null): AccountData {
     vocabProgress: getVocabProgress(),
     profile: getProfile(),
     activeTest: getActiveTest(),
+    pausedTests: getPausedTests(),
     history: getTestHistory(),
   };
 }
@@ -93,6 +95,7 @@ function writeLocal(data: AccountData) {
   // This store saves itself whenever it changes.
   usePracticeTestStore.setState({
     active: upgradeSavedTest(data.activeTest),
+    paused: (data.pausedTests ?? []).map((t) => upgradeSavedTest(t) as ActiveTest),
     history: upgradeSavedHistory(data.history),
   });
 }
@@ -104,6 +107,7 @@ const EMPTY: AccountData = {
   vocabProgress: {},
   profile: null,
   activeTest: null,
+  pausedTests: [],
   history: [],
 };
 
@@ -192,7 +196,9 @@ export const useAccountStore = create<AccountState>((set, get) => {
       useProgressStore.subscribe((s, p) => (s.progress !== p.progress || s.stats !== p.stats) && scheduleSave()),
       useVocabStore.subscribe((s, p) => s.progress !== p.progress && scheduleSave()),
       useSettingsStore.subscribe((s, p) => s.profile !== p.profile && scheduleSave()),
-      usePracticeTestStore.subscribe((s, p) => (s.active !== p.active || s.history !== p.history) && scheduleSave()),
+      usePracticeTestStore.subscribe(
+        (s, p) => (s.active !== p.active || s.paused !== p.paused || s.history !== p.history) && scheduleSave(),
+      ),
     ];
     // Leaving the page is the last chance to save what's waiting on the timer.
     const onHide = () => document.visibilityState === 'hidden' && flush();
