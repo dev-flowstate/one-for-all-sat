@@ -33,11 +33,27 @@ interface PracticeTestState {
   dismissTimedOut: () => void;
 }
 
-// Tests saved before the untimed option existed were all timed, and ones saved before a test
-// could route twice hold their one routing on its own rather than in a list.
-const savedTest = getActiveTest();
-const savedRouting = savedTest?.routing as TestRouting | TestRouting[] | undefined;
-const savedHistory = getTestHistory().map((t) => ({ ...t, timed: t.timed ?? true }));
+/**
+ * Brings a saved test up to date, whether it was saved in this browser or comes back from the
+ * cloud. Tests saved before the untimed option existed were all timed, and ones saved before a
+ * test could route twice hold their one routing on its own rather than in a list.
+ */
+export function upgradeSavedTest(test: ActiveTest | null): ActiveTest | null {
+  if (!test) return null;
+  const routing = test.routing as TestRouting | TestRouting[] | undefined;
+  return {
+    ...test,
+    timed: test.timed ?? true,
+    routing: routing && (Array.isArray(routing) ? routing : [routing]),
+  };
+}
+
+export function upgradeSavedHistory(history: CompletedTest[]): CompletedTest[] {
+  return history.map((t) => ({ ...t, timed: t.timed ?? true }));
+}
+
+const savedTest = upgradeSavedTest(getActiveTest());
+const savedHistory = upgradeSavedHistory(getTestHistory());
 
 /** The section break sits between the last Reading and Writing module and the first Math one. */
 const MODULE_BEFORE_BREAK = 1;
@@ -81,11 +97,7 @@ export const usePracticeTestStore = create<PracticeTestState>((set, get) => {
   return {
     // Read straight away rather than from an effect: a reload lands on the runner, and for its
     // first render to find the test, the test has to be there before anything renders.
-    active: savedTest && {
-      ...savedTest,
-      timed: savedTest.timed ?? true,
-      routing: savedRouting && (Array.isArray(savedRouting) ? savedRouting : [savedRouting]),
-    },
+    active: savedTest,
     history: savedHistory,
     justFinished: null,
     timedOut: false,

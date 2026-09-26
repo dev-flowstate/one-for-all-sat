@@ -22,7 +22,7 @@ import { DEFAULT_AVATARS } from '../types/settings';
 import { useProgressStore } from './useProgressStore';
 import { useVocabStore } from './useVocabStore';
 import { useSettingsStore } from './useSettingsStore';
-import { usePracticeTestStore } from './usePracticeTestStore';
+import { upgradeSavedHistory, upgradeSavedTest, usePracticeTestStore } from './usePracticeTestStore';
 
 export type AccountStatus =
   /** No Firebase project configured: accounts don't exist on this build. */
@@ -91,7 +91,10 @@ function writeLocal(data: AccountData) {
   useVocabStore.setState({ progress: data.vocabProgress });
   useSettingsStore.setState({ profile: data.profile });
   // This store saves itself whenever it changes.
-  usePracticeTestStore.setState({ active: data.activeTest, history: data.history });
+  usePracticeTestStore.setState({
+    active: upgradeSavedTest(data.activeTest),
+    history: upgradeSavedHistory(data.history),
+  });
 }
 
 const EMPTY: AccountData = {
