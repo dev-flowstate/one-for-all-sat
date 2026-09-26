@@ -10,7 +10,8 @@ import type { Question } from '../../types/question';
  * carrying the student's progress and once looking brand new.
  */
 function normalize(text: string): string {
-  return text.toLowerCase().replace(/\s+/g, ' ').trim();
+  // Bullets and line breaks are layout: a notes question is the same question with or without them.
+  return text.toLowerCase().replace(/•/g, ' ').replace(/\s+/g, ' ').trim();
 }
 
 /** Below this the fingerprint isn't distinctive enough to merge on — see `isWeak`. */

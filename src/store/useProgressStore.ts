@@ -10,7 +10,8 @@ import {
   setProgress,
   setStats,
 } from '../lib/storage/localStorage';
-import { ensureBundledSeeded, getAllQuestions, mergeQuestions, putQuestions } from '../lib/storage/db';
+import { deleteQuestions, ensureBundledSeeded, getAllQuestions, mergeQuestions, putQuestions } from '../lib/storage/db';
+import { isWeakFingerprint, questionFingerprint } from '../lib/storage/dedupe';
 import { fetchQuestionFile, fetchShippedBank } from '../lib/storage/seedBank';
 
 interface ProgressStore {
@@ -75,15 +76,35 @@ export const useProgressStore = create<ProgressStore>((set, get) => ({
       return;
     }
 
-    // Merged rather than imported: importQuestions replaces the whole imported set, which
-    // would delete questions someone had imported and left this bank out of.
+    // The shipped bank is the whole bank: a question someone imported by hand that it doesn't
+    // have is removed, so an older copy can't sit beside the shipped one as a duplicate. Progress
+    // on a removed copy moves to the shipped question it matches, so no answer is lost. A named
+    // test's questions aren't in the bank and stay.
+    const shippedIds = new Set(result.questions.map((q) => q.id));
+    const extras = get().questions.filter((q) => q.source === 'imported' && !q.testOnly && !shippedIds.has(q.id));
+    if (extras.length > 0) {
+      const byFingerprint = new Map(result.questions.map((q) => [questionFingerprint(q), q.id]));
+      const progress = { ...get().progress };
+      for (const q of extras) {
+        const fingerprint = questionFingerprint(q);
+        const target = isWeakFingerprint(fingerprint) ? undefined : byFingerprint.get(fingerprint);
+        if (target && progress[q.id]) {
+          progress[target] ??= progress[q.id];
+          delete progress[q.id];
+        }
+      }
+      setProgress(progress);
+      set({ progress });
+      await deleteQuestions(extras.map((q) => q.id));
+    }
+
     // Questions already stored are left alone, except once after the bank's revision goes up:
     // then they're rewritten, so a corrected explanation reaches people who already have the
     // question. Progress is keyed by id, which a correction never changes, so it's untouched.
     const corrected = result.revision > getBankRevision();
     const { added, updated } = await mergeQuestions(result.questions, undefined, { updateExisting: corrected });
     if (corrected) setBankRevision(result.revision);
-    if (added === 0 && updated === 0) return;
+    if (added === 0 && updated === 0 && extras.length === 0) return;
 
     const questions = await getAllQuestions();
     set({ questions, ...bankCounts(questions) });

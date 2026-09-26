@@ -116,6 +116,13 @@ export async function getAllQuestions(): Promise<Question[]> {
   return db.getAll('questions');
 }
 
+export async function deleteQuestions(ids: string[]): Promise<void> {
+  const db = await getDB();
+  const tx = db.transaction('questions', 'readwrite');
+  await Promise.all(ids.map((id) => tx.store.delete(id)));
+  await tx.done;
+}
+
 /**
  * Writes questions as they are, replacing any stored under the same ids. For a named test's
  * questions, which have to be there by exactly the ids the test lists: the duplicate check

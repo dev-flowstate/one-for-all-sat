@@ -16,6 +16,9 @@ const MIN_STIMULUS_LENGTH = 80;
  *  and a text that ends on its blank (`It seems, then, that ______ Which choice…`) ends there. */
 const SENTENCE_BOUNDARY = /(?:[.!?]["'”’)\]]*|_{3,})(?=\s+["'“‘(]?[A-Z])/g;
 
+/** A title whose full stop doesn't end the sentence. */
+const TITLE_BEFORE = /\b(?:Dr|Mr|Mrs|Ms|Mx|Prof|St)$/;
+
 /** How the SAT's question sentences open. */
 const QUESTION_OPENER = /(?:^|\s)(?=(?:Which|What|How|Based on|According to|As used in|Taken together)\b)/g;
 
@@ -45,6 +48,8 @@ export function splitPrompt(prompt: string): PromptParts {
   SENTENCE_BOUNDARY.lastIndex = 0;
   let match: RegExpExecArray | null;
   while ((match = SENTENCE_BOUNDARY.exec(text)) !== null) {
+    // "Dr. Malsufrido" is one name, not the end of a sentence.
+    if (TITLE_BEFORE.test(text.slice(0, match.index))) continue;
     if (!insideMath(match.index)) ends.push(match.index + match[0].length);
   }
   if (ends.length === 0) return { stimulus: null, stem: text };
