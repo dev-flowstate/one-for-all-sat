@@ -35,6 +35,42 @@
   --font-sans: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
+/*
+ * Dark mode: the same tokens, turned over. Every pairing keeps working: ink is still what
+ * text and borders are drawn in (now light on dark), and the fills that carry page-coloured
+ * text (venice blue, coral, success, danger) get lighter, since that text is now dark. Rock
+ * blue goes the other way, as it carries ink. `data-theme` is set in index.html before the
+ * first paint, from the saved choice or the device's setting.
+ */
+:root {
+  color-scheme: light;
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
+  --color-merino: #121719;
+  --color-merino-dark: #1f282b;
+  --color-paper: #192124;
+
+  --color-ink: #e4dac4;
+  --color-ink-soft: #a3aea9;
+
+  --color-rock-blue: #3a6c8a;
+  --color-rock-blue-dark: #2f5a74;
+  --color-venice-blue: #6aa6c9;
+  --color-venice-blue-dark: #528db3;
+
+  --color-coral: #e57368;
+  --color-coral-dark: #cf5a4f;
+
+  --color-success: #74c395;
+  --color-success-bg: #1b3326;
+  --color-danger: #ec7f6f;
+  --color-danger-bg: #3b201c;
+  --color-caution: #e0a94a;
+}
+
 html,
 body,
 #root {
@@ -231,11 +267,13 @@ body[data-resizing] iframe {
    will become. */
 .highlighter-on ::selection {
   background-color: #f6dd7a;
+  color: #1e2a2c;
 }
 
 mark.highlight {
   background-color: #f6dd7a;
-  color: inherit;
+  /* Dark on the yellow in either theme: light text on it would all but vanish. */
+  color: #1e2a2c;
   padding: 0 1px;
   box-decoration-break: clone;
 }
