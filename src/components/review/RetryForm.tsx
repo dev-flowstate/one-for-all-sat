@@ -8,10 +8,14 @@ import { pointsForAnswer } from '../../lib/scoring/points';
 import { MathText } from '../math/MathText';
 import { GridInInput } from '../test-runner/GridInInput';
 import { distinctAnswers } from '../../lib/scoring/answerDisplay';
+import { Toggle } from '../ui/Toggle';
+import { CalculatorPanel } from '../test-runner/CalculatorPanel';
 
 interface RetryFormProps {
   question: Question;
   onCancel: () => void;
+  /** Told when the right answer is shown after a miss, and when it's hidden again for another try. */
+  onRevealed?: (revealed: boolean) => void;
 }
 
 function correctAnswerLabel(question: Question): string {
@@ -25,11 +29,12 @@ function correctAnswerLabel(question: Question): string {
 }
 
 /** Inline retry UI for a single question: answer it, submit, and commit the outcome to progress. */
-export function RetryForm({ question, onCancel }: RetryFormProps) {
+export function RetryForm({ question, onCancel, onRevealed }: RetryFormProps) {
   const streak = useProgressStore((s) => s.stats.currentStreak);
   const [selectedChoice, setSelectedChoice] = useState<ChoiceId | undefined>(undefined);
   const [sprInput, setSprInput] = useState('');
   const [showIncorrectFeedback, setShowIncorrectFeedback] = useState(false);
+  const [calculatorOpen, setCalculatorOpen] = useState(false);
 
   const hasAnswer = question.type === 'mcq' ? selectedChoice !== undefined : sprInput.trim().length > 0;
 
@@ -67,6 +72,7 @@ export function RetryForm({ question, onCancel }: RetryFormProps) {
     useProgressStore.getState().applySessionResult(result);
     if (outcome === 'incorrect') {
       setShowIncorrectFeedback(true);
+      onRevealed?.(true);
     }
   }
 
@@ -74,10 +80,20 @@ export function RetryForm({ question, onCancel }: RetryFormProps) {
     setSelectedChoice(undefined);
     setSprInput('');
     setShowIncorrectFeedback(false);
+    onRevealed?.(false);
   }
 
   return (
     <div className="mt-3 border-t border-rock-blue/20 pt-3">
+      {question.subject === 'math' && (
+        <div className="mb-3">
+          <Toggle active={calculatorOpen} onToggle={() => setCalculatorOpen((v) => !v)} label="Calculator" />
+          {/* Hidden rather than removed when closed, so reopening keeps what was typed. */}
+          <div className={`mt-3 h-[28rem] border-2 border-ink ${calculatorOpen ? '' : 'hidden'}`}>
+            <CalculatorPanel open={calculatorOpen} onClose={() => setCalculatorOpen(false)} />
+          </div>
+        </div>
+      )}
       {question.type === 'mcq' ? (
         <div className="grid gap-2">
           {question.choices?.map((choice) => (

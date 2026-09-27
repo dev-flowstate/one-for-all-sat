@@ -22,10 +22,18 @@ interface QuestionReviewCardProps {
   answerSummary?: ReactNode;
   /** Extra expandable content below the explanation, e.g. an inline retry form. */
   children?: ReactNode;
+  /** Keeps the explanation out of sight, e.g. while the question is being retried. */
+  hideExplanation?: boolean;
 }
 
 /** Shared review card: badges, passage/prompt/images, and a "Show explanation" toggle. */
-export function QuestionReviewCard({ question, actions, answerSummary, children }: QuestionReviewCardProps) {
+export function QuestionReviewCard({
+  question,
+  actions,
+  answerSummary,
+  children,
+  hideExplanation = false,
+}: QuestionReviewCardProps) {
   const [showExplanation, setShowExplanation] = useState(false);
 
   return (
@@ -81,7 +89,7 @@ export function QuestionReviewCard({ question, actions, answerSummary, children 
 
       {answerSummary && <div className="mb-4">{answerSummary}</div>}
 
-      <div>
+      <div className={hideExplanation ? 'hidden' : ''}>
         <Toggle
           active={showExplanation}
           onToggle={() => setShowExplanation((v) => !v)}

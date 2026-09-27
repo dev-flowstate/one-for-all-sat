@@ -18,6 +18,12 @@ export function WrongTabPage() {
   const rightCount = useMemo(() => getRightPool(questions, progress).length, [questions, progress]);
 
   const [retryingId, setRetryingId] = useState<string | null>(null);
+  // While a question is being retried its explanation stays hidden, until a miss shows the answer.
+  const [retryRevealed, setRetryRevealed] = useState(false);
+  const retry = (id: string | null) => {
+    setRetryingId(id);
+    setRetryRevealed(false);
+  };
 
   function handleResetAll() {
     if (wrongPool.length === 0) return;
@@ -26,7 +32,7 @@ export function WrongTabPage() {
     );
     if (confirmed) {
       resetProgress(wrongPool.map((q) => q.id));
-      setRetryingId(null);
+      retry(null);
     }
   }
 
@@ -81,11 +87,12 @@ export function WrongTabPage() {
               <QuestionReviewCard
                 key={question.id}
                 question={question}
+                hideExplanation={retryingId === question.id && !retryRevealed}
                 actions={
                   <>
                     <Button
                       variant="secondary"
-                      onClick={() => setRetryingId((id) => (id === question.id ? null : question.id))}
+                      onClick={() => retry(retryingId === question.id ? null : question.id)}
                     >
                       {retryingId === question.id ? 'Hide retry' : 'Retry'}
                     </Button>
@@ -95,7 +102,9 @@ export function WrongTabPage() {
                   </>
                 }
               >
-                {retryingId === question.id && <RetryForm question={question} onCancel={() => setRetryingId(null)} />}
+                {retryingId === question.id && (
+                  <RetryForm question={question} onCancel={() => retry(null)} onRevealed={setRetryRevealed} />
+                )}
               </QuestionReviewCard>
             ))}
           </div>
