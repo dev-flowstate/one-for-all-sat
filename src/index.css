@@ -40,7 +40,7 @@
  * text and borders are drawn in (now light on dark), and the fills that carry page-coloured
  * text (venice blue, coral, success, danger) get lighter, since that text is now dark. Rock
  * blue goes the other way, as it carries ink. `data-theme` is set in index.html before the
- * first paint, from the saved choice or the device's setting.
+ * first paint: light unless dark was picked with the button on the home screen.
  */
 :root {
   color-scheme: light;

@@ -49,7 +49,7 @@ export function HomePage() {
         </div>
 
         <div className="relative px-4 py-6 sm:px-6 sm:py-8">
-          <div className="mb-4 flex justify-end gap-3 sm:absolute sm:top-6 sm:right-6 sm:mb-0">
+          <div className="mb-4 flex flex-wrap justify-end gap-3">
             <button
               type="button"
               onClick={toggleTheme}
@@ -76,7 +76,7 @@ export function HomePage() {
                   <path d="M20 14A8 8 0 1 1 10 4a6 6 0 0 0 10 10z" fill="currentColor" fillOpacity="0.25" />
                 )}
               </svg>
-              <span className="hidden sm:inline">{theme === 'dark' ? 'Light' : 'Dark'}</span>
+              <span>{theme === 'dark' ? 'Light mode' : 'Dark mode'}</span>
             </button>
             <Link to="/resources" aria-label="Resources" className="press flex items-center gap-2 border-2 border-ink bg-paper px-2.5 py-2 font-mono text-xs font-bold tracking-tight uppercase shadow-[4px_4px_0_var(--color-ink)] hover:bg-merino-dark">
               {/* A play button, for the videos the page holds. */}
