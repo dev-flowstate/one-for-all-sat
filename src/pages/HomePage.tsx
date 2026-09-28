@@ -4,6 +4,7 @@ import { useProgressStore } from '../store/useProgressStore';
 import { useSettingsStore } from '../store/useSettingsStore';
 import { usePracticeTestStore } from '../store/usePracticeTestStore';
 import { useTheme } from '../lib/theme';
+import { SatCountdown } from '../components/sat/SatCountdown';
 import { Button } from '../components/ui/Button';
 import { testName } from '../lib/practiceTest/format';
 import { getMainPool, getWrongPool, getRightPool } from '../lib/pools';
@@ -16,7 +17,7 @@ export function HomePage() {
   const { questions, progress, stats, isLoaded, bundledCount, importedCount } = useProgressStore();
   const profile = useSettingsStore((s) => s.profile);
   const activeTest = usePracticeTestStore((s) => s.active);
-  const [theme, toggleTheme] = useTheme();
+  const { theme, toggleDark } = useTheme();
 
   const mainCount = getMainPool(questions, progress).length;
   const wrongCount = getWrongPool(questions, progress).length;
@@ -49,69 +50,72 @@ export function HomePage() {
         </div>
 
         <div className="relative px-4 py-6 sm:px-6 sm:py-8">
-          <div className="mb-4 flex flex-wrap justify-end gap-3">
-            <button
-              type="button"
-              onClick={toggleTheme}
-              aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-              className="press flex items-center gap-2 border-2 border-ink bg-paper px-2.5 py-2 font-mono text-xs font-bold tracking-tight uppercase shadow-[4px_4px_0_var(--color-ink)] hover:bg-merino-dark"
-            >
-              {/* A moon to go dark, a sun to come back. */}
-              <svg
-                aria-hidden="true"
-                viewBox="0 0 24 24"
-                className="h-6 w-6 flex-none text-caution"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.25"
-                strokeLinecap="square"
-                strokeLinejoin="miter"
+          <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
+            <SatCountdown />
+            <div className="ml-auto flex flex-wrap justify-end gap-3">
+              <button
+                type="button"
+                onClick={toggleDark}
+                aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+                className="press flex items-center gap-2 border-2 border-ink bg-paper px-2.5 py-2 font-mono text-xs font-bold tracking-tight uppercase shadow-[4px_4px_0_var(--color-ink)] hover:bg-merino-dark"
               >
-                {theme === 'dark' ? (
-                  <>
-                    <path d="M8 8h8v8H8z" fill="currentColor" fillOpacity="0.25" />
-                    <path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1" />
-                  </>
-                ) : (
-                  <path d="M20 14A8 8 0 1 1 10 4a6 6 0 0 0 10 10z" fill="currentColor" fillOpacity="0.25" />
-                )}
-              </svg>
-              <span>{theme === 'dark' ? 'Light mode' : 'Dark mode'}</span>
-            </button>
-            <Link to="/resources" aria-label="Resources" className="press flex items-center gap-2 border-2 border-ink bg-paper px-2.5 py-2 font-mono text-xs font-bold tracking-tight uppercase shadow-[4px_4px_0_var(--color-ink)] hover:bg-merino-dark">
-              {/* A play button, for the videos the page holds. */}
-              <svg
-                aria-hidden="true"
-                viewBox="0 0 24 24"
-                className="h-6 w-6 flex-none text-venice-blue"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.25"
-                strokeLinecap="square"
-                strokeLinejoin="miter"
-              >
-                <path d="M3 5h18v14H3z" />
-                <path d="M10 9v6l5-3z" fill="currentColor" />
-              </svg>
-              <span className="hidden sm:inline">Resources</span>
-            </Link>
-            <Link to="/leaderboard" aria-label="Leaderboard" className="press flex items-center gap-2 border-2 border-ink bg-paper px-2.5 py-2 font-mono text-xs font-bold tracking-tight uppercase shadow-[4px_4px_0_var(--color-ink)] hover:bg-merino-dark">
-              {/* A trophy, drawn square-cornered to match the rest of the chrome. */}
-              <svg
-                aria-hidden="true"
-                viewBox="0 0 24 24"
-                className="h-6 w-6 flex-none text-coral"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.25"
-                strokeLinecap="square"
-                strokeLinejoin="miter"
-              >
-                <path d="M7 3h10v6a5 5 0 0 1-10 0z" fill="currentColor" fillOpacity="0.25" />
-                <path d="M7 5H3v2a4 4 0 0 0 4 4M17 5h4v2a4 4 0 0 1-4 4M12 14v4M8 21h8v-3H8z" />
-              </svg>
-              <span className="hidden sm:inline">Leaderboard</span>
-            </Link>
+                {/* A moon to go dark, a sun to come back. */}
+                <svg
+                  aria-hidden="true"
+                  viewBox="0 0 24 24"
+                  className="h-6 w-6 flex-none text-caution"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.25"
+                  strokeLinecap="square"
+                  strokeLinejoin="miter"
+                >
+                  {theme === 'dark' ? (
+                    <>
+                      <path d="M8 8h8v8H8z" fill="currentColor" fillOpacity="0.25" />
+                      <path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1" />
+                    </>
+                  ) : (
+                    <path d="M20 14A8 8 0 1 1 10 4a6 6 0 0 0 10 10z" fill="currentColor" fillOpacity="0.25" />
+                  )}
+                </svg>
+                <span>{theme === 'dark' ? 'Light mode' : 'Dark mode'}</span>
+              </button>
+              <Link to="/resources" aria-label="Resources" className="press flex items-center gap-2 border-2 border-ink bg-paper px-2.5 py-2 font-mono text-xs font-bold tracking-tight uppercase shadow-[4px_4px_0_var(--color-ink)] hover:bg-merino-dark">
+                {/* A play button, for the videos the page holds. */}
+                <svg
+                  aria-hidden="true"
+                  viewBox="0 0 24 24"
+                  className="h-6 w-6 flex-none text-venice-blue"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.25"
+                  strokeLinecap="square"
+                  strokeLinejoin="miter"
+                >
+                  <path d="M3 5h18v14H3z" />
+                  <path d="M10 9v6l5-3z" fill="currentColor" />
+                </svg>
+                <span className="hidden sm:inline">Resources</span>
+              </Link>
+              <Link to="/leaderboard" aria-label="Leaderboard" className="press flex items-center gap-2 border-2 border-ink bg-paper px-2.5 py-2 font-mono text-xs font-bold tracking-tight uppercase shadow-[4px_4px_0_var(--color-ink)] hover:bg-merino-dark">
+                {/* A trophy, drawn square-cornered to match the rest of the chrome. */}
+                <svg
+                  aria-hidden="true"
+                  viewBox="0 0 24 24"
+                  className="h-6 w-6 flex-none text-coral"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.25"
+                  strokeLinecap="square"
+                  strokeLinejoin="miter"
+                >
+                  <path d="M7 3h10v6a5 5 0 0 1-10 0z" fill="currentColor" fillOpacity="0.25" />
+                  <path d="M7 5H3v2a4 4 0 0 0 4 4M17 5h4v2a4 4 0 0 1-4 4M12 14v4M8 21h8v-3H8z" />
+                </svg>
+                <span className="hidden sm:inline">Leaderboard</span>
+              </Link>
+            </div>
           </div>
           <p className="text-[11px] font-semibold tracking-tight text-ink-soft uppercase">Digital SAT practice</p>
           <h1 className="mt-2 text-3xl leading-none font-bold tracking-tight uppercase sm:text-5xl">

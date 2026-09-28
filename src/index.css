@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Inter:wght@400..700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Inter:wght@400..700&family=Noto+Serif:wght@400;600&display=swap');
 @import "tailwindcss";
 
 @theme {
@@ -69,6 +69,84 @@
   --color-danger: #ec7f6f;
   --color-danger-bg: #3b201c;
   --color-caution: #e0a94a;
+}
+
+/*
+ * Bluebook: blue and white, like College Board's test app. Tokens alone would keep the
+ * site's retro furniture, so this theme also swaps it for Bluebook's: a plain sans face for
+ * the interface and a serif for questions, sentence case, grey hairline borders, rounded
+ * corners and soft shadows in place of hard ink ones.
+ */
+:root[data-theme='bluebook'] {
+  --color-merino: #ffffff;
+  --color-merino-dark: #edf1fa;
+  --color-paper: #ffffff;
+
+  --color-ink: #1f1f1f;
+  --color-ink-soft: #5a5f6b;
+
+  --color-rock-blue: #e3e9f9;
+  --color-rock-blue-dark: #d2dbf5;
+  --color-venice-blue: #324dc7;
+  --color-venice-blue-dark: #2638a0;
+
+  /* The call-to-action colour: Bluebook's buttons are its blue, not coral. */
+  --color-coral: #324dc7;
+  --color-coral-dark: #2638a0;
+
+  --color-success: #1f7a45;
+  --color-success-bg: #e3f3e8;
+  --color-danger: #c0392b;
+  --color-danger-bg: #fbe7e4;
+  --color-caution: #b7791f;
+
+  --font-mono: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --font-sans: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --font-reading: 'Noto Serif', Georgia, 'Times New Roman', serif;
+}
+
+:root[data-theme='bluebook'] body {
+  background-image: none;
+}
+
+:root[data-theme='bluebook'] :is(.border-ink, .panel, .panel-raised, .panel-flat, .qtable, .qtable-head, .qtable-cell) {
+  border-color: #c5cad6;
+}
+
+/* `divide-ink` often carries a breakpoint prefix (`lg:divide-ink`), so match it anywhere. */
+:root[data-theme='bluebook'] [class*='divide-ink'] > * {
+  border-color: #c5cad6;
+}
+
+:root[data-theme='bluebook'] :is(.panel, .panel-raised, .panel-flat) {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+:root[data-theme='bluebook'] :is(.panel, [class*='shadow-[']) {
+  box-shadow: 0 1px 3px rgb(16 24 64 / 0.1);
+}
+
+:root[data-theme='bluebook'] .panel-raised {
+  box-shadow: 0 2px 8px rgb(16 24 64 / 0.12);
+}
+
+:root[data-theme='bluebook'] :is(button, input, select, textarea) {
+  border-radius: 8px;
+}
+
+:root[data-theme='bluebook'] .uppercase {
+  text-transform: none;
+}
+
+/* Bluebook's dark strips are navy. The 2px ruled grids use the same fill for their rules,
+   which should stay hairline grey. */
+:root[data-theme='bluebook'] .bg-ink {
+  background-color: #1c2472;
+}
+
+:root[data-theme='bluebook'] .bg-ink[class*='gap-[2px]'] {
+  background-color: #c5cad6;
 }
 
 html,

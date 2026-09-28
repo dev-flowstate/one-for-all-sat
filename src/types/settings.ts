@@ -20,6 +20,8 @@ export interface LocalProfile {
   createdAt: string;
   /** Signed-in users are on the leaderboard unless they turn this on. */
   hideFromLeaderboard?: boolean;
+  /** The student's SAT date (YYYY-MM-DD), which the home screen counts down to. */
+  satDate?: string;
 }
 
 export const DEFAULT_AVATARS = ['🦉', '📘', '🧮', '✏️', '🎯', '⭐', '🚀', '🧠'] as const;

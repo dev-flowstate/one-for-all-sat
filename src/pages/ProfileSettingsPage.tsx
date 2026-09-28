@@ -4,6 +4,8 @@ import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { AvatarPicker } from '../components/profile/AvatarPicker';
 import { AccountCard } from '../components/profile/AccountCard';
+import { ThemeCard } from '../components/profile/ThemeCard';
+import { SatDateCard } from '../components/profile/SatDateCard';
 import { useSettingsStore } from '../store/useSettingsStore';
 import { useProgressStore } from '../store/useProgressStore';
 import { useAccountStore } from '../store/useAccountStore';
@@ -65,6 +67,8 @@ export function ProfileSettingsPage() {
       </h1>
 
       <AccountCard />
+      <SatDateCard />
+      <ThemeCard />
 
       <Card className="mb-4" title={signedIn ? 'Profile' : 'Local profile'}>
         <p className="mb-4 text-sm text-ink-soft">

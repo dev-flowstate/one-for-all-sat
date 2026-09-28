@@ -243,7 +243,10 @@ export const useAccountStore = create<AccountState>((set, get) => {
   }
 
   return {
-    status: cloudConfigured ? 'signed-out' : 'off',
+    // Someone signed in on this browser before starts as "checking", not "signed out": the
+    // latter showed the home screen's sign-in banner for a frame before hiding it again, and
+    // the jump it gave everything below was the page's layout shift.
+    status: !cloudConfigured ? 'off' : getAccountOwner() ? 'checking' : 'signed-out',
     user: null,
     error: null,
     ready: false,

@@ -5,6 +5,7 @@ import { useSettingsStore } from './store/useSettingsStore';
 import { useVocabStore } from './store/useVocabStore';
 import { useAccountStore } from './store/useAccountStore';
 import { bundledQuestions } from './data/bundled-bank';
+import { SatDatePrompt } from './components/sat/SatDatePrompt';
 
 function App() {
   const loadAll = useProgressStore((s) => s.loadAll);
@@ -22,7 +23,12 @@ function App() {
     initAccount();
   }, [loadAll, loadShippedBank, loadProfile, loadVocab, initAccount]);
 
-  return <AppRouter />;
+  return (
+    <>
+      <AppRouter />
+      <SatDatePrompt />
+    </>
+  );
 }
 
 export default App;

@@ -12,13 +12,13 @@
     <title>One for All SAT</title>
     <script>
       // The theme, set before anything is drawn so a dark page never flashes light first.
-      // Light unless dark was picked. Kept in step with src/lib/theme.ts.
+      // Light unless another theme was picked. Kept in step with src/lib/theme.ts.
       (function () {
         var saved = null;
         try {
           saved = localStorage.getItem('ofa-sat:theme');
         } catch (e) {}
-        document.documentElement.dataset.theme = saved === 'dark' ? 'dark' : 'light';
+        document.documentElement.dataset.theme = saved === 'dark' || saved === 'bluebook' ? saved : 'light';
       })();
     </script>
   </head>

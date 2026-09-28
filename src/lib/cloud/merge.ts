@@ -52,7 +52,11 @@ export function mergeAccountData(local: AccountData, cloud: AccountData): Accoun
       bestStreak: Math.max(local.stats.bestStreak, cloud.stats.bestStreak),
     },
     vocabProgress: mergeByLatest(local.vocabProgress, cloud.vocabProgress, (s) => s.lastReviewedAt, (s) => s.reviews),
-    profile: local.profile ?? cloud.profile,
+    // The SAT date is kept from whichever side has one, so a date picked on one device
+    // isn't asked for again on the next.
+    profile: local.profile
+      ? { ...local.profile, satDate: local.profile.satDate ?? cloud.profile?.satDate }
+      : cloud.profile,
     activeTest,
     pausedTests,
     history,
