@@ -110,7 +110,7 @@ export function TestRunnerPage() {
 
       <CalculatorSplit calculatorOpen={calculatorOpen} onCloseCalculator={() => setCalculatorOpen(false)}>
         <TestRunnerLayout>
-          <Card title="Question">
+          <Card className="bb-question-card" title="Question">
             <QuestionPanel
               key={question.id}
               question={question}

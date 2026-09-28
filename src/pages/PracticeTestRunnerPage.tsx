@@ -99,13 +99,13 @@ export function PracticeTestRunnerPage() {
     // Same arrangement as a drill: a fixed-height split with the calculator open, an ordinary
     // scrolling page with it closed.
     <div className={calculatorOpen ? 'flex h-[100dvh] flex-col overflow-hidden' : 'min-h-screen pb-24'}>
-      <div className="sticky top-0 z-20 flex-none border-b-2 border-ink bg-merino-dark">
+      <div className="bb-header sticky top-0 z-20 flex-none border-b-2 border-ink bg-merino-dark">
         <div className="mx-auto max-w-6xl px-3 py-1.5 sm:px-4 sm:py-2">
           <div className="flex items-center gap-2 sm:gap-3">
             <Button variant="ghost" onClick={exit} className="-ml-1 flex-none">
               Save &amp; exit
             </Button>
-            <p className="min-w-0 flex-1 truncate font-mono text-xs font-bold tracking-tight uppercase">
+            <p className="bb-title min-w-0 flex-1 truncate font-mono text-xs font-bold tracking-tight uppercase">
               {moduleTitle(module)}
             </p>
             {test.timed ? (
@@ -131,6 +131,8 @@ export function PracticeTestRunnerPage() {
                 active={test.marked.includes(question.id)}
                 onToggle={() => toggleMarked(question.id)}
                 label="Mark for review"
+                // Bluebook puts this beside the question number instead.
+                className="bb-hide"
               />
             )}
             <Toggle active={highlighterActive} onToggle={toggleHighlighter} label="Highlighter" />
@@ -142,12 +144,38 @@ export function PracticeTestRunnerPage() {
         </div>
       </div>
 
+      {/* Bluebook's strip under the header; shown only in the Bluebook theme. */}
+      <p className="bb-only bb-banner flex-none">THIS IS A PRACTICE TEST</p>
+
       <CalculatorSplit calculatorOpen={calculatorOpen} onCloseCalculator={() => setCalculatorOpen(false)}>
         {onReview ? (
           <ModuleReview test={test} moduleIndex={moduleIndex} />
         ) : (
           <TestRunnerLayout>
-            <Card title={`Question ${index + 1}`}>
+            <Card
+              className="bb-question-card"
+              title={
+                <span className="flex items-center gap-3">
+                  <span className="bb-qnum">
+                    <span className="bb-hide">Question </span>
+                    {index + 1}
+                  </span>
+                  {question && (
+                    <button
+                      type="button"
+                      aria-pressed={test.marked.includes(question.id)}
+                      onClick={() => toggleMarked(question.id)}
+                      className="bb-only-flex items-center gap-1.5"
+                    >
+                      <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5" fill={test.marked.includes(question.id) ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2">
+                        <path d="M6 3h12v18l-6-5-6 5z" />
+                      </svg>
+                      Mark for Review
+                    </button>
+                  )}
+                </span>
+              }
+            >
               {question ? (
                 <TestQuestion key={question.id} question={question} />
               ) : (
@@ -160,12 +188,12 @@ export function PracticeTestRunnerPage() {
 
       <nav
         aria-label="Question navigation"
-        className={`z-20 flex-none border-t-2 border-ink bg-merino-dark ${calculatorOpen ? '' : 'fixed inset-x-0 bottom-0'}`}
+        className={`bb-footer z-20 flex-none border-t-2 border-ink bg-merino-dark ${calculatorOpen ? '' : 'fixed inset-x-0 bottom-0'}`}
       >
         <div className="mx-auto flex max-w-6xl items-center gap-2 px-3 py-2 sm:px-4">
           <Button
             variant="secondary"
-            className="flex-none"
+            className="bb-nav-btn flex-none"
             disabled={!onReview && index === 0}
             onClick={() => goTo(onReview ? ids.length - 1 : index - 1)}
           >
@@ -175,14 +203,14 @@ export function PracticeTestRunnerPage() {
             {onReview ? (
               <p className="font-mono text-xs font-bold tracking-tight uppercase">Check your work</p>
             ) : (
-              <Button variant="ghost" onClick={() => setNavigatorFor(moduleIndex)} aria-haspopup="dialog">
+              <Button variant="ghost" className="bb-qnav" onClick={() => setNavigatorFor(moduleIndex)} aria-haspopup="dialog">
                 Question {index + 1} of {ids.length} ▴
               </Button>
             )}
           </div>
           {!onReview && (
             <Button
-              className="flex-none"
+              className="bb-nav-btn flex-none"
               onClick={() => (index + 1 >= ids.length ? showReview() : goTo(index + 1))}
             >
               Next

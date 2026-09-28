@@ -89,12 +89,12 @@ export function QuestionPanel({ question, revealMode, isLast, onNext, onBack }: 
       {(onBack || (submitted && answered)) && (
         <div className="mt-5 flex gap-3">
           {onBack && (
-            <Button variant="secondary" className="flex-none" onClick={onBack}>
+            <Button variant="secondary" className="bb-nav-btn flex-none" onClick={onBack}>
               Back
             </Button>
           )}
           {submitted && answered && (
-            <Button className="flex-1" onClick={onNext}>
+            <Button className="bb-nav-btn flex-1" onClick={onNext}>
               {isLast ? 'Finish' : 'Next'}
             </Button>
           )}

@@ -42,7 +42,7 @@ export function TestRunnerToolbar({
   onTimerExpire,
 }: TestRunnerToolbarProps) {
   return (
-    <div className="sticky top-0 z-20 border-b-2 border-ink bg-merino-dark">
+    <div className="bb-header sticky top-0 z-20 border-b-2 border-ink bg-merino-dark">
       <div className="mx-auto max-w-6xl px-3 py-1.5 sm:px-4 sm:py-2">
         <div className="flex items-center gap-2 sm:gap-3">
           <Button variant="ghost" onClick={onExit} className="-ml-1 flex-none">

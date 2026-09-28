@@ -123,12 +123,9 @@
   overflow: hidden;
 }
 
-:root[data-theme='bluebook'] :is(.panel, [class*='shadow-[']) {
-  box-shadow: 0 1px 3px rgb(16 24 64 / 0.1);
-}
-
-:root[data-theme='bluebook'] .panel-raised {
-  box-shadow: 0 2px 8px rgb(16 24 64 / 0.12);
+:root[data-theme='bluebook'] :is(.panel, .panel-raised, [class*='shadow-[']) {
+  /* Bluebook is flat: no shadows at all, soft or hard. */
+  box-shadow: none;
 }
 
 :root[data-theme='bluebook'] :is(button, input, select, textarea) {
@@ -147,6 +144,145 @@
 
 :root[data-theme='bluebook'] .bg-ink[class*='gap-[2px]'] {
   background-color: #c5cad6;
+}
+
+/*
+ * The test screens, laid out like Bluebook's. `bb-*` classes are hooks that style nothing in
+ * the other themes; `bb-only` pieces exist only here and `bb-hide` ones everywhere else.
+ */
+.bb-only,
+.bb-only-flex {
+  display: none;
+}
+
+:root[data-theme='bluebook'] .bb-only {
+  display: block;
+}
+
+:root[data-theme='bluebook'] .bb-only-flex {
+  display: flex;
+}
+
+:root[data-theme='bluebook'] .bb-hide {
+  display: none;
+}
+
+:root[data-theme='bluebook'] :is(.bb-header, .bb-footer) {
+  background-color: #e6ecf8;
+  border-color: #161a4f;
+  border-style: dashed;
+}
+
+:root[data-theme='bluebook'] .bb-title {
+  font-size: 1.05rem;
+}
+
+:root[data-theme='bluebook'] .bb-banner {
+  margin: 0 1.5rem;
+  border-radius: 0 0 12px 12px;
+  background-color: #1a2263;
+  padding: 0.3rem;
+  color: #ffffff;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+/* No card around the question: it sits on the page, under a grey bar holding the question's
+   number in a black square and Mark for Review. */
+:root[data-theme='bluebook'] .bb-question-card {
+  border: 0;
+  border-radius: 0;
+  background-color: transparent;
+}
+
+:root[data-theme='bluebook'] .bb-question-card > :first-child {
+  border-bottom: 2px dashed #1e1e1e;
+  background-color: #f0f0f0;
+  padding: 0 0.75rem 0 0;
+}
+
+:root[data-theme='bluebook'] .bb-question-card > :first-child > [aria-hidden='true'] {
+  display: none;
+}
+
+:root[data-theme='bluebook'] .bb-question-card > :first-child * {
+  color: #1e1e1e;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+:root[data-theme='bluebook'] .bb-qnum {
+  display: inline-flex;
+  min-width: 2.25rem;
+  align-self: stretch;
+  align-items: center;
+  justify-content: center;
+  background-color: #1e1e1e;
+  padding: 0.4rem 0.6rem;
+}
+
+:root[data-theme='bluebook'] .bb-question-card > :first-child .bb-qnum {
+  color: #ffffff;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+:root[data-theme='bluebook'] .bb-split > * {
+  border-color: #8c8c8c;
+}
+
+/* Answer choices: a grey outline with a round letter; the chosen one outlined in blue. */
+:root[data-theme='bluebook'] .bb-choice {
+  border-width: 1.5px;
+  border-color: #767676;
+}
+
+:root[data-theme='bluebook'] .bb-choice[data-selected='true'] {
+  border-width: 3px;
+  border-color: #334dc8;
+  background-color: #ffffff;
+  color: #1e1e1e;
+}
+
+:root[data-theme='bluebook'] .bb-letter {
+  width: 1.75rem;
+  height: 1.75rem;
+  border-width: 1.5px;
+  border-color: #1e1e1e;
+  border-radius: 9999px;
+  background-color: #ffffff;
+  color: #1e1e1e;
+}
+
+:root[data-theme='bluebook'] .bb-choice[data-selected='true'] .bb-letter {
+  border-color: #334dc8;
+  background-color: #334dc8;
+  color: #ffffff;
+}
+
+/* The footer: blue pill buttons, and the question count as a black pill. */
+:root[data-theme='bluebook'] .bb-nav-btn {
+  border-color: #334dc8;
+  border-radius: 9999px;
+  background-color: #334dc8;
+  padding-inline: 1.75rem;
+  color: #ffffff;
+}
+
+:root[data-theme='bluebook'] .bb-nav-btn:hover:not(:disabled) {
+  background-color: #2638a0;
+}
+
+:root[data-theme='bluebook'] .bb-qnav {
+  border-radius: 6px;
+  background-color: #1e1e1e;
+  color: #ffffff;
+  font-weight: 700;
+}
+
+:root[data-theme='bluebook'] .bb-qnav:hover {
+  background-color: #000000;
 }
 
 html,

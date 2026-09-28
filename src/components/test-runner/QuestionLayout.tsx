@@ -45,7 +45,7 @@ export function QuestionLayout({ question, children }: QuestionLayoutProps) {
   );
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 lg:divide-x-2 lg:divide-ink">
+    <div className="bb-split grid grid-cols-1 lg:grid-cols-2 lg:divide-x-2 lg:divide-ink">
       <div className="min-w-0 lg:pr-6">
         {figuresFirst && figures}
         {stimulus && (

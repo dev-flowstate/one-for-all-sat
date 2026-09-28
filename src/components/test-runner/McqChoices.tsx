@@ -100,10 +100,12 @@ function ChoiceButton({ choice, crossed, disabled, isSelected, isCorrect, isWron
       disabled={disabled}
       onClick={onClick}
       aria-label={crossed ? `Restore choice ${choice.id}` : choice.image ? `Choice ${choice.id}` : undefined}
-      className={`press relative flex min-h-14 w-full items-center gap-3 border-2 border-ink px-3 py-2.5 text-left disabled:cursor-default ${surface}`}
+      // bb-* classes are hooks for the Bluebook theme and style nothing on their own.
+      data-selected={isSelected && !isCorrect && !isWrongSelection}
+      className={`bb-choice press relative flex min-h-14 w-full items-center gap-3 border-2 border-ink px-3 py-2.5 text-left disabled:cursor-default ${surface}`}
     >
       <span
-        className={`flex h-8 w-8 flex-none items-center justify-center border-2 font-mono text-sm font-bold ${badge}`}
+        className={`bb-letter flex h-8 w-8 flex-none items-center justify-center border-2 font-mono text-sm font-bold ${badge}`}
       >
         {choice.id}
       </span>
