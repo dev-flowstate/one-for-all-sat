@@ -19,7 +19,7 @@ const VARIANT_CLASSES: Record<Variant, string> = {
 export function Button({ variant = 'primary', className = '', children, ...rest }: ButtonProps) {
   return (
     <button
-      className={`inline-flex min-h-11 items-center justify-center gap-2 px-4 py-2.5 font-mono text-sm font-semibold tracking-tight uppercase disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none ${VARIANT_CLASSES[variant]} ${className}`}
+      className={`bb-btn-${variant} inline-flex min-h-11 items-center justify-center gap-2 px-4 py-2.5 font-mono text-sm font-semibold tracking-tight uppercase disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none ${VARIANT_CLASSES[variant]} ${className}`}
       {...rest}
     >
       {children}

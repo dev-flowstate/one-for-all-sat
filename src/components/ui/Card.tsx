@@ -13,7 +13,7 @@ export function Card({ className = '', title, titleRight, children, ...rest }: C
   return (
     <div className={`panel ${className}`} {...rest}>
       {title !== undefined && (
-        <div className="flex items-center gap-2 border-b-2 border-ink bg-venice-blue px-3 py-1.5">
+        <div className="bb-cardbar flex items-center gap-2 border-b-2 border-ink bg-venice-blue px-3 py-1.5">
           {/* The two dots read as window controls; decorative, so hidden from screen readers. */}
           <span aria-hidden="true" className="flex gap-1">
             <span className="block h-2.5 w-2.5 rounded-full border-2 border-merino" />

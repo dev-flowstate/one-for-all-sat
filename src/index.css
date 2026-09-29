@@ -147,6 +147,43 @@
 }
 
 /*
+ * Bluebook is white and pale grey, with its blue kept for the main action and what's
+ * selected. Large blue fills (card title bars, the sign-in banner, the countdown) become
+ * the pale grey-blue of its header, and secondary buttons white with a grey outline.
+ */
+:root[data-theme='bluebook'] :is(.bb-cardbar, .bb-soft) {
+  border-color: #c5cad6;
+  background-color: #e6ecf8;
+}
+
+:root[data-theme='bluebook'] :is(.bb-cardbar, .bb-soft, .bb-soft *) {
+  color: #1e1e1e;
+}
+
+:root[data-theme='bluebook'] .bb-cardbar {
+  border-bottom-width: 1px;
+}
+
+:root[data-theme='bluebook'] .bb-cardbar * {
+  color: #1e1e1e;
+}
+
+:root[data-theme='bluebook'] .bb-cardbar > [aria-hidden='true'] {
+  display: none;
+}
+
+:root[data-theme='bluebook'] .bb-btn-secondary {
+  border-width: 1.5px;
+  border-color: #767676;
+  background-color: #ffffff;
+  color: #1e1e1e;
+}
+
+:root[data-theme='bluebook'] .bb-btn-secondary:hover:not(:disabled) {
+  background-color: #f0f2f5;
+}
+
+/*
  * The test screens, laid out like Bluebook's. `bb-*` classes are hooks that style nothing in
  * the other themes; `bb-only` pieces exist only here and `bb-hide` ones everywhere else.
  */

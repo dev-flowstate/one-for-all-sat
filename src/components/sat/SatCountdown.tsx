@@ -26,7 +26,7 @@ export function SatCountdown() {
     <div
       role="timer"
       aria-label={`${days} days, ${clock} until your SAT on ${satLabel(satDate)}`}
-      className="border-2 border-ink bg-venice-blue px-3 py-1.5 text-merino shadow-[4px_4px_0_var(--color-ink)]"
+      className="bb-soft border-2 border-ink bg-venice-blue px-3 py-1.5 text-merino shadow-[4px_4px_0_var(--color-ink)]"
     >
       <p className="font-mono text-[10px] font-semibold tracking-tight uppercase">SAT · {satLabel(satDate)}</p>
       <p className="font-mono text-lg leading-tight font-bold tabular-nums">

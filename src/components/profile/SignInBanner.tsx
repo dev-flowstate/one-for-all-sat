@@ -31,7 +31,7 @@ export function SignInBanner() {
   return (
     <section
       aria-labelledby="sign-in-banner-title"
-      className="mt-4 border-2 border-ink bg-venice-blue text-merino shadow-[6px_6px_0_var(--color-ink)] sm:mt-6"
+      className="bb-soft mt-4 border-2 border-ink bg-venice-blue text-merino shadow-[6px_6px_0_var(--color-ink)] sm:mt-6"
     >
       <div className="flex flex-col gap-4 px-4 py-5 sm:flex-row sm:items-center sm:px-6">
         <div className="min-w-0 flex-1">

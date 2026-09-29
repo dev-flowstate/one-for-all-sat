@@ -59,7 +59,7 @@ export function SatDatePrompt() {
     >
       <h2
         id="sat-date-title"
-        className="border-b-2 border-ink bg-venice-blue px-4 py-2 font-mono text-sm font-bold tracking-tight text-merino uppercase"
+        className="bb-cardbar border-b-2 border-ink bg-venice-blue px-4 py-2 font-mono text-sm font-bold tracking-tight text-merino uppercase"
       >
         When is your SAT?
       </h2>

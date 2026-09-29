@@ -45,7 +45,7 @@ export function ConfirmDialog({
       }}
       className="panel-raised m-auto w-[min(28rem,calc(100vw-2rem))] p-0 text-ink backdrop:bg-ink/50"
     >
-      <h2 id={titleId} className="border-b-2 border-ink bg-venice-blue px-4 py-2 font-mono text-sm font-bold tracking-tight text-merino uppercase">
+      <h2 id={titleId} className="bb-cardbar border-b-2 border-ink bg-venice-blue px-4 py-2 font-mono text-sm font-bold tracking-tight text-merino uppercase">
         {title}
       </h2>
       <div className="flex flex-col gap-3 px-4 py-4 text-sm">{children}</div>
