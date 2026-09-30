@@ -1,23 +1,24 @@
 import { useState } from 'react';
 
-export type Theme = 'light' | 'dark' | 'bluebook';
+export type Theme = 'light' | 'dark' | 'bluebook' | 'minecraft';
 
 export const THEMES: { id: Theme; label: string; description: string }[] = [
   { id: 'light', label: 'Light', description: 'Cream paper and ink, the site’s own look.' },
   { id: 'dark', label: 'Dark', description: 'The same look, dark, for night studying.' },
   { id: 'bluebook', label: 'Bluebook', description: 'Blue and white, like the real test app.' },
+  { id: 'minecraft', label: 'Minecraft-style', description: 'Sky, grass and dirt, in blocky pixels.' },
 ];
 
 /** Light unless another has been picked; the choice is remembered on this device. Kept in step
  *  with the script in index.html, which applies it before the first paint. */
 const THEME_KEY = 'ofa-sat:theme';
-/** The theme the dark-mode button returns to, so leaving dark mode goes back to Bluebook when
- *  that was in use rather than always to light. */
+/** The theme the dark-mode button returns to, so leaving dark mode goes back to the theme that
+ *  was in use rather than always to light. */
 const DAY_THEME_KEY = 'ofa-sat:day-theme';
 
 function currentTheme(): Theme {
   const value = document.documentElement.dataset.theme;
-  return value === 'dark' || value === 'bluebook' ? value : 'light';
+  return value === 'dark' || value === 'bluebook' || value === 'minecraft' ? value : 'light';
 }
 
 function remember(key: string, value: string) {
@@ -30,7 +31,8 @@ function remember(key: string, value: string) {
 
 function dayTheme(): Theme {
   try {
-    return localStorage.getItem(DAY_THEME_KEY) === 'bluebook' ? 'bluebook' : 'light';
+    const value = localStorage.getItem(DAY_THEME_KEY);
+    return value === 'bluebook' || value === 'minecraft' ? value : 'light';
   } catch {
     return 'light';
   }

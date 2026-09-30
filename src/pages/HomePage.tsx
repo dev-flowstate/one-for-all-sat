@@ -118,8 +118,8 @@ export function HomePage() {
             </div>
           </div>
           <p className="text-[11px] font-semibold tracking-tight text-ink-soft uppercase">Digital SAT practice</p>
-          <h1 className="mt-2 text-3xl leading-none font-bold tracking-tight uppercase sm:text-5xl">
-            One for all <span className="inline-block bg-venice-blue px-2 py-1 text-merino">SAT</span>
+          <h1 className="mc-logo mt-2 text-3xl leading-none font-bold tracking-tight uppercase sm:text-5xl">
+            One for all <span className="mc-logo-accent inline-block bg-venice-blue px-2 py-1 text-merino">SAT</span>
           </h1>
           <p className="mt-4 text-sm text-ink-soft">
             {profile ? `Welcome back, ${profile.avatar} ${profile.nickname}` : 'Your personal SAT practice space'}

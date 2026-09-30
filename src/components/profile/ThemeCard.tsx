@@ -7,7 +7,7 @@ export function ThemeCard() {
 
   return (
     <Card className="mb-4" title="Theme">
-      <div className="grid gap-3 sm:grid-cols-3" role="radiogroup" aria-label="Theme">
+      <div className="grid gap-3 sm:grid-cols-2" role="radiogroup" aria-label="Theme">
         {THEMES.map((option) => (
           <button
             key={option.id}
