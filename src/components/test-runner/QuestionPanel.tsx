@@ -25,7 +25,9 @@ interface QuestionPanelProps {
 const EMPTY_CHOICE_IDS: ChoiceId[] = [];
 
 /**
- * One drill question, graded the moment it's answered.
+ * One drill question. Revealed after each question, a tapped choice is only picked until
+ * Check answer grades it, so a mis-tap can't cost the question. Revealed at the end, it's
+ * recorded straight away and can change until Next.
  *
  * Mount this keyed by question.id so all local per-question UI state resets on navigation.
  */
@@ -40,6 +42,8 @@ export function QuestionPanel({ question, revealMode, isLast, onNext, onBack }: 
   const answerCurrent = useSessionStore((s) => s.answerCurrent);
   const toggleCrossedChoice = useSessionStore((s) => s.toggleCrossedChoice);
   const submitted = !!answered;
+  // A choice picked but not yet checked, in the reveal-after-each-question mode.
+  const [pending, setPending] = useState<ChoiceId | undefined>(undefined);
   // Revealed straight away, an answer is final. Revealed at the end, it can change until Next.
   const locked = submitted && revealMode === 'immediate';
 
@@ -55,6 +59,14 @@ export function QuestionPanel({ question, revealMode, isLast, onNext, onBack }: 
       toggleCrossedChoice(question.id, choiceId);
       return;
     }
+    if (revealMode === 'immediate') {
+      setPending(choiceId);
+      return;
+    }
+    grade(choiceId);
+  }
+
+  function grade(choiceId: ChoiceId) {
     const outcome: AttemptOutcome = checkMcqAnswer(choiceId, question.correctChoice) ? 'correct' : 'incorrect';
     answerCurrent(outcome, choiceId);
   }
@@ -72,13 +84,21 @@ export function QuestionPanel({ question, revealMode, isLast, onNext, onBack }: 
           choices={question.choices ?? []}
           crossedIds={crossedIds}
           submitted={locked}
-          selectedChoice={answered?.selectedChoice}
+          selectedChoice={answered?.selectedChoice ?? pending}
           correctChoice={question.correctChoice}
           revealMode={revealMode}
           onChoiceClick={handleChoiceClick}
         />
       ) : (
         <SprInput value={sprValue} onChange={setSprValue} onSubmit={handleSprSubmit} submitted={locked} />
+      )}
+
+      {!submitted && pending && (
+        <div className="mt-5">
+          <Button className="bb-nav-btn w-full" onClick={() => grade(pending)}>
+            Check answer
+          </Button>
+        </div>
       )}
 
       {submitted && answered && revealMode === 'immediate' && (
