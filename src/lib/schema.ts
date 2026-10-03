@@ -29,6 +29,7 @@ export const questionSchema = z
     images: z.array(questionImageSchema).optional(),
     underlines: z.array(z.object({ start: z.number().int().nonnegative(), end: z.number().int().positive() })).optional(),
     testOnly: z.boolean().optional(),
+    verified: z.boolean().optional(),
     source: z.enum(['bundled', 'imported']),
   })
   .refine((q) => (q.type === 'mcq' ? !!q.choices?.length && !!q.correctChoice : true), {

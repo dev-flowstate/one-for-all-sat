@@ -48,5 +48,7 @@ export interface Question {
   /** Belongs to a named practice test, so it's kept out of practice sets and generated tests
    *  until it's been answered there. */
   testOnly?: boolean;
+  /** Checked by hand against the College Board original: question, choices and key. */
+  verified?: boolean;
   source: 'bundled' | 'imported';
 }
