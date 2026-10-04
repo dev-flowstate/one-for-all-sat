@@ -29,6 +29,14 @@ export interface TestRouting {
   routedEasier?: boolean;
 }
 
+/** Which second modules a paper with a choice of path is taken with: the medium (easier) or the
+ *  hard version. Its first attempt includes each section's baseline module; later attempts are
+ *  the chosen second modules alone. */
+export interface PaperPath {
+  level: 'medium' | 'hard';
+  module2Only: boolean;
+}
+
 export type TestStage =
   | { kind: 'module'; module: number; view: 'question' | 'review' }
   | { kind: 'break' };
@@ -44,6 +52,8 @@ export interface ActiveTest {
   presetId?: string;
   /** One entry per routed module: a full test routes both sections' second modules. */
   routing?: TestRouting[];
+  /** Set for a paper taken on a path of the student's choosing rather than one routed. */
+  paperPath?: PaperPath;
   createdAt: string;
   /** Untimed tests have no module clocks and no break countdown. */
   timed: boolean;
@@ -73,13 +83,17 @@ export interface CompletedTest {
   /** For an adaptive test: for each routed module in order, whether its easier version was
    *  given. (Tests saved before a test could route twice hold a single boolean here.) */
   routedEasier?: boolean[];
+  paperPath?: PaperPath;
   createdAt: string;
   completedAt: string;
   timed: boolean;
   /** A section's score, or null when the test didn't include that section. */
   readingWriting: number | null;
   math: number | null;
-  /** Out of 1600, only when the test had both sections. */
+  /** What a section is scored out of: 800, or 400 for second modules taken alone. Older
+   *  tests have none and are out of 800. */
+  sectionMax?: number;
+  /** Out of twice `sectionMax`, only when the test had both sections. */
   total: number | null;
   /** Every question in test order. A question left blank counts as incorrect, as on the SAT. */
   answers: SessionAnswer[];

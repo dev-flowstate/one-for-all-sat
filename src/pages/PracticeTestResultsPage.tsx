@@ -23,6 +23,7 @@ export function PracticeTestResultsPage() {
   // A named test may cover one section only; that section's score is then the headline.
   const sections = SECTIONS.filter((s) => scores[s.subject] !== null);
   const only = sections.length === 1 ? sections[0] : null;
+  const sectionMax = result.sectionMax ?? 800;
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-6 sm:py-10">
@@ -46,7 +47,7 @@ export function PracticeTestResultsPage() {
               {only ? scores[only.subject] : result.total}
             </span>
             <span className="text-2xl font-bold tracking-tight text-ink-soft tabular-nums sm:text-4xl">
-              / {only ? 800 : 1600}
+              / {only ? sectionMax : sectionMax * 2}
             </span>
           </p>
         </div>
@@ -58,7 +59,7 @@ export function PracticeTestResultsPage() {
                 <dt className="text-[10px] font-semibold tracking-tight text-ink-soft uppercase">{section.title}</dt>
                 <dd className="mt-1 text-3xl font-bold tabular-nums">
                   {scores[section.subject]}
-                  <span className="text-base text-ink-soft"> / 800</span>
+                  <span className="text-base text-ink-soft"> / {sectionMax}</span>
                 </dd>
               </div>
             ))}

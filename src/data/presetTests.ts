@@ -38,3 +38,56 @@ export const PRESET_TESTS: PresetTest[] = [
     ],
   },
 ];
+
+/** A paper whose second modules the student picks, medium or hard, instead of being routed. */
+export interface PaperTest {
+  id: string;
+  name: string;
+  description: string;
+  file: string;
+  sections: { baseline: TestModule; medium: TestModule; hard: TestModule }[];
+}
+
+/** Module ids, with any question that also appears word for word in the other version of the
+ *  module kept under the one id, so it counts once however many times it's answered. */
+function idsWithShared(prefix: string, count: number, shared: Record<number, string>): string[] {
+  return moduleIds(prefix, count).map((id, i) => shared[i + 1] ?? id);
+}
+
+/** Minutes for a module, at the real test's pace: 32 minutes per 27 Reading and Writing
+ *  questions, 35 per 22 Math. */
+function minutesFor(subject: 'reading-writing' | 'math', count: number): number {
+  return Math.round(subject === 'math' ? (count * 35) / 22 : (count * 32) / 27);
+}
+
+function paperModule(subject: 'reading-writing' | 'math', number: 1 | 2, questionIds: string[]): TestModule {
+  return { subject, number, minutes: minutesFor(subject, questionIds.length), questionIds };
+}
+
+export const PAPER_TESTS: PaperTest[] = [
+  {
+    id: 'october-2026',
+    name: 'October 3rd SAT',
+    description:
+      'Reading and Writing, a 10-minute break, then Math. Each section starts with a baseline module; you choose whether its second module is the medium or the hard one.',
+    file: 'tests/october-2026.json',
+    sections: [
+      {
+        baseline: paperModule('reading-writing', 1, moduleIds('oct26-rw-m1', 32)),
+        medium: paperModule('reading-writing', 2, moduleIds('oct26-rw-m2e', 29)),
+        hard: paperModule('reading-writing', 2, idsWithShared('oct26-rw-m2h', 30, { 29: 'oct26-rw-m2e-26' })),
+      },
+      {
+        baseline: paperModule('math', 1, moduleIds('oct26-math-m1', 24)),
+        medium: paperModule('math', 2, moduleIds('oct26-math-m2e', 25)),
+        hard: paperModule('math', 2, idsWithShared('oct26-math-m2h', 27, { 12: 'oct26-math-m2e-05', 17: 'oct26-math-m2e-20' })),
+      },
+    ],
+  },
+];
+
+/** The modules of a paper on a chosen path: each section's baseline then its chosen second
+ *  module, or the chosen second modules alone. */
+export function paperModules(paper: PaperTest, level: 'medium' | 'hard', module2Only: boolean): TestModule[] {
+  return paper.sections.flatMap((s) => (module2Only ? [s[level]] : [s.baseline, s[level]]));
+}

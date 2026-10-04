@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import type { Question } from '../types/question';
-import type { ActiveTest, CompletedTest, TestModule, TestResponse, TestRouting } from '../types/practiceTest';
+import type { ActiveTest, CompletedTest, PaperPath, TestModule, TestResponse, TestRouting } from '../types/practiceTest';
 import {
   getActiveTest,
   getPausedTests,
@@ -29,7 +29,7 @@ interface PracticeTestState {
   begin: (
     modules: TestModule[],
     timed: boolean,
-    preset?: { id: string; name: string; routing?: TestRouting[] },
+    preset?: { id: string; name: string; routing?: TestRouting[]; paperPath?: PaperPath },
   ) => void;
   respond: (questionId: string, response: TestResponse | null) => void;
   toggleMarked: (questionId: string) => void;
@@ -70,8 +70,12 @@ const savedTest = upgradeSavedTest(getActiveTest());
 const savedPaused = getPausedTests().map((t) => upgradeSavedTest(t) as ActiveTest);
 const savedHistory = upgradeSavedHistory(getTestHistory());
 
-/** The section break sits between the last Reading and Writing module and the first Math one. */
-const MODULE_BEFORE_BREAK = 1;
+/** The section break sits between the last Reading and Writing module and the first Math one:
+ *  after the second module of a full test, after the first when second modules are taken alone.
+ *  -1 when the test has only one section, which has no break. */
+function moduleBeforeBreak(modules: TestModule[]): number {
+  return modules.findIndex((m, i) => m.subject === 'reading-writing' && modules[i + 1]?.subject === 'math');
+}
 
 export const usePracticeTestStore = create<PracticeTestState>((set, get) => {
   function update(change: Partial<ActiveTest>) {
@@ -133,6 +137,7 @@ export const usePracticeTestStore = create<PracticeTestState>((set, get) => {
           name: preset?.name ?? `Practice Test ${generated + 1}`,
           presetId: preset?.id,
           routing: preset?.routing,
+          paperPath: preset?.paperPath,
           createdAt: new Date().toISOString(),
           timed,
           modules,
@@ -207,12 +212,15 @@ export const usePracticeTestStore = create<PracticeTestState>((set, get) => {
         });
       }
       if (next >= active.modules.length) finish();
-      else if (active.stage.module === MODULE_BEFORE_BREAK) {
+      else if (active.stage.module === moduleBeforeBreak(active.modules)) {
         update({ stage: { kind: 'break' }, secondsLeft: BREAK_MINUTES * 60 });
       } else startModule(next);
     },
 
-    endBreak: () => startModule(MODULE_BEFORE_BREAK + 1),
+    endBreak: () => {
+      const { active } = get();
+      if (active) startModule(moduleBeforeBreak(active.modules) + 1);
+    },
 
     resume: (createdAt) => {
       const { active, paused } = get();
