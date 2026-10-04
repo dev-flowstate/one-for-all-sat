@@ -225,38 +225,6 @@
    "source": "imported"
   },
   {
-   "id": "oct26-rw-m1-08",
-   "subject": "reading-writing",
-   "domain": "Craft and Structure",
-   "skill": "Text Structure and Purpose",
-   "difficulty": "Medium",
-   "type": "mcq",
-   "passage": "Modern forestry offers diverse career opportunities that integrate scientific knowledge with hands-on environmental work. Arborists assess tree health and perform maintenance such as pruning to promote safety and prevent problems. Forestry technicians collect data on growth patterns and biodiversity in the wild. Forest ecologists conduct field research and analyze ecosystems to understand how forests respond to changes in weather patterns. With this blend of scientific understanding and practical application, forestry professionals address a variety of complex environmental challenges.",
-   "prompt": "Which choice best describes the main purpose of the text?",
-   "choices": [
-    {
-     "id": "A",
-     "text": "To explain technological advances in modern forestry and demonstrate how they’ve transformed traditional practices"
-    },
-    {
-     "id": "B",
-     "text": "To analyze environmental challenges facing forests and describe how modern professionals address these problems"
-    },
-    {
-     "id": "C",
-     "text": "To compare career opportunities in modern forestry and explain which positions offer the best job security"
-    },
-    {
-     "id": "D",
-     "text": "To highlight career opportunities in modern forestry and describe how they integrate scientific knowledge and hands-on work"
-    }
-   ],
-   "correctChoice": "D",
-   "explanation": "The text names three forestry careers and shows each combining science with hands-on work, as its first and last sentences say. It doesn't discuss technology, analyze specific challenges or rank jobs by security.",
-   "testOnly": true,
-   "source": "imported"
-  },
-  {
    "id": "oct26-rw-m1-09",
    "subject": "reading-writing",
    "domain": "Information and Ideas",
@@ -435,38 +403,6 @@
    ]
   },
   {
-   "id": "oct26-rw-m1-14",
-   "subject": "reading-writing",
-   "domain": "Information and Ideas",
-   "skill": "Central Ideas and Details",
-   "difficulty": "Medium",
-   "type": "mcq",
-   "passage": "Unlike terrestrial and shallow-water ecosystems that rely predominantly on photosynthetic primary producers, hydrothermal vent communities depend on chemolithoautotrophic bacteria. These microscopic organisms derive metabolic energy by oxidizing hydrogen sulfide emitted from geothermal fissures along the ocean floor, forming the bedrock of an abyssal food web isolated from solar radiation.",
-   "prompt": "Based on the text, what distinguishes hydrothermal vent communities from surface ecosystems?",
-   "choices": [
-    {
-     "id": "A",
-     "text": "Their reliance on chemical oxidation rather than sunlight for primary energy generation."
-    },
-    {
-     "id": "B",
-     "text": "Their complete vulnerability to seasonal shifts in solar radiation levels."
-    },
-    {
-     "id": "C",
-     "text": "Their exclusive dependence on plant matter descending from shallow waters."
-    },
-    {
-     "id": "D",
-     "text": "Their inability to maintain complex ecological interactions in cold temperatures."
-    }
-   ],
-   "correctChoice": "A",
-   "explanation": "Surface ecosystems run on photosynthesis, while vent communities rely on bacteria that get energy by oxidizing hydrogen sulfide, isolated from sunlight. The text never mentions seasons, sinking plant matter or cold temperatures.",
-   "testOnly": true,
-   "source": "imported"
-  },
-  {
    "id": "oct26-rw-m1-15",
    "subject": "reading-writing",
    "domain": "Information and Ideas",
@@ -527,70 +463,6 @@
    ],
    "correctChoice": "A",
    "explanation": "Since much of the novel is pure invention, readers who treat it all as autobiography miss what Céline invented, his creativity. The text doesn't discuss earlier writers or readership, and such readers over-acknowledge, not deny, the real-world material.",
-   "testOnly": true,
-   "source": "imported"
-  },
-  {
-   "id": "oct26-rw-m1-17",
-   "subject": "reading-writing",
-   "domain": "Information and Ideas",
-   "skill": "Inferences",
-   "difficulty": "Medium",
-   "type": "mcq",
-   "passage": "Last-mile delivery, the final stage in the delivery of products to customers, is subject to increasing pressure as consumers place greater emphasis on convenience and immediacy, often expecting next-day delivery. In response to this challenge and others, such as the increasing volume of parcels to be delivered, delivery companies are continually looking for ways to make last-mile delivery more efficient. One advance in last-mile delivery is the use of self-service lockers (containers where consumers can pick up their parcels using a unique code). This approach, while promising, also introduces new obstacles (e.g., convenient placement of self-service lockers is challenging). It is therefore likely that ______",
-   "prompt": "Which choice most logically completes the text?",
-   "choices": [
-    {
-     "id": "A",
-     "text": "delivery companies will need to keep experimenting with new ideas for last-mile delivery if they hope to keep pace with consumers’ expectations."
-    },
-    {
-     "id": "B",
-     "text": "delivery companies will continue promising next-day delivery out of a desire to meet consumers’ expectations."
-    },
-    {
-     "id": "C",
-     "text": "advances in last-mile technologies will slow as delivery companies focus more on meeting customer expectations for increased convenience."
-    },
-    {
-     "id": "D",
-     "text": "innovations in the use of self-service lockers for last-mile delivery will stall unless delivery companies shift their focus to methods with fewer complications."
-    }
-   ],
-   "correctChoice": "A",
-   "explanation": "Pressure keeps growing and even a promising solution brings new obstacles, so companies will need to keep trying new ideas. Nothing suggests innovation will slow or stall, and B ignores the point about new obstacles.",
-   "testOnly": true,
-   "source": "imported"
-  },
-  {
-   "id": "oct26-rw-m1-18",
-   "subject": "reading-writing",
-   "domain": "Information and Ideas",
-   "skill": "Inferences",
-   "difficulty": "Medium",
-   "type": "mcq",
-   "passage": "A cognitive psychology study revealed that participants memorizing pairs of abstract geometric symbols exhibited 35% higher retention when tested following eight hours of sleep compared to eight hours of wakefulness. If consolidation of non-verbal, abstract information occurs predominantly during deep slow-wave sleep cycles, it can be logically inferred that ______",
-   "prompt": "Which choice best completes the text based on the reasoning presented?",
-   "choices": [
-    {
-     "id": "A",
-     "text": "wakefulness permanently disables the neurological circuits that process abstract geometric forms."
-    },
-    {
-     "id": "B",
-     "text": "slow-wave sleep plays a critical functional role in solidifying the neurological retention of abstract visual data."
-    },
-    {
-     "id": "C",
-     "text": "sleep deprivation enhances memory retention for linguistic information rather than visual symbols."
-    },
-    {
-     "id": "D",
-     "text": "abstract memory storage is completely dependent on intentional waking mental rehearsal."
-    }
-   ],
-   "correctChoice": "B",
-   "explanation": "Retention of abstract symbols was higher after sleep, and such information is said to be consolidated mainly in slow-wave sleep, so slow-wave sleep helps solidify it. A and D are extreme claims the study can't support, and C concerns verbal information, which wasn't tested.",
    "testOnly": true,
    "source": "imported"
   },
@@ -917,38 +789,6 @@
    ],
    "correctChoice": "B",
    "explanation": "B names pistol shrimp, says what they are and gives their most striking trait, which suits readers who don't know them. A never names them, C assumes the reader already knows \"the shrimp,\" and D gets the facts wrong.",
-   "testOnly": true,
-   "source": "imported"
-  },
-  {
-   "id": "oct26-rw-m1-29",
-   "subject": "reading-writing",
-   "domain": "Expression of Ideas",
-   "skill": "Rhetorical Synthesis",
-   "difficulty": "Medium",
-   "type": "mcq",
-   "passage": "While researching a topic, a student has taken the following notes:\n• Elizabeth Catlett (1915–2012) was a celebrated African American artist.\n• She is best known for creating sculptures and prints that explore the Black experience.\n• Standing Mother and Child is a 1980 sculpture by Catlett.\n• New Generation is a 1992 print by Catlett.",
-   "prompt": "The student wants to provide an example of one of Catlett’s sculptures. Which choice most effectively uses relevant information from the notes to accomplish this goal?",
-   "choices": [
-    {
-     "id": "A",
-     "text": "The print New Generation was created by celebrated artist Elizabeth Catlett in 1992."
-    },
-    {
-     "id": "B",
-     "text": "The sculpture Standing Mother and Child was created by celebrated artist Elizabeth Catlett in 1980."
-    },
-    {
-     "id": "C",
-     "text": "Artist Elizabeth Catlett is best known for creating sculptures and prints that explore the Black experience."
-    },
-    {
-     "id": "D",
-     "text": "Elizabeth Catlett, a celebrated artist, was born in 1915."
-    }
-   ],
-   "correctChoice": "B",
-   "explanation": "Standing Mother and Child is the sculpture in the notes. New Generation is a print, and C and D give no example at all.",
    "testOnly": true,
    "source": "imported"
   },
@@ -1797,38 +1637,6 @@
    "source": "imported"
   },
   {
-   "id": "oct26-rw-m2e-24",
-   "subject": "reading-writing",
-   "domain": "Expression of Ideas",
-   "skill": "Transitions",
-   "difficulty": "Easy",
-   "type": "mcq",
-   "passage": "In Angola, the National Assembly is elected via a proportional representation (PR) system. In PR elections, votes are cast (not for specific candidates, as they are in single-member plurality systems, but for political parties) and then tabulated; ______ each qualifying party is awarded a number of seats proportional to the number of votes it received.",
-   "prompt": "Which choice completes the text with the most logical transition?",
-   "choices": [
-    {
-     "id": "A",
-     "text": "accordingly,"
-    },
-    {
-     "id": "B",
-     "text": "by contrast,"
-    },
-    {
-     "id": "C",
-     "text": "second of all,"
-    },
-    {
-     "id": "D",
-     "text": "in fact,"
-    }
-   ],
-   "correctChoice": "A",
-   "explanation": "Seats are awarded based on the tabulated votes: a result of that count, so \"accordingly\" fits.",
-   "testOnly": true,
-   "source": "imported"
-  },
-  {
    "id": "oct26-rw-m2e-25",
    "subject": "reading-writing",
    "domain": "Expression of Ideas",
@@ -1889,38 +1697,6 @@
    ],
    "correctChoice": "B",
    "explanation": "B names the challenge, says what it takes (the highest points in all fifty states) and gives examples. A and C describe one hiker without naming the 50 Completers challenge, and D makes it sound like only two peaks are needed.",
-   "testOnly": true,
-   "source": "imported"
-  },
-  {
-   "id": "oct26-rw-m2e-27",
-   "subject": "reading-writing",
-   "domain": "Expression of Ideas",
-   "skill": "Rhetorical Synthesis",
-   "difficulty": "Easy",
-   "type": "mcq",
-   "passage": "• Cinematographers work with cameras and lighting.\n• They help translate film directors’ ideas into visual images.\n• Passengers (2016) was directed by Morten Tyldum.\n• Rodrigo Prieto was the film’s cinematographer.",
-   "prompt": "Which choice most effectively uses information from the given sentences to provide an example of a film Prieto worked on?",
-   "choices": [
-    {
-     "id": "A",
-     "text": "One example of Rodrigo Prieto’s work as a cinematographer is the 2016 film Passengers."
-    },
-    {
-     "id": "B",
-     "text": "As cinematographer, Rodrigo Prieto works with cameras and lighting to translate the film director’s ideas into visual images."
-    },
-    {
-     "id": "C",
-     "text": "Cinematographer Rodrigo Prieto and director Morten Tyldum have worked together."
-    },
-    {
-     "id": "D",
-     "text": "In filmmaking, directors work with others to translate their ideas into the visual images that we encounter on the screen."
-    }
-   ],
-   "correctChoice": "A",
-   "explanation": "Only A names a film Prieto worked on, Passengers. The others describe the job or a collaboration without naming a film.",
    "testOnly": true,
    "source": "imported"
   },
@@ -2613,38 +2389,6 @@
    "source": "imported"
   },
   {
-   "id": "oct26-rw-m2h-20",
-   "subject": "reading-writing",
-   "domain": "Standard English Conventions",
-   "skill": "Boundaries",
-   "difficulty": "Hard",
-   "type": "mcq",
-   "passage": "During the late nineteenth century, agricultural chemist George Washington Carver revolutionized farming practices in the American ______ promoting systematic crop rotation techniques that replenished essential nitrogen in depleted soils.",
-   "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
-   "choices": [
-    {
-     "id": "A",
-     "text": "South, by"
-    },
-    {
-     "id": "B",
-     "text": "South by"
-    },
-    {
-     "id": "C",
-     "text": "South; by"
-    },
-    {
-     "id": "D",
-     "text": "South: by"
-    }
-   ],
-   "correctChoice": "B",
-   "explanation": "\"By promoting…\" tells how he revolutionized farming and is essential to the sentence, so no punctuation separates it. A semicolon or colon would need a full clause after it.",
-   "testOnly": true,
-   "source": "imported"
-  },
-  {
    "id": "oct26-rw-m2h-21",
    "subject": "reading-writing",
    "domain": "Standard English Conventions",
@@ -2709,38 +2453,6 @@
    "source": "imported"
   },
   {
-   "id": "oct26-rw-m2h-23",
-   "subject": "reading-writing",
-   "domain": "Expression of Ideas",
-   "skill": "Transitions",
-   "difficulty": "Hard",
-   "type": "mcq",
-   "passage": "In a 1993 study by Vales and Peek, the researchers used microhistological fecal analysis to determine the ratio of three plant subtypes (graminoids, forbs, and browse) within the diets of North American ungulates. The researchers did not perform this analysis on all such ungulates, ______ they focused exclusively on elk in Wyoming.",
-   "prompt": "Which choice completes the text with the most logical transition?",
-   "choices": [
-    {
-     "id": "A",
-     "text": "for instance;"
-    },
-    {
-     "id": "B",
-     "text": "in other words;"
-    },
-    {
-     "id": "C",
-     "text": "regardless;"
-    },
-    {
-     "id": "D",
-     "text": "however;"
-    }
-   ],
-   "correctChoice": "B",
-   "explanation": "Focusing only on elk in Wyoming restates \"did not perform this analysis on all such ungulates\" in more specific terms, so \"in other words\" fits. Elk aren't one example among several studied, and there's no contrast.",
-   "testOnly": true,
-   "source": "imported"
-  },
-  {
    "id": "oct26-rw-m2h-24",
    "subject": "reading-writing",
    "domain": "Expression of Ideas",
@@ -2769,38 +2481,6 @@
    ],
    "correctChoice": "B",
    "explanation": "Because the veena makes sound with vibrating strings, it follows that it is classed as a chordophone. \"Thus\" marks that conclusion.",
-   "testOnly": true,
-   "source": "imported"
-  },
-  {
-   "id": "oct26-rw-m2h-25",
-   "subject": "reading-writing",
-   "domain": "Expression of Ideas",
-   "skill": "Transitions",
-   "difficulty": "Hard",
-   "type": "mcq",
-   "passage": "Generally, sleek vehicles are more aerodynamic than bulkier ones. The streamlined nose of the Airbus A350 XWB jet, ______ helps it glide through wind with relative ease, while a boxy pickup truck encounters more wind resistance, making it less aerodynamic.",
-   "prompt": "Which choice completes the text with the most logical transition?",
-   "choices": [
-    {
-     "id": "A",
-     "text": "additionally,"
-    },
-    {
-     "id": "B",
-     "text": "however,"
-    },
-    {
-     "id": "C",
-     "text": "for example,"
-    },
-    {
-     "id": "D",
-     "text": "meanwhile,"
-    }
-   ],
-   "correctChoice": "C",
-   "explanation": "The jet and the pickup are examples of the general rule in the first sentence, so \"for example\" fits.",
    "testOnly": true,
    "source": "imported"
   },
@@ -3156,37 +2836,6 @@
    "correctChoice": "D"
   },
   {
-   "id": "oct26-math-m1-09",
-   "subject": "math",
-   "domain": "Advanced Math",
-   "skill": "Nonlinear equations in one variable and systems of equations in two variables",
-   "difficulty": "Medium",
-   "prompt": "\\(|x|-43=0\\)\nWhich value is a solution to the given equation?",
-   "explanation": "\\(|x|=43\\), so \\(x=43\\) or \\(x=-43\\). Only \\(-43\\) is a choice.",
-   "testOnly": true,
-   "source": "imported",
-   "type": "mcq",
-   "choices": [
-    {
-     "id": "A",
-     "text": "\\(\\frac{1}{43}\\)"
-    },
-    {
-     "id": "B",
-     "text": "\\(0\\)"
-    },
-    {
-     "id": "C",
-     "text": "\\(-\\frac{1}{43}\\)"
-    },
-    {
-     "id": "D",
-     "text": "\\(-43\\)"
-    }
-   ],
-   "correctChoice": "D"
-  },
-  {
    "id": "oct26-math-m1-10",
    "subject": "math",
    "domain": "Algebra",
@@ -3346,37 +2995,6 @@
    "acceptableAnswers": [
     "11"
    ]
-  },
-  {
-   "id": "oct26-math-m1-16",
-   "subject": "math",
-   "domain": "Advanced Math",
-   "skill": "Equivalent expressions",
-   "difficulty": "Medium",
-   "prompt": "\\(55=\\frac{2K}{v^{2}}\\)\nFor an object with a mass of \\(55\\) kilograms, the given equation relates the kinetic energy \\(K\\), in joules, of the object to the object’s speed \\(v\\), in meters per second, where \\(K\\) and \\(v\\) are positive. Which equation correctly expresses this object’s speed, in meters per second, in terms of the object’s kinetic energy, in joules?",
-   "explanation": "Multiply by \\(v^{2}\\) and divide by \\(55\\): \\(v^{2}=\\frac{2K}{55}\\). Since \\(v\\) is positive, \\(v=\\sqrt{\\frac{2K}{55}}\\).",
-   "testOnly": true,
-   "source": "imported",
-   "type": "mcq",
-   "choices": [
-    {
-     "id": "A",
-     "text": "\\(v=\\frac{2K}{55^{2}}\\)"
-    },
-    {
-     "id": "B",
-     "text": "\\(v=\\frac{55^{2}}{2K}\\)"
-    },
-    {
-     "id": "C",
-     "text": "\\(v=\\sqrt{\\frac{55}{2K}}\\)"
-    },
-    {
-     "id": "D",
-     "text": "\\(v=\\sqrt{\\frac{2K}{55}}\\)"
-    }
-   ],
-   "correctChoice": "D"
   },
   {
    "id": "oct26-math-m1-17",
@@ -3696,37 +3314,6 @@
    ]
   },
   {
-   "id": "oct26-math-m2e-04",
-   "subject": "math",
-   "domain": "Algebra",
-   "skill": "Linear equations in two variables",
-   "difficulty": "Easy",
-   "prompt": "\\(x+y=88\\)\nThe given equation relates the total number of marble queen pothos stems, \\(x\\), and the total number of snow queen pothos stems, \\(y\\), a plant nursery propagates to create pothos plants. If \\(28\\) snow queen pothos stems are propagated, how many marble queen pothos stems are propagated?",
-   "explanation": "Substitute \\(y=28\\): \\(x+28=88\\), so \\(x=60\\).",
-   "testOnly": true,
-   "source": "imported",
-   "type": "mcq",
-   "choices": [
-    {
-     "id": "A",
-     "text": "\\(88\\)"
-    },
-    {
-     "id": "B",
-     "text": "\\(60\\)"
-    },
-    {
-     "id": "C",
-     "text": "\\(32\\)"
-    },
-    {
-     "id": "D",
-     "text": "\\(28\\)"
-    }
-   ],
-   "correctChoice": "B"
-  },
-  {
    "id": "oct26-math-m2e-05",
    "subject": "math",
    "domain": "Algebra",
@@ -3762,37 +3349,6 @@
      "alt": "A dashed line through (0, 4) with slope 3, crossing the x-axis near -4/3. The region above and to the left of the line is shaded. The x-axis runs from -6 to 4 and the y-axis from 0 to 12."
     }
    ]
-  },
-  {
-   "id": "oct26-math-m2e-06",
-   "subject": "math",
-   "domain": "Algebra",
-   "skill": "Linear equations in one variable",
-   "difficulty": "Easy",
-   "prompt": "If \\(3(2x-5)=4x+7\\), what is the value of \\(x\\)?",
-   "explanation": "\\(6x-15=4x+7\\), so \\(2x=22\\) and \\(x=11\\).",
-   "testOnly": true,
-   "source": "imported",
-   "type": "mcq",
-   "choices": [
-    {
-     "id": "A",
-     "text": "\\(8\\)"
-    },
-    {
-     "id": "B",
-     "text": "\\(11\\)"
-    },
-    {
-     "id": "C",
-     "text": "\\(14\\)"
-    },
-    {
-     "id": "D",
-     "text": "\\(22\\)"
-    }
-   ],
-   "correctChoice": "B"
   },
   {
    "id": "oct26-math-m2e-07",
@@ -3969,37 +3525,6 @@
     }
    ],
    "correctChoice": "A"
-  },
-  {
-   "id": "oct26-math-m2e-13",
-   "subject": "math",
-   "domain": "Algebra",
-   "skill": "Linear equations in two variables",
-   "difficulty": "Easy",
-   "prompt": "A teacher is creating an assignment worth \\(10\\) points. The assignment will consist of questions worth \\(1\\) point and questions worth \\(2\\) points. Which equation represents this situation, where \\(x\\) represents the number of \\(1\\)-point questions and \\(y\\) represents the number of \\(2\\)-point questions?",
-   "explanation": "The \\(1\\)-point questions are worth \\(1x\\) points and the \\(2\\)-point ones \\(2y\\), for a total of \\(10\\): \\(x+2y=10\\).",
-   "testOnly": true,
-   "source": "imported",
-   "type": "mcq",
-   "choices": [
-    {
-     "id": "A",
-     "text": "\\(3xy=10\\)"
-    },
-    {
-     "id": "B",
-     "text": "\\(3(x+y)=10\\)"
-    },
-    {
-     "id": "C",
-     "text": "\\(2x+y=10\\)"
-    },
-    {
-     "id": "D",
-     "text": "\\(x+2y=10\\)"
-    }
-   ],
-   "correctChoice": "D"
   },
   {
    "id": "oct26-math-m2e-14",
@@ -4382,37 +3907,6 @@
    ]
   },
   {
-   "id": "oct26-math-m2h-02",
-   "subject": "math",
-   "domain": "Geometry and Trigonometry",
-   "skill": "Circles",
-   "difficulty": "Hard",
-   "prompt": "A circle in the \\(xy\\)-plane has equation \\((x-4)^{2}+(y+1)^{2}=49\\). What is the radius of the circle?",
-   "explanation": "In \\((x-h)^{2}+(y-k)^{2}=r^{2}\\), \\(r^{2}=49\\), so \\(r=7\\).",
-   "testOnly": true,
-   "source": "imported",
-   "type": "mcq",
-   "choices": [
-    {
-     "id": "A",
-     "text": "\\(7\\)"
-    },
-    {
-     "id": "B",
-     "text": "\\(14\\)"
-    },
-    {
-     "id": "C",
-     "text": "\\(24.5\\)"
-    },
-    {
-     "id": "D",
-     "text": "\\(49\\)"
-    }
-   ],
-   "correctChoice": "A"
-  },
-  {
    "id": "oct26-math-m2h-03",
    "subject": "math",
    "domain": "Algebra",
@@ -4675,37 +4169,6 @@
    "correctChoice": "C"
   },
   {
-   "id": "oct26-math-m2h-14",
-   "subject": "math",
-   "domain": "Advanced Math",
-   "skill": "Nonlinear functions",
-   "difficulty": "Hard",
-   "prompt": "The function \\(f\\) is defined by \\(f(x)=-2(x-3)^{2}+8\\). What is the maximum value of \\(f(x)\\)?",
-   "explanation": "\\(-2(x-3)^{2}\\) is never positive and equals \\(0\\) at \\(x=3\\), so the greatest value of \\(f(x)\\) is \\(8\\).",
-   "testOnly": true,
-   "source": "imported",
-   "type": "mcq",
-   "choices": [
-    {
-     "id": "A",
-     "text": "\\(-2\\)"
-    },
-    {
-     "id": "B",
-     "text": "\\(3\\)"
-    },
-    {
-     "id": "C",
-     "text": "\\(6\\)"
-    },
-    {
-     "id": "D",
-     "text": "\\(8\\)"
-    }
-   ],
-   "correctChoice": "D"
-  },
-  {
    "id": "oct26-math-m2h-15",
    "subject": "math",
    "domain": "Problem-Solving and Data Analysis",
@@ -4803,37 +4266,6 @@
      "alt": "A right triangle with the right angle at the bottom left. The angle at the top is labeled r degrees and the angle at the bottom right is labeled s degrees. Note: Figure not drawn to scale."
     }
    ]
-  },
-  {
-   "id": "oct26-math-m2h-19",
-   "subject": "math",
-   "domain": "Algebra",
-   "skill": "Systems of two linear equations in two variables",
-   "difficulty": "Hard",
-   "prompt": "\\(2x+3y=19\\\\x-y=2\\)\nConsider the system of equations above. What is the value of \\(x+y\\)?",
-   "explanation": "From the second equation, \\(x=y+2\\). Then \\(2(y+2)+3y=19\\), so \\(5y=15\\) and \\(y=3\\), giving \\(x=5\\) and \\(x+y=8\\).",
-   "testOnly": true,
-   "source": "imported",
-   "type": "mcq",
-   "choices": [
-    {
-     "id": "A",
-     "text": "\\(5\\)"
-    },
-    {
-     "id": "B",
-     "text": "\\(7\\)"
-    },
-    {
-     "id": "C",
-     "text": "\\(8\\)"
-    },
-    {
-     "id": "D",
-     "text": "\\(11\\)"
-    }
-   ],
-   "correctChoice": "C"
   },
   {
    "id": "oct26-math-m2h-20",

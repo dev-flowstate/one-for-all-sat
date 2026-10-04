@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import type { Question } from '../types/question';
-import type { ActiveTest, CompletedTest, PaperPath, TestModule, TestResponse, TestRouting } from '../types/practiceTest';
+import type { ActiveTest, CompletedTest, TestModule, TestResponse, TestRouting } from '../types/practiceTest';
 import {
   getActiveTest,
   getPausedTests,
@@ -29,7 +29,7 @@ interface PracticeTestState {
   begin: (
     modules: TestModule[],
     timed: boolean,
-    preset?: { id: string; name: string; routing?: TestRouting[]; paperPath?: PaperPath },
+    preset?: { id: string; name: string; routing?: TestRouting[]; cappedScoring?: boolean },
   ) => void;
   respond: (questionId: string, response: TestResponse | null) => void;
   toggleMarked: (questionId: string) => void;
@@ -137,7 +137,7 @@ export const usePracticeTestStore = create<PracticeTestState>((set, get) => {
           name: preset?.name ?? `Practice Test ${generated + 1}`,
           presetId: preset?.id,
           routing: preset?.routing,
-          paperPath: preset?.paperPath,
+          cappedScoring: preset?.cappedScoring,
           createdAt: new Date().toISOString(),
           timed,
           modules,

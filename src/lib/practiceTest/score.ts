@@ -1,6 +1,6 @@
 import type { Difficulty, Question } from '../../types/question';
 import type { SessionAnswer } from '../../types/progress';
-import type { ActiveTest, CompletedTest, DomainTally, PaperPath, TestResponse } from '../../types/practiceTest';
+import type { ActiveTest, CompletedTest, DomainTally, TestResponse } from '../../types/practiceTest';
 import { checkMcqAnswer, checkSprAnswer } from '../scoring/answerChecking';
 import { pointsForAnswer } from '../scoring/points';
 import { SECTIONS } from './buildTest';
@@ -25,17 +25,14 @@ function shareRight(graded: { correct: boolean }[]): number {
 }
 
 /**
- * A section's score on a paper taken on a chosen path, always a multiple of 10. With the baseline
- * module it's 200 to 800: the baseline is worth up to 300, the hard second module up to 300 and
- * the medium one up to 150, so the medium path tops out at 650, as the easier route does on the
- * real test. Second modules taken alone are scored 0 to 400.
+ * A section's score from its two modules, 200 to 800 and always a multiple of 10. Module 1 is
+ * worth up to 300; the harder Module 2 up to 300 and the easier one up to 150, so a section
+ * routed to the easier module tops out at 650, as on the real test.
  */
-export function paperSectionScore(graded: { module: number; correct: boolean }[], path: PaperPath): number {
-  const second = shareRight(graded.filter((g) => g.module === 2));
-  if (path.module2Only) return Math.round(40 * second) * 10;
+export function cappedSectionScore(graded: { module: number; correct: boolean }[], routedEasier: boolean): number {
   const first = shareRight(graded.filter((g) => g.module === 1));
-  const secondWorth = path.level === 'hard' ? 300 : 150;
-  return 200 + Math.round((300 * first + secondWorth * second) / 10) * 10;
+  const second = shareRight(graded.filter((g) => g.module === 2));
+  return 200 + Math.round((300 * first + (routedEasier ? 150 : 300) * second) / 10) * 10;
 }
 
 /** Whether an entered answer is right. A blank never is. */
@@ -89,7 +86,9 @@ export function gradeTest(
   const scoreFor = (subject: string) => {
     const inSection = graded.filter((g) => g.question.subject === subject);
     if (inSection.length === 0) return null;
-    return test.paperPath ? paperSectionScore(inSection, test.paperPath) : sectionScore(inSection);
+    if (!test.cappedScoring) return sectionScore(inSection);
+    const routing = test.routing?.find((r) => test.modules[r.afterModule]?.subject === subject);
+    return cappedSectionScore(inSection, routing?.routedEasier ?? false);
   };
   const readingWriting = scoreFor('reading-writing');
   const math = scoreFor('math');
@@ -98,8 +97,6 @@ export function gradeTest(
     name: test.name,
     presetId: test.presetId,
     routedEasier: test.routing?.map((r) => r.routedEasier ?? false),
-    paperPath: test.paperPath,
-    sectionMax: test.paperPath?.module2Only ? 400 : 800,
     createdAt: test.createdAt,
     completedAt: new Date().toISOString(),
     timed: test.timed,

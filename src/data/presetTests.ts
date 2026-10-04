@@ -10,6 +10,9 @@ export interface PresetTest {
   file: string;
   modules: TestModule[];
   routing?: TestRouting[];
+  /** Scores each section from its two modules, with the easier second module worth less, so
+   *  a section routed to it can't reach 800. Otherwise questions count by difficulty. */
+  cappedScoring?: boolean;
 }
 
 /** Ids of a module's questions in the test's file: `${prefix}-01` … */
@@ -17,57 +20,38 @@ function moduleIds(prefix: string, count: number): string[] {
   return Array.from({ length: count }, (_, i) => `${prefix}-${String(i + 1).padStart(2, '0')}`);
 }
 
-export const PRESET_TESTS: PresetTest[] = [];
-
-/** A paper whose second modules the student picks, medium or hard, instead of being routed. */
-export interface PaperTest {
-  id: string;
-  name: string;
-  description: string;
-  file: string;
-  sections: { baseline: TestModule; medium: TestModule; hard: TestModule }[];
+/** Ids `${prefix}-01` … `${prefix}-NN`, less the numbers left out, with any of `shared`'s numbers
+ *  swapped for the id of the same question in another module, so it counts once. */
+function paperIds(prefix: string, count: number, leftOut: number[], shared: Record<number, string> = {}): string[] {
+  return moduleIds(prefix, count)
+    .map((id, i) => shared[i + 1] ?? id)
+    .filter((_, i) => !leftOut.includes(i + 1));
 }
 
-/** Module ids, with any question that also appears word for word in the other version of the
- *  module kept under the one id, so it counts once however many times it's answered. */
-function idsWithShared(prefix: string, count: number, shared: Record<number, string>): string[] {
-  return moduleIds(prefix, count).map((id, i) => shared[i + 1] ?? id);
-}
-
-/** Minutes for a module, at the real test's pace: 32 minutes per 27 Reading and Writing
- *  questions, 35 per 22 Math. */
-function minutesFor(subject: 'reading-writing' | 'math', count: number): number {
-  return Math.round(subject === 'math' ? (count * 35) / 22 : (count * 32) / 27);
-}
-
-function paperModule(subject: 'reading-writing' | 'math', number: 1 | 2, questionIds: string[]): TestModule {
-  return { subject, number, minutes: minutesFor(subject, questionIds.length), questionIds };
-}
-
-export const PAPER_TESTS: PaperTest[] = [
+export const PRESET_TESTS: PresetTest[] = [
   {
     id: 'october-2026',
     name: 'October 3rd SAT',
     description:
-      'Reading and Writing, a 10-minute break, then Math. Each section starts with a baseline module; you choose whether its second module is the medium or the hard one.',
+      'Reading and Writing, a 10-minute break, then Math, adaptive like the real test: do well on a section’s Module 1 and its Module 2 is the harder one; otherwise it’s the easier one, where the section tops out at 650 instead of 800. Take it as often as you like.',
     file: 'tests/october-2026.json',
-    sections: [
+    modules: [
+      { subject: 'reading-writing', number: 1, minutes: 32, questionIds: paperIds('oct26-rw-m1', 32, [8, 14, 17, 18, 29]) },
       {
-        baseline: paperModule('reading-writing', 1, moduleIds('oct26-rw-m1', 32)),
-        medium: paperModule('reading-writing', 2, moduleIds('oct26-rw-m2e', 29)),
-        hard: paperModule('reading-writing', 2, idsWithShared('oct26-rw-m2h', 30, { 29: 'oct26-rw-m2e-26' })),
+        subject: 'reading-writing',
+        number: 2,
+        minutes: 32,
+        questionIds: paperIds('oct26-rw-m2h', 30, [20, 23, 25], { 29: 'oct26-rw-m2e-26' }),
       },
-      {
-        baseline: paperModule('math', 1, moduleIds('oct26-math-m1', 24)),
-        medium: paperModule('math', 2, moduleIds('oct26-math-m2e', 25)),
-        hard: paperModule('math', 2, idsWithShared('oct26-math-m2h', 27, { 12: 'oct26-math-m2e-05', 17: 'oct26-math-m2e-20' })),
-      },
+      { subject: 'math', number: 1, minutes: 35, questionIds: paperIds('oct26-math-m1', 24, [9, 16]) },
+      { subject: 'math', number: 2, minutes: 35, questionIds: paperIds('oct26-math-m2h', 27, [2, 12, 14, 17, 19]) },
     ],
+    // The same cut-offs as on the real test, as they're commonly estimated: about 63% right.
+    routing: [
+      { afterModule: 0, minCorrect: 17, easierIds: paperIds('oct26-rw-m2e', 29, [24, 27]) },
+      { afterModule: 2, minCorrect: 14, easierIds: paperIds('oct26-math-m2e', 25, [4, 6, 13]) },
+    ],
+    cappedScoring: true,
   },
 ];
 
-/** The modules of a paper on a chosen path: each section's baseline then its chosen second
- *  module, or the chosen second modules alone. */
-export function paperModules(paper: PaperTest, level: 'medium' | 'hard', module2Only: boolean): TestModule[] {
-  return paper.sections.flatMap((s) => (module2Only ? [s[level]] : [s.baseline, s[level]]));
-}
