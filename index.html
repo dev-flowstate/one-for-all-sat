@@ -10,6 +10,16 @@
       content="One for All SAT — a personal, Bluebook-style SAT practice tool with topic drills, timers, and a graphing calculator."
     />
     <title>One for All SAT</title>
+    <!-- Fonts load from here rather than an @import in the stylesheet, so they start with the
+         page instead of after the CSS. "optional" means a font that isn't ready for the first
+         paint isn't swapped in mid-visit: swapping reflowed every line of text and pushed the
+         page around (layout shift). It's cached for the next visit. -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Inter:wght@400..700&family=Noto+Serif:wght@400;600&family=Pixelify+Sans:wght@400..700&display=optional"
+    />
     <script>
       // The theme, set before anything is drawn so a dark page never flashes light first.
       // Light unless another theme was picked. Kept in step with src/lib/theme.ts.

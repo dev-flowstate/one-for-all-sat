@@ -43,8 +43,15 @@ export function useTheme(): { theme: Theme; setTheme: (theme: Theme) => void; to
   const [theme, setState] = useState<Theme>(currentTheme);
 
   const setTheme = (next: Theme) => {
-    document.documentElement.dataset.theme = next;
     setState(next);
+    // Switching theme restyles the whole page, which took a couple of hundred milliseconds on
+    // a phone. Done after the tap's own paint, the button answers at once and the page follows
+    // a frame later, instead of the tap seeming to hang.
+    requestAnimationFrame(() =>
+      setTimeout(() => {
+        document.documentElement.dataset.theme = next;
+      }, 0),
+    );
     remember(THEME_KEY, next);
     if (next !== 'dark') remember(DAY_THEME_KEY, next);
   };
