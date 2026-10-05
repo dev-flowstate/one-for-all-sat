@@ -12,6 +12,7 @@ import { MIN_ANSWERED, rankWeakest, skillStats } from '../lib/topicStats';
 import { Card } from '../components/ui/Card';
 import { TopicRow } from '../components/topics/TopicRow';
 import { SignInBanner } from '../components/profile/SignInBanner';
+import { StudyCalendar } from '../components/plan/StudyCalendar';
 
 export function HomePage() {
   const { questions, progress, stats, isLoaded, bundledCount, importedCount } = useProgressStore();
@@ -245,6 +246,8 @@ export function HomePage() {
         </>
         );
       })()}
+
+      <StudyCalendar />
 
       <footer className="mt-10 border-t-2 border-ink pt-4 text-center text-[11px] font-semibold tracking-tight text-ink-soft uppercase">
         Made by Muhammad Salar Khan

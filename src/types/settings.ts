@@ -22,6 +22,8 @@ export interface LocalProfile {
   hideFromLeaderboard?: boolean;
   /** The student's SAT date (YYYY-MM-DD), which the home screen counts down to. */
   satDate?: string;
+  /** The day the study calendar was made (YYYY-MM-DD); there's no calendar without it. */
+  studyPlanStart?: string;
 }
 
 export const DEFAULT_AVATARS = ['🦉', '📘', '🧮', '✏️', '🎯', '⭐', '🚀', '🧠'] as const;

@@ -8,6 +8,7 @@ interface SettingsStore {
   saveProfile: (nickname: string, avatar: string) => void;
   setHideFromLeaderboard: (hidden: boolean) => void;
   setSatDate: (date: string | undefined) => void;
+  setStudyPlanStart: (date: string | undefined) => void;
 }
 
 export const useSettingsStore = create<SettingsStore>((set, get) => {
@@ -31,5 +32,6 @@ export const useSettingsStore = create<SettingsStore>((set, get) => {
     },
     setHideFromLeaderboard: (hidden) => update({ hideFromLeaderboard: hidden }),
     setSatDate: (date) => update({ satDate: date }),
+    setStudyPlanStart: (date) => update({ studyPlanStart: date }),
   };
 });

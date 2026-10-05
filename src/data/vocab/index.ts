@@ -25,6 +25,7 @@ import { V } from './v';
 import { W } from './w';
 import { Y } from './y';
 import { Z } from './z';
+import { VOCAB_CARD_COUNT } from './count';
 
 /**
  * The flashcard deck: the standard SAT vocabulary corpus, with definitions and example
@@ -37,3 +38,7 @@ export const VOCAB_CARDS: VocabCard[] = [
   ...A, ...B, ...C, ...D, ...E, ...F, ...G, ...H, ...I, ...J, ...K, ...L, ...M,
   ...N, ...O, ...P, ...Q, ...R, ...S, ...T, ...U, ...V, ...W, ...Y, ...Z,
 ];
+
+if (import.meta.env.DEV && VOCAB_CARDS.length !== VOCAB_CARD_COUNT) {
+  console.warn(`VOCAB_CARD_COUNT is ${VOCAB_CARD_COUNT} but the deck has ${VOCAB_CARDS.length} words; update src/data/vocab/count.ts.`);
+}
