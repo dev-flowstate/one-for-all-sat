@@ -1,21 +1,36 @@
 import { create } from 'zustand';
-import type { Question } from '../types/question';
+import { toMeta, type Question, type QuestionMeta } from '../types/question';
 import type { AttemptOutcome, ProgressMap, ProfileStats, SessionResult } from '../types/progress';
 import {
   DEFAULT_STATS,
   getBankRevision,
   getProgress,
+  getQuestionMeta,
   getStats,
   setBankRevision,
   setProgress,
+  setQuestionMeta,
   setStats,
 } from '../lib/storage/localStorage';
-import { deleteQuestions, ensureBundledSeeded, getAllQuestions, mergeQuestions, putQuestions } from '../lib/storage/db';
+import {
+  deleteQuestions,
+  ensureBundledSeeded,
+  getAllQuestionIds,
+  getAllQuestions,
+  getQuestionsById,
+  mergeQuestions,
+  putQuestions,
+} from '../lib/storage/db';
 import { isWeakFingerprint, questionFingerprint } from '../lib/storage/dedupe';
-import { fetchQuestionFile, fetchShippedBank } from '../lib/storage/seedBank';
+import { fetchBankIndex, fetchQuestionFile, fetchShippedBank } from '../lib/storage/seedBank';
 
 interface ProgressStore {
-  questions: Question[];
+  /** Every stored question's details, without its text and images: enough for counts, pools
+   *  and topics, and there from the first paint. */
+  questions: QuestionMeta[];
+  /** Full questions loaded so far, by id. Filled by `loadQuestions` for whatever is about to be
+   *  shown, so the whole bank (tens of MB of images) is never read just to open the site. */
+  loaded: Record<string, Question>;
   progress: ProgressMap;
   stats: ProfileStats;
   isLoaded: boolean;
@@ -29,6 +44,8 @@ interface ProgressStore {
    *  question someone imported themselves, and never re-adds one already present, so answered
    *  questions can't reappear in the unattempted pool. */
   loadShippedBank: () => Promise<void>;
+  /** Loads the full questions with these ids, if they aren't loaded already. */
+  loadQuestions: (ids: string[]) => Promise<void>;
   /** Stores a named test's questions from its own file, so the test can start. */
   loadTestQuestions: (file: string) => Promise<void>;
   applySessionResult: (result: SessionResult) => void;
@@ -42,7 +59,7 @@ interface ProgressStore {
 
 /** How many practice questions there are of each kind. A named test's questions aren't part of
  *  the bank, so they aren't counted. */
-function bankCounts(questions: Question[]): { bundledCount: number; importedCount: number } {
+function bankCounts(questions: QuestionMeta[]): { bundledCount: number; importedCount: number } {
   let bundledCount = 0;
   let importedCount = 0;
   for (const q of questions) {
@@ -55,6 +72,7 @@ function bankCounts(questions: Question[]): { bundledCount: number; importedCoun
 
 export const useProgressStore = create<ProgressStore>((set, get) => ({
   questions: [],
+  loaded: {},
   progress: {},
   stats: DEFAULT_STATS,
   isLoaded: false,
@@ -63,11 +81,34 @@ export const useProgressStore = create<ProgressStore>((set, get) => ({
 
   loadAll: async (bundled) => {
     await ensureBundledSeeded(bundled);
-    const questions = await getAllQuestions();
-    set({ questions, progress: getProgress(), stats: getStats(), isLoaded: true, ...bankCounts(questions) });
+    // The details saved last time, unless the stored questions have changed since, which the
+    // stored ids catch (another tab importing a bank, say). Without them, every question is
+    // read once to make them.
+    const ids = await getAllQuestionIds();
+    let meta = getQuestionMeta();
+    const metaIds = new Set(meta?.map((q) => q.id));
+    if (!meta || meta.length !== ids.length || ids.some((id) => !metaIds.has(id))) {
+      meta = (await getAllQuestions()).map(toMeta);
+      setQuestionMeta(meta);
+    }
+    set({ questions: meta, progress: getProgress(), stats: getStats(), isLoaded: true, ...bankCounts(meta) });
   },
 
   loadShippedBank: async () => {
+    // The full bank is only downloaded when the stored copy is out of date: a newer revision,
+    // a question missing, or a hand-imported question the bank doesn't have (which the full
+    // run removes). Otherwise the small index is all that's fetched.
+    const index = await fetchBankIndex();
+    if (index) {
+      const stored = new Set(get().questions.map((q) => q.id));
+      const shipped = new Set(index.ids);
+      const current =
+        index.revision <= getBankRevision() &&
+        index.ids.every((id) => stored.has(id)) &&
+        get().questions.every((q) => q.source !== 'imported' || q.testOnly || shipped.has(q.id));
+      if (current) return;
+    }
+
     const result = await fetchShippedBank();
     if (result.status !== 'loaded') {
       if (result.status === 'invalid') {
@@ -85,7 +126,7 @@ export const useProgressStore = create<ProgressStore>((set, get) => ({
     if (extras.length > 0) {
       const byFingerprint = new Map(result.questions.map((q) => [questionFingerprint(q), q.id]));
       const progress = { ...get().progress };
-      for (const q of extras) {
+      for (const q of await getQuestionsById(extras.map((e) => e.id))) {
         const fingerprint = questionFingerprint(q);
         const target = isWeakFingerprint(fingerprint) ? undefined : byFingerprint.get(fingerprint);
         if (target && progress[q.id]) {
@@ -106,8 +147,22 @@ export const useProgressStore = create<ProgressStore>((set, get) => ({
     if (corrected) setBankRevision(result.revision);
     if (added === 0 && updated === 0 && extras.length === 0) return;
 
-    const questions = await getAllQuestions();
-    set({ questions, ...bankCounts(questions) });
+    // The details of what's stored now, from the bank and what was known before, without
+    // reading any question back. Loaded questions the bank corrected are dropped, to reload.
+    const known = new Map(get().questions.map((q) => [q.id, q]));
+    for (const q of result.questions) known.set(q.id, toMeta(q));
+    const questions = (await getAllQuestionIds()).flatMap((id) => known.get(id) ?? []);
+    setQuestionMeta(questions);
+    const loaded = { ...get().loaded };
+    for (const q of result.questions) delete loaded[q.id];
+    set({ questions, loaded, ...bankCounts(questions) });
+  },
+
+  loadQuestions: async (ids) => {
+    const missing = ids.filter((id) => !get().loaded[id]);
+    if (missing.length === 0) return;
+    const found = await getQuestionsById(missing);
+    set({ loaded: { ...get().loaded, ...Object.fromEntries(found.map((q) => [q.id, q])) } });
   },
 
   loadTestQuestions: async (file) => {
@@ -119,12 +174,16 @@ export const useProgressStore = create<ProgressStore>((set, get) => ({
     // Written only when something differs from what's stored, which after the first visit is
     // only when the file has been corrected. Kept out of practice whatever the file says.
     const incoming = result.questions.map((q) => ({ ...q, testOnly: true }));
-    const stored = new Map(get().questions.map((q) => [q.id, q]));
+    const stored = new Map((await getQuestionsById(incoming.map((q) => q.id))).map((q) => [q.id, q]));
     const changed = incoming.filter((q) => JSON.stringify(q) !== JSON.stringify(stored.get(q.id)));
     if (changed.length === 0) return;
     await putQuestions(changed);
     const ids = new Set(changed.map((q) => q.id));
-    set({ questions: [...get().questions.filter((q) => !ids.has(q.id)), ...changed] });
+    const questions = [...get().questions.filter((q) => !ids.has(q.id)), ...changed.map(toMeta)];
+    setQuestionMeta(questions);
+    const loaded = { ...get().loaded };
+    for (const q of changed) loaded[q.id] = q;
+    set({ questions, loaded });
   },
 
   applySessionResult: (result) => {
@@ -185,7 +244,8 @@ export const useProgressStore = create<ProgressStore>((set, get) => ({
     // imported set on each import deleted it -- anyone importing the maths bank lost every
     // English question until the next reload put them back.
     await mergeQuestions(qs, onProgress, { updateExisting: true });
-    const questions = await getAllQuestions();
-    set({ questions, ...bankCounts(questions) });
+    const questions = (await getAllQuestions()).map(toMeta);
+    setQuestionMeta(questions);
+    set({ questions, loaded: {}, ...bankCounts(questions) });
   },
 }));

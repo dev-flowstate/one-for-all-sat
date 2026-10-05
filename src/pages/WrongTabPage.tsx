@@ -6,6 +6,8 @@ import { Tabs } from '../components/ui/Tabs';
 import { QuestionReviewCard } from '../components/review/QuestionReviewCard';
 import { RetryForm } from '../components/review/RetryForm';
 import { getWrongPool, getRightPool } from '../lib/pools';
+import { useLoadedQuestions } from '../lib/useLoadedQuestions';
+import { QuestionPlaceholder } from '../components/review/QuestionPlaceholder';
 
 export function WrongTabPage() {
   const navigate = useNavigate();
@@ -16,6 +18,10 @@ export function WrongTabPage() {
 
   const wrongPool = useMemo(() => getWrongPool(questions, progress), [questions, progress]);
   const rightCount = useMemo(() => getRightPool(questions, progress).length, [questions, progress]);
+  // Every wrong question in full. They're usually loaded already: the app fetches them in the
+  // background just after it starts.
+  const wrongIds = useMemo(() => wrongPool.map((q) => q.id), [wrongPool]);
+  const { loaded } = useLoadedQuestions(wrongIds);
 
   const [retryingId, setRetryingId] = useState<string | null>(null);
   // While a question is being retried its explanation stays hidden, until a miss shows the answer.
@@ -83,7 +89,10 @@ export function WrongTabPage() {
       ) : (
         <>
           <div className="flex flex-col gap-4">
-            {wrongPool.map((question) => (
+            {wrongPool.map(({ id }) => {
+              const question = loaded[id];
+              if (!question) return <QuestionPlaceholder key={id} />;
+              return (
               <QuestionReviewCard
                 key={question.id}
                 question={question}
@@ -106,7 +115,8 @@ export function WrongTabPage() {
                   <RetryForm question={question} onCancel={() => retry(null)} onRevealed={setRetryRevealed} />
                 )}
               </QuestionReviewCard>
-            ))}
+              );
+            })}
           </div>
 
           {/* Bulk reset is destructive, so it sits below the list in its own red frame —

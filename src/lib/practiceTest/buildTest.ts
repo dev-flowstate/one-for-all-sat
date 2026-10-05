@@ -1,4 +1,4 @@
-import type { Difficulty, Question, Subject } from '../../types/question';
+import type { Difficulty, QuestionMeta, Subject } from '../../types/question';
 import type { ProgressMap } from '../../types/progress';
 import type { TestModule } from '../../types/practiceTest';
 import { statusOf } from '../pools';
@@ -78,15 +78,15 @@ export interface BuiltTest {
  * Draws a full test from the bank. Only unattempted questions are used unless `allowOld` is
  * set, in which case questions already answered fill whatever the unattempted ones can't.
  */
-export function buildTest(questions: Question[], progress: ProgressMap, allowOld: boolean): BuiltTest {
+export function buildTest(questions: QuestionMeta[], progress: ProgressMap, allowOld: boolean): BuiltTest {
   const used = new Set<string>();
   // Questions kept back for a named test stay out of generated ones.
   const eligible = questions.filter((q) => !q.testOnly);
   const fresh = shuffle(eligible.filter((q) => statusOf(progress, q.id) === 'unattempted'));
   const old = allowOld ? shuffle(eligible.filter((q) => statusOf(progress, q.id) !== 'unattempted')) : [];
 
-  function take(subject: Subject, domain: string, difficulties: Difficulty[], count: number): Question[] {
-    const picked: Question[] = [];
+  function take(subject: Subject, domain: string, difficulties: Difficulty[], count: number): QuestionMeta[] {
+    const picked: QuestionMeta[] = [];
     for (const source of [fresh, old]) {
       for (const q of source) {
         if (picked.length === count) return picked;
@@ -104,7 +104,7 @@ export function buildTest(questions: Question[], progress: ProgressMap, allowOld
   for (const section of SECTIONS) {
     section.modules.forEach((counts, m) => {
       const [lower, upper] = MODULE_DIFFICULTIES[m];
-      let picked: Question[] = [];
+      let picked: QuestionMeta[] = [];
       for (const [domain, count] of Object.entries(counts)) {
         // An even split between the module's two difficulties, topped up from either one
         // when a difficulty runs short.

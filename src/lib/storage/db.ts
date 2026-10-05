@@ -134,3 +134,18 @@ export async function putQuestions(questions: Question[]): Promise<void> {
   await Promise.all(questions.map((q) => tx.store.put(q)));
   await tx.done;
 }
+
+/** The questions stored under these ids, in no particular order. Ids not stored are skipped. */
+export async function getQuestionsById(ids: string[]): Promise<Question[]> {
+  const db = await getDB();
+  const tx = db.transaction('questions', 'readonly');
+  const found = await Promise.all(ids.map((id) => tx.store.get(id)));
+  await tx.done;
+  return found.filter((q): q is Question => q !== undefined);
+}
+
+/** The ids of every stored question: only the keys, so it's cheap however many images they hold. */
+export async function getAllQuestionIds(): Promise<string[]> {
+  const db = await getDB();
+  return db.getAllKeys('questions');
+}

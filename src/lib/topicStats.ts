@@ -1,4 +1,4 @@
-import type { Question, Subject } from '../types/question';
+import type { QuestionMeta, Subject } from '../types/question';
 import type { ProgressMap } from '../types/progress';
 import { DOMAINS } from '../data/taxonomy';
 import { statusOf } from './pools';
@@ -36,7 +36,7 @@ const WEAK_BELOW = 50;
  * How each subtopic is going, in the order the SAT lists them. Based on each question's
  * current status, so a wrong answer later retried correctly counts as right.
  */
-export function skillStats(questions: Question[], progress: ProgressMap): SkillStat[] {
+export function skillStats(questions: QuestionMeta[], progress: ProgressMap): SkillStat[] {
   const stats = new Map<string, SkillStat>();
   for (const domain of DOMAINS) {
     for (const skill of domain.skills) {

@@ -48,3 +48,22 @@ export async function fetchQuestionFile(file: string): Promise<BankLoadResult> {
     questions: parsed.data.questions.map((q) => ({ ...q, source: 'imported' as const })),
   };
 }
+
+export interface BankIndex {
+  revision: number;
+  ids: string[];
+}
+
+/** The shipped bank's revision and ids, from the small file built alongside it, so the full
+ *  bank only has to be downloaded when it has changed. Null when the file can't be read. */
+export async function fetchBankIndex(): Promise<BankIndex | null> {
+  try {
+    const response = await fetch(`${import.meta.env.BASE_URL}question-index.json`, { cache: 'no-cache' });
+    if (!response.ok) return null;
+    const data = (await response.json()) as { revision?: number; questions?: { id: string }[] };
+    if (!Array.isArray(data.questions)) return null;
+    return { revision: data.revision ?? 0, ids: data.questions.map((q) => q.id) };
+  } catch {
+    return null;
+  }
+}

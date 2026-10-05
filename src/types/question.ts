@@ -52,3 +52,13 @@ export interface Question {
   verified?: boolean;
   source: 'bundled' | 'imported';
 }
+
+/** What's known about a question without loading it: enough to count, sort into pools and rank
+ *  topics. The full question, with its text and images, is loaded only when it's shown. */
+export type QuestionMeta = Pick<Question, 'id' | 'subject' | 'domain' | 'skill' | 'difficulty' | 'testOnly' | 'source'>;
+
+export function toMeta(q: QuestionMeta): QuestionMeta {
+  const meta: QuestionMeta = { id: q.id, subject: q.subject, domain: q.domain, skill: q.skill, difficulty: q.difficulty, source: q.source };
+  if (q.testOnly) meta.testOnly = true;
+  return meta;
+}

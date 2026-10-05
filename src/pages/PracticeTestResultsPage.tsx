@@ -1,8 +1,8 @@
 import { useMemo } from 'react';
 import { Link, Navigate, useParams } from 'react-router-dom';
-import type { Question } from '../types/question';
 import { usePracticeTestStore } from '../store/usePracticeTestStore';
 import { useProgressStore } from '../store/useProgressStore';
+import { useLoadedQuestions } from '../lib/useLoadedQuestions';
 import { SECTIONS } from '../lib/practiceTest/buildTest';
 import { testName } from '../lib/practiceTest/format';
 import { Button } from '../components/ui/Button';
@@ -15,7 +15,13 @@ export function PracticeTestResultsPage() {
   const { number } = useParams();
   const result = usePracticeTestStore((s) => s.history.find((t) => String(t.number) === number));
   const questions = useProgressStore((s) => s.questions);
-  const questionsById = useMemo(() => new Map<string, Question>(questions.map((q) => [q.id, q])), [questions]);
+  const metaById = useMemo(() => new Map(questions.map((q) => [q.id, q])), [questions]);
+  // Only the missed questions are shown in full, so only they are loaded.
+  const wrongIds = useMemo(
+    () => (result?.answers ?? []).filter((a) => a.outcome === 'incorrect').map((a) => a.questionId),
+    [result],
+  );
+  const { loaded } = useLoadedQuestions(wrongIds);
 
   if (!result) return <Navigate to="/tests" replace />;
 
@@ -117,7 +123,7 @@ export function PracticeTestResultsPage() {
 
       {sections.map((section) => {
         const wrong = result.answers.filter(
-          (a) => a.outcome === 'incorrect' && questionsById.get(a.questionId)?.subject === section.subject,
+          (a) => a.outcome === 'incorrect' && metaById.get(a.questionId)?.subject === section.subject,
         );
         return (
           <section key={section.subject} className="mt-8">
@@ -132,7 +138,7 @@ export function PracticeTestResultsPage() {
             ) : (
               <div className="flex flex-col gap-4">
                 {wrong.map((answer) => {
-                  const question = questionsById.get(answer.questionId);
+                  const question = loaded[answer.questionId];
                   if (!question) return null;
                   return (
                     <QuestionReviewCard

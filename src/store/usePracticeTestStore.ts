@@ -52,6 +52,11 @@ interface PracticeTestState {
  * cloud. Tests saved before the untimed option existed were all timed, and ones saved before a
  * test could route twice hold their one routing on its own rather than in a list.
  */
+/** Every question a test may show: its modules', and the easier versions it could route to. */
+export function testQuestionIds(test: ActiveTest): string[] {
+  return [...test.modules.flatMap((m) => m.questionIds), ...(test.routing ?? []).flatMap((r) => r.easierIds)];
+}
+
 export function upgradeSavedTest(test: ActiveTest | null): ActiveTest | null {
   if (!test) return null;
   const routing = test.routing as TestRouting | TestRouting[] | undefined;
@@ -97,10 +102,10 @@ export const usePracticeTestStore = create<PracticeTestState>((set, get) => {
     const { active, history } = get();
     if (!active) return;
     const progress = useProgressStore.getState();
-    // Grading needs the bank. The runner holds the clock until it's loaded, so this is only a
-    // backstop against grading every question as missing.
-    if (!progress.isLoaded) return;
-    const byId = new Map<string, Question>(progress.questions.map((q) => [q.id, q]));
+    // Grading needs the test's questions. The runner holds the clock until they're loaded, so
+    // this is only a backstop against grading every question as missing.
+    if (!testQuestionIds(active).every((id) => progress.loaded[id])) return;
+    const byId = new Map<string, Question>(Object.entries(progress.loaded));
     // Numbered when it's finished, since several can be in progress at once.
     const result = gradeTest({ ...active, number: history.length + 1 }, byId, progress.stats.currentStreak);
     // The same bookkeeping a drill does: wrong answers move to the Wrong tab, right ones to Right.
@@ -198,7 +203,7 @@ export const usePracticeTestStore = create<PracticeTestState>((set, get) => {
       const next = current + 1;
       const routing = active.routing?.find((r) => r.afterModule === current);
       if (routing && next < active.modules.length) {
-        const byId = new Map(useProgressStore.getState().questions.map((q) => [q.id, q]));
+        const byId = new Map(Object.entries(useProgressStore.getState().loaded));
         const right = active.modules[active.stage.module].questionIds.filter((id) => {
           const question = byId.get(id);
           return question !== undefined && isCorrect(question, active.responses[id]);

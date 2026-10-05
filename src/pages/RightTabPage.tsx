@@ -1,10 +1,15 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useProgressStore } from '../store/useProgressStore';
 import { Button } from '../components/ui/Button';
 import { Tabs } from '../components/ui/Tabs';
 import { QuestionReviewCard } from '../components/review/QuestionReviewCard';
 import { getWrongPool, getRightPool } from '../lib/pools';
+import { useLoadedQuestions } from '../lib/useLoadedQuestions';
+import { QuestionPlaceholder } from '../components/review/QuestionPlaceholder';
+
+/** How many right questions are shown at first, and added each time the list nears its end. */
+const PAGE = 20;
 
 export function RightTabPage() {
   const navigate = useNavigate();
@@ -15,6 +20,27 @@ export function RightTabPage() {
 
   const rightPool = useMemo(() => getRightPool(questions, progress), [questions, progress]);
   const wrongCount = useMemo(() => getWrongPool(questions, progress).length, [questions, progress]);
+
+  // Right questions can run to hundreds, each with its text and images, so they're loaded a page
+  // at a time as the list is scrolled rather than all on opening the tab.
+  const [shown, setShown] = useState(PAGE);
+  const visible = useMemo(() => rightPool.slice(0, shown), [rightPool, shown]);
+  const visibleIds = useMemo(() => visible.map((q) => q.id), [visible]);
+  const { loaded, ready } = useLoadedQuestions(visibleIds);
+  const sentinel = useRef<HTMLDivElement>(null);
+  const more = ready && shown < rightPool.length;
+
+  useEffect(() => {
+    const target = sentinel.current;
+    if (!target || !more) return;
+    // Starts loading a screen before the end is reached, so scrolling rarely meets a placeholder.
+    const observer = new IntersectionObserver(
+      (entries) => entries.some((e) => e.isIntersecting) && setShown((n) => n + PAGE),
+      { rootMargin: '100% 0px' },
+    );
+    observer.observe(target);
+    return () => observer.disconnect();
+  }, [more]);
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-6 sm:py-10">
@@ -62,17 +88,22 @@ export function RightTabPage() {
         </div>
       ) : (
         <div className="flex flex-col gap-4">
-          {rightPool.map((question) => (
-            <QuestionReviewCard
-              key={question.id}
-              question={question}
-              actions={
-                <Button variant="secondary" onClick={() => resetProgress([question.id])}>
-                  Practice again
-                </Button>
-              }
-            />
-          ))}
+          {visible.map(({ id }) => {
+            const question = loaded[id];
+            if (!question) return <QuestionPlaceholder key={id} />;
+            return (
+              <QuestionReviewCard
+                key={id}
+                question={question}
+                actions={
+                  <Button variant="secondary" onClick={() => resetProgress([id])}>
+                    Practice again
+                  </Button>
+                }
+              />
+            );
+          })}
+          {more && <div ref={sentinel} aria-hidden="true" className="h-px" />}
         </div>
       )}
     </div>

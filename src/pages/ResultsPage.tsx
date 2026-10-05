@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import type { Question } from '../types/question';
 import { useSessionStore } from '../store/useSessionStore';
-import { useProgressStore } from '../store/useProgressStore';
+import { useLoadedQuestions } from '../lib/useLoadedQuestions';
 import { Button } from '../components/ui/Button';
 import { Toggle } from '../components/ui/Toggle';
 import { QuestionReviewCard } from '../components/review/QuestionReviewCard';
@@ -17,14 +17,12 @@ function verdictFor(accuracy: number): { label: string; tone: string } {
 
 export function ResultsPage() {
   const lastResult = useSessionStore((s) => s.lastResult);
-  const questions = useProgressStore((s) => s.questions);
   const [showCorrect, setShowCorrect] = useState(false);
 
-  const questionsById = useMemo(() => {
-    const map = new Map<string, Question>();
-    for (const q of questions) map.set(q.id, q);
-    return map;
-  }, [questions]);
+  // The session's own questions, loaded from storage (they're usually still in memory).
+  const answerIds = useMemo(() => (lastResult?.answers ?? []).map((a) => a.questionId), [lastResult]);
+  const { loaded } = useLoadedQuestions(answerIds);
+  const questionsById = useMemo(() => new Map<string, Question>(Object.entries(loaded)), [loaded]);
 
   if (!lastResult) return <Navigate to="/" replace />;
 

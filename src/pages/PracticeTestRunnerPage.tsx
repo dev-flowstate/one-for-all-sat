@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import type { Question } from '../types/question';
-import { usePracticeTestStore } from '../store/usePracticeTestStore';
-import { useProgressStore } from '../store/useProgressStore';
+import { testQuestionIds, usePracticeTestStore } from '../store/usePracticeTestStore';
+import { useLoadedQuestions } from '../lib/useLoadedQuestions';
 import { useSessionStore } from '../store/useSessionStore';
 import { formatClock, moduleTitle } from '../lib/practiceTest/format';
 import { Button } from '../components/ui/Button';
@@ -47,8 +47,9 @@ export function PracticeTestRunnerPage() {
   const justFinished = usePracticeTestStore((s) => s.justFinished);
   const timedOut = usePracticeTestStore((s) => s.timedOut);
   const { goTo, showReview, toggleMarked, endBreak, dismissTimedOut } = usePracticeTestStore.getState();
-  const questions = useProgressStore((s) => s.questions);
-  const isLoaded = useProgressStore((s) => s.isLoaded);
+  // Only this test's questions are loaded, not the bank.
+  const testIds = useMemo(() => (test ? testQuestionIds(test) : []), [test]);
+  const { loaded, ready: isLoaded } = useLoadedQuestions(testIds);
   const crosserActive = useSessionStore((s) => s.crosserActive);
   const toggleCrosser = useSessionStore((s) => s.toggleCrosser);
   const highlighterActive = useSessionStore((s) => s.highlighterActive);
@@ -58,9 +59,9 @@ export function PracticeTestRunnerPage() {
   /** Which module's navigator is open. Tied to the module, so it closes when time moves it on. */
   const [navigatorFor, setNavigatorFor] = useState<number | null>(null);
 
-  const questionsById = useMemo(() => new Map<string, Question>(questions.map((q) => [q.id, q])), [questions]);
+  const questionsById = useMemo(() => new Map<string, Question>(Object.entries(loaded)), [loaded]);
 
-  // Held until the bank has loaded, so a module can't run out and be graded against nothing.
+  // Held until the test's questions have loaded, so a module can't run out and be graded against nothing.
   useTestClock(!!test && test.timed && isLoaded);
 
   if (!test) return <Navigate to={justFinished ? `/tests/${justFinished}` : '/tests'} replace />;

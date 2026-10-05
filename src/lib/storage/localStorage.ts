@@ -1,3 +1,4 @@
+import type { QuestionMeta } from '../../types/question';
 import type { ProgressMap, ProfileStats } from '../../types/progress';
 import type { LocalProfile } from '../../types/settings';
 import type { VocabProgressMap } from '../../types/vocab';
@@ -18,6 +19,7 @@ const KEYS = {
   accountOwner: 'ofa-sat:account-owner',
   // The shipped bank's revision this browser last stored. Per device, like the bank itself.
   bankRevision: 'ofa-sat:bank-revision',
+  questionMeta: 'ofa-sat:question-meta',
 } as const;
 
 function read<T>(key: string, fallback: T): T {
@@ -127,4 +129,14 @@ export function getBankRevision(): number {
 
 export function setBankRevision(revision: number): void {
   write(KEYS.bankRevision, revision);
+}
+
+/** The stored questions' details, without their text and images, so counts and pools are there
+ *  on the first paint instead of after every question is read from IndexedDB. */
+export function getQuestionMeta(): QuestionMeta[] | null {
+  return read<QuestionMeta[] | null>(KEYS.questionMeta, null);
+}
+
+export function setQuestionMeta(meta: QuestionMeta[]): void {
+  write(KEYS.questionMeta, meta);
 }

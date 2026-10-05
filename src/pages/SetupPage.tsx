@@ -38,6 +38,7 @@ export function SetupPage() {
   const [revealMode, setRevealMode] = useState<RevealMode>('immediate');
   const [timerMode, setTimerMode] = useState<TimerMode>('none');
   const [countdownMinutes, setCountdownMinutes] = useState(DEFAULT_COUNTDOWN_MINUTES);
+  const [starting, setStarting] = useState(false);
 
   const filteredPool = useMemo(() => {
     const mainPool = getMainPool(questions, progress);
@@ -69,8 +70,8 @@ export function SetupPage() {
     setQuestionCount(Math.min(Math.max(parsed, 1), Math.max(availableCount, 1)));
   }
 
-  function handleStart() {
-    if (availableCount === 0) return;
+  async function handleStart() {
+    if (availableCount === 0 || starting) return;
 
     const selectedDomainObjects = DOMAINS.filter((d) => d.skills.some((s) => selectedSkills.includes(s)));
     const subjects: Subject[] =
@@ -89,7 +90,16 @@ export function SetupPage() {
       countdownMinutes: timerMode === 'countdown' ? countdownMinutes : undefined,
     };
 
-    const queue = shuffle(filteredPool).slice(0, questionCount);
+    // Only the questions picked are loaded, not the bank.
+    setStarting(true);
+    const ids = shuffle(filteredPool)
+      .slice(0, questionCount)
+      .map((q) => q.id);
+    await useProgressStore.getState().loadQuestions(ids);
+    const loaded = useProgressStore.getState().loaded;
+    const queue = ids.flatMap((id) => loaded[id] ?? []);
+    setStarting(false);
+    if (queue.length === 0) return;
 
     useSessionStore.getState().startSession(config, queue, stats.currentStreak);
     navigate('/run');
@@ -197,9 +207,10 @@ export function SetupPage() {
               <Button
                 variant="primary"
                 className="w-full py-4 text-base sm:text-lg"
-                onClick={handleStart}
+                disabled={starting}
+                onClick={() => void handleStart()}
               >
-                Start practicing
+                {starting ? 'Loading questions…' : 'Start practicing'}
               </Button>
             )}
           </div>

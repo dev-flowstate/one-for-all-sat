@@ -43,3 +43,7 @@ _*.ts
 /Backups/
 /tools/bbpt1/
 /*.pdf
+
+# Generated from public/question-bank.json by scripts/build-question-index.mjs on every dev
+# start and build.
+public/question-index.json
