@@ -13,6 +13,7 @@ import { Card } from '../components/ui/Card';
 import { TopicRow } from '../components/topics/TopicRow';
 import { SignInBanner } from '../components/profile/SignInBanner';
 import { StudyCalendar } from '../components/plan/StudyCalendar';
+import { ReadingCard } from '../components/reading/ReadingCard';
 
 export function HomePage() {
   const { questions, progress, stats, isLoaded, bundledCount, importedCount } = useProgressStore();
@@ -129,6 +130,7 @@ export function HomePage() {
       </header>
 
       <SignInBanner />
+      <ReadingCard />
 
       {/* Rendered whether or not storage has answered yet, with placeholders standing in for
           the numbers. Swapping a short "loading" block for the full layout grew the page by
