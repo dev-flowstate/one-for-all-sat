@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import type { Question } from '../../types/question';
 import { HighlightableText } from './HighlightableText';
 import { splitPrompt } from '../../lib/promptParts';
+import { Annotatable } from '../annotate/Annotatable';
 
 interface QuestionLayoutProps {
   question: Question;
@@ -45,6 +46,8 @@ export function QuestionLayout({ question, children }: QuestionLayoutProps) {
   );
 
   return (
+    // Practice and practice tests both draw through here, so a question's doodle is the same in each.
+    <Annotatable id={`q:${question.id}`}>
     <div className="bb-split grid grid-cols-1 lg:grid-cols-2 lg:divide-x-2 lg:divide-ink">
       <div className="min-w-0 lg:pr-6">
         {figuresFirst && figures}
@@ -78,5 +81,6 @@ export function QuestionLayout({ question, children }: QuestionLayoutProps) {
         {children}
       </div>
     </div>
+    </Annotatable>
   );
 }

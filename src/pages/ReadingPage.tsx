@@ -12,6 +12,7 @@ import {
   type ReadingProgress,
 } from '../lib/reading';
 import { ConfirmDialog } from '../components/ui/ConfirmDialog';
+import { Annotatable } from '../components/annotate/Annotatable';
 
 const BOOK = BOOKS[0];
 
@@ -230,6 +231,7 @@ export function ReadingPage() {
                 </p>
               )}
               <h1 className="mb-6 font-mono text-sm font-bold tracking-tight text-venice-blue uppercase">{chapter.title}</h1>
+              <Annotatable id={`book:${BOOK.id}:${progress.chapter}`} highlighter stickyToolbar="top-[4.75rem]">
               <div className="font-reading text-[17px] leading-8">
                 {tokens.map((pieces, i) => (
                   <p
@@ -256,6 +258,7 @@ export function ReadingPage() {
                   </p>
                 ))}
               </div>
+              </Annotatable>
 
               <div className="mt-10 flex gap-3 border-t-2 border-ink pt-5">
                 {progress.chapter > 0 && (
