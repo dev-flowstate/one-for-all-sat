@@ -22,8 +22,17 @@ export function SignInBanner() {
   const { status, user, ready, error, signIn, prepare } = useAccountStore();
   const shown = status !== 'off' && status !== 'checking' && !user;
 
+  // Loaded once the page has settled rather than straight away, so loading Firebase doesn't
+  // hold up a tap made while the page is still starting. It's still in long before anyone
+  // reaches the button.
   useEffect(() => {
-    if (shown) prepare();
+    if (!shown) return;
+    if (!('requestIdleCallback' in window)) {
+      const timer = setTimeout(prepare, 1500);
+      return () => clearTimeout(timer);
+    }
+    const handle = requestIdleCallback(prepare, { timeout: 3000 });
+    return () => cancelIdleCallback(handle);
   }, [shown, prepare]);
 
   if (!shown) return null;

@@ -13,7 +13,6 @@ import {
   setStats,
 } from '../lib/storage/localStorage';
 import {
-  deleteQuestions,
   ensureBundledSeeded,
   getAllQuestionIds,
   getAllQuestions,
@@ -21,8 +20,8 @@ import {
   mergeQuestions,
   putQuestions,
 } from '../lib/storage/db';
-import { isWeakFingerprint, questionFingerprint } from '../lib/storage/dedupe';
-import { fetchBankIndex, fetchQuestionFile, fetchShippedBank } from '../lib/storage/seedBank';
+import { runBankJob } from '../lib/storage/runBankJob';
+import { fetchBankIndex, fetchQuestionFile } from '../lib/storage/seedBank';
 
 interface ProgressStore {
   /** Every stored question's details, without its text and images: enough for counts, pools
@@ -88,7 +87,8 @@ export const useProgressStore = create<ProgressStore>((set, get) => ({
     let meta = getQuestionMeta();
     const metaIds = new Set(meta?.map((q) => q.id));
     if (!meta || meta.length !== ids.length || ids.some((id) => !metaIds.has(id))) {
-      meta = (await getAllQuestions()).map(toMeta);
+      // Reading every question, images and all, is heavy, so it's done in the worker.
+      meta = await runBankJob('readAllMeta');
       setQuestionMeta(meta);
     }
     set({ questions: meta, progress: getProgress(), stats: getStats(), isLoaded: true, ...bankCounts(meta) });
@@ -109,7 +109,12 @@ export const useProgressStore = create<ProgressStore>((set, get) => ({
       if (current) return;
     }
 
-    const result = await fetchShippedBank();
+    // Downloading, checking and storing the bank happen in the worker; only the stored ids and
+    // the bank's details come back.
+    const importedIds = get()
+      .questions.filter((q) => q.source === 'imported' && !q.testOnly)
+      .map((q) => q.id);
+    const result = await runBankJob('syncShippedBank', importedIds, getBankRevision());
     if (result.status !== 'loaded') {
       if (result.status === 'invalid') {
         console.error('question-bank.json failed validation:', result.issues);
@@ -117,44 +122,35 @@ export const useProgressStore = create<ProgressStore>((set, get) => ({
       return;
     }
 
-    // The shipped bank is the whole bank: a question someone imported by hand that it doesn't
-    // have is removed, so an older copy can't sit beside the shipped one as a duplicate. Progress
-    // on a removed copy moves to the shipped question it matches, so no answer is lost. A named
-    // test's questions aren't in the bank and stay.
-    const shippedIds = new Set(result.questions.map((q) => q.id));
-    const extras = get().questions.filter((q) => q.source === 'imported' && !q.testOnly && !shippedIds.has(q.id));
-    if (extras.length > 0) {
-      const byFingerprint = new Map(result.questions.map((q) => [questionFingerprint(q), q.id]));
+    // Hand-imported questions the bank doesn't have were removed, so an older copy can't sit
+    // beside the shipped one; progress on one that matched a shipped question moves to it, so no
+    // answer is lost.
+    if (Object.keys(result.moved).length > 0) {
       const progress = { ...get().progress };
-      for (const q of await getQuestionsById(extras.map((e) => e.id))) {
-        const fingerprint = questionFingerprint(q);
-        const target = isWeakFingerprint(fingerprint) ? undefined : byFingerprint.get(fingerprint);
-        if (target && progress[q.id]) {
-          progress[target] ??= progress[q.id];
-          delete progress[q.id];
+      for (const [from, to] of Object.entries(result.moved)) {
+        if (progress[from]) {
+          progress[to] ??= progress[from];
+          delete progress[from];
         }
       }
       setProgress(progress);
       set({ progress });
-      await deleteQuestions(extras.map((q) => q.id));
     }
 
-    // Questions already stored are left alone, except once after the bank's revision goes up:
-    // then they're rewritten, so a corrected explanation reaches people who already have the
-    // question. Progress is keyed by id, which a correction never changes, so it's untouched.
+    // Stored questions are rewritten once after the bank's revision goes up, so a corrected
+    // question reaches people who already have it.
     const corrected = result.revision > getBankRevision();
-    const { added, updated } = await mergeQuestions(result.questions, undefined, { updateExisting: corrected });
     if (corrected) setBankRevision(result.revision);
-    if (added === 0 && updated === 0 && extras.length === 0) return;
+    if (result.added === 0 && result.updated === 0 && result.removed.length === 0) return;
 
-    // The details of what's stored now, from the bank and what was known before, without
-    // reading any question back. Loaded questions the bank corrected are dropped, to reload.
+    // The details of what's stored now, from the bank and what was known before. Loaded
+    // questions the bank corrected are dropped, to reload.
     const known = new Map(get().questions.map((q) => [q.id, q]));
-    for (const q of result.questions) known.set(q.id, toMeta(q));
-    const questions = (await getAllQuestionIds()).flatMap((id) => known.get(id) ?? []);
+    for (const q of result.shipped) known.set(q.id, q);
+    const questions = result.storedIds.flatMap((id) => known.get(id) ?? []);
     setQuestionMeta(questions);
     const loaded = { ...get().loaded };
-    for (const q of result.questions) delete loaded[q.id];
+    for (const q of result.shipped) delete loaded[q.id];
     set({ questions, loaded, ...bankCounts(questions) });
   },
 
