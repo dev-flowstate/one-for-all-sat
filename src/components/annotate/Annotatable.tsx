@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { COLORS, HIGHLIGHTER, getDoodle, saveDoodle, type DoodleColor, type Stroke } from '../../lib/doodles';
 
 /** Drawing units across the content's width; a stroke's coordinates and width are in these. */
@@ -95,6 +95,23 @@ export function Annotatable({ id, highlighter, stickyToolbar, children }: Annota
   const scale = UNITS / size.w;
   const highlighting = active && tool === 'highlighter' && !!highlighter;
   const penOn = active && !highlighting;
+
+  // Safari on an iPad still pans the page under an Apple Pencil despite `touch-action: none`,
+  // which cancels the stroke. Its touches are stopped from scrolling here instead; a finger's
+  // scrolling is done by onPointerMove, so it isn't lost. It has to be a native listener: React
+  // registers touch listeners as passive, and those can't stop a scroll.
+  const surface = useRef<SVGSVGElement>(null);
+  useEffect(() => {
+    const el = surface.current;
+    if (!el || !penOn) return;
+    const stop = (e: TouchEvent) => e.preventDefault();
+    el.addEventListener('touchstart', stop, { passive: false });
+    el.addEventListener('touchmove', stop, { passive: false });
+    return () => {
+      el.removeEventListener('touchstart', stop);
+      el.removeEventListener('touchmove', stop);
+    };
+  }, [penOn]);
 
   function point(e: React.PointerEvent): [number, number] {
     const rect = box.current!.getBoundingClientRect();
@@ -303,10 +320,17 @@ export function Annotatable({ id, highlighter, stickyToolbar, children }: Annota
       <div ref={box} className="relative">
         {typeof children === 'function' ? children({ highlighting }) : children}
         <svg
+          ref={surface}
           aria-hidden={!penOn}
           aria-label={penOn ? 'Drawing area' : undefined}
           className={`absolute inset-0 h-full w-full ${penOn ? 'cursor-crosshair' : ''}`}
-          style={{ pointerEvents: penOn ? 'auto' : 'none', touchAction: penOn ? 'none' : 'auto' }}
+          style={{
+            pointerEvents: penOn ? 'auto' : 'none',
+            touchAction: penOn ? 'none' : 'auto',
+            // A long press with the pencil would otherwise select text or show the magnifier.
+            WebkitUserSelect: penOn ? 'none' : undefined,
+            WebkitTouchCallout: penOn ? 'none' : undefined,
+          }}
           viewBox={`0 0 ${UNITS} ${size.h * scale}`}
           preserveAspectRatio="xMinYMin meet"
           onPointerDown={onPointerDown}
