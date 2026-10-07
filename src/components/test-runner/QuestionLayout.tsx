@@ -47,7 +47,7 @@ export function QuestionLayout({ question, children }: QuestionLayoutProps) {
 
   return (
     // Practice and practice tests both draw through here, so a question's doodle is the same in each.
-    <Annotatable id={`q:${question.id}`}>
+    <Annotatable id={`q:${question.id}`} stickyToolbar="top-[var(--annotate-top,0.5rem)]">
     <div className="bb-split grid grid-cols-1 lg:grid-cols-2 lg:divide-x-2 lg:divide-ink">
       <div className="min-w-0 lg:pr-6">
         {figuresFirst && figures}

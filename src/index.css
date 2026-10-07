@@ -119,7 +119,9 @@
 
 :root[data-theme='bluebook'] :is(.panel, .panel-raised, .panel-flat) {
   border-radius: 8px;
-  overflow: hidden;
+  /* clip, not hidden: it rounds the corners the same, but doesn't stop a sticky toolbar
+     inside the panel from staying in view. */
+  overflow: clip;
 }
 
 :root[data-theme='bluebook'] :is(.panel, .panel-raised, [class*='shadow-[']) {

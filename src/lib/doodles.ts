@@ -47,3 +47,37 @@ export function saveDoodle(id: string, strokes: Stroke[]): boolean {
     return false;
   }
 }
+
+/** A highlighted stretch of a book paragraph, by character offsets in its text. */
+export interface TextHighlight {
+  /** The paragraph's index in its chapter. */
+  p: number;
+  s: number;
+  e: number;
+}
+
+const HIGHLIGHTS_KEY = 'ofa-sat:highlights';
+
+function readHighlights(): Record<string, TextHighlight[]> {
+  try {
+    return JSON.parse(localStorage.getItem(HIGHLIGHTS_KEY) ?? '{}') as Record<string, TextHighlight[]>;
+  } catch {
+    return {};
+  }
+}
+
+export function getHighlights(id: string): TextHighlight[] {
+  return readHighlights()[id] ?? [];
+}
+
+/** Highlights save as they're made, like ink from a real highlighter. */
+export function saveHighlights(id: string, highlights: TextHighlight[]): void {
+  const all = readHighlights();
+  if (highlights.length === 0) delete all[id];
+  else all[id] = highlights;
+  try {
+    localStorage.setItem(HIGHLIGHTS_KEY, JSON.stringify(all));
+  } catch {
+    // Storage full: the highlight stays until the page is left.
+  }
+}

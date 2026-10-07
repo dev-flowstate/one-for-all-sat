@@ -1,20 +1,36 @@
 import { useLayoutEffect, useRef, useState, type ReactNode } from 'react';
-import { COLORS, HIGHLIGHTER, getDoodle, saveDoodle, type DoodleColor, type DoodleTool, type Stroke } from '../../lib/doodles';
+import { COLORS, HIGHLIGHTER, getDoodle, saveDoodle, type DoodleColor, type Stroke } from '../../lib/doodles';
 
 /** Drawing units across the content's width; a stroke's coordinates and width are in these. */
 const UNITS = 1000;
 /** A point closer than this to the last one adds nothing visible. */
 const MIN_STEP = 2;
-const HIGHLIGHTER_PX = 18;
+/** Remembered once a stylus is seen, so on that device a finger scrolls instead of drawing. */
+const STYLUS_KEY = 'ofa-sat:stylus';
+
+function stylusSeen(): boolean {
+  try {
+    return localStorage.getItem(STYLUS_KEY) === '1';
+  } catch {
+    return false;
+  }
+}
+
+/** The text highlighter, where the content offers one: it marks selected text, kept by the page. */
+export interface TextHighlighter {
+  count: number;
+  undo: () => void;
+  clear: () => void;
+}
 
 interface AnnotatableProps {
   /** What the drawing is saved under: a question's id, or a book chapter. */
   id: string;
-  /** The highlighter is offered only where asked for; the pen always is. */
-  highlighter?: boolean;
-  /** Keeps the tools in view while a long page scrolls (a book chapter). */
+  highlighter?: TextHighlighter;
+  /** Keeps the tools in view while a long page scrolls. */
   stickyToolbar?: string;
-  children: ReactNode;
+  /** Told whether the highlighter is in use, so the content can take text selections. */
+  children: ReactNode | ((state: { highlighting: boolean }) => ReactNode);
 }
 
 function pathOf(points: number[]): string {
@@ -26,14 +42,20 @@ function pathOf(points: number[]): string {
   return d;
 }
 
+const smallButton = 'border-2 border-ink bg-paper px-2 py-1 font-mono text-[11px] font-bold uppercase disabled:opacity-40';
+
 /**
- * Content that can be written on with a pen or highlighter. Drawings are vector strokes laid
- * over the content, scaled to its width, and kept only when "Save doodle" is pressed; a saved
- * one shows again whenever the same question or chapter is opened.
+ * Content that can be written on with a pen, and, where offered, text that can be highlighted.
+ * Pen drawings are vector strokes over the content, scaled to its width, kept when "Save
+ * doodle" is pressed and shown again whenever the same question or chapter is opened.
+ *
+ * Fingers and pens: one finger draws and two fingers scroll, so a phone can do both. Once a
+ * stylus has been used on a device (an iPad with an Apple Pencil, say), the stylus draws and a
+ * finger scrolls, as in a notes app.
  */
-export function Annotatable({ id, highlighter = false, stickyToolbar, children }: AnnotatableProps) {
+export function Annotatable({ id, highlighter, stickyToolbar, children }: AnnotatableProps) {
   const [active, setActive] = useState(false);
-  const [tool, setTool] = useState<DoodleTool>('pen');
+  const [tool, setTool] = useState<'pen' | 'highlighter'>('pen');
   const [color, setColor] = useState<DoodleColor>('ink');
   const [widthPx, setWidthPx] = useState(3);
   const [strokes, setStrokes] = useState<Stroke[]>(() => getDoodle(id));
@@ -43,6 +65,12 @@ export function Annotatable({ id, highlighter = false, stickyToolbar, children }
   const box = useRef<HTMLDivElement>(null);
   /** The stroke being drawn, until the pen lifts. */
   const [drawing, setDrawing] = useState<Stroke | null>(null);
+  const drawingPointer = useRef<number | null>(null);
+  /** Fingers on the screen, by pointer id, with where each last was. */
+  const touches = useRef(new Map<number, number>());
+  /** The finger whose movement scrolls the page, while scrolling. */
+  const scroller = useRef<number | null>(null);
+  const [stylus, setStylus] = useState(stylusSeen);
 
   // Another question or chapter: its own saved drawing instead.
   const [shownFor, setShownFor] = useState(id);
@@ -65,6 +93,8 @@ export function Annotatable({ id, highlighter = false, stickyToolbar, children }
   }, []);
 
   const scale = UNITS / size.w;
+  const highlighting = active && tool === 'highlighter' && !!highlighter;
+  const penOn = active && !highlighting;
 
   function point(e: React.PointerEvent): [number, number] {
     const rect = box.current!.getBoundingClientRect();
@@ -72,28 +102,61 @@ export function Annotatable({ id, highlighter = false, stickyToolbar, children }
   }
 
   function onPointerDown(e: React.PointerEvent<SVGSVGElement>) {
-    if (!active || e.button > 0) return;
+    if (!penOn || e.button > 0) return;
     e.preventDefault();
-    e.currentTarget.setPointerCapture(e.pointerId);
+    try {
+      e.currentTarget.setPointerCapture(e.pointerId);
+    } catch {
+      // A pointer the browser no longer tracks; the stroke still draws while it's over the page.
+    }
+    if (e.pointerType === 'pen' && !stylus) {
+      setStylus(true);
+      try {
+        localStorage.setItem(STYLUS_KEY, '1');
+      } catch {
+        // Then it's learned again next visit.
+      }
+    }
+    if (e.pointerType === 'touch') {
+      touches.current.set(e.pointerId, e.clientY);
+      // A finger scrolls when a stylus does the drawing, or when it's the second finger down,
+      // which also abandons the stroke the first one started.
+      if (stylus || touches.current.size >= 2) {
+        if (drawingPointer.current !== null) {
+          drawingPointer.current = null;
+          setDrawing(null);
+        }
+        // The first finger down leads the scroll; following one finger keeps two from doubling it.
+        scroller.current ??= touches.current.keys().next().value ?? e.pointerId;
+        return;
+      }
+    }
+    drawingPointer.current = e.pointerId;
     const [x, y] = point(e);
-    setDrawing({
-      tool,
-      color,
-      width: Math.max(1, Math.round((tool === 'highlighter' ? HIGHLIGHTER_PX : widthPx) * scale)),
-      points: [x, y],
-    });
+    setDrawing({ tool: 'pen', color, width: Math.max(1, Math.round(widthPx * scale)), points: [x, y] });
   }
 
   function onPointerMove(e: React.PointerEvent<SVGSVGElement>) {
-    if (!drawing) return;
+    if (e.pointerType === 'touch' && touches.current.has(e.pointerId)) {
+      const lastY = touches.current.get(e.pointerId)!;
+      touches.current.set(e.pointerId, e.clientY);
+      if (scroller.current === e.pointerId) {
+        window.scrollBy(0, lastY - e.clientY);
+        return;
+      }
+    }
+    if (!drawing || drawingPointer.current !== e.pointerId) return;
     const [x, y] = point(e);
     const n = drawing.points.length;
     if (Math.hypot(x - drawing.points[n - 2], y - drawing.points[n - 1]) < MIN_STEP) return;
     setDrawing({ ...drawing, points: [...drawing.points, x, y] });
   }
 
-  function onPointerUp() {
-    if (!drawing) return;
+  function onPointerUp(e: React.PointerEvent<SVGSVGElement>) {
+    touches.current.delete(e.pointerId);
+    if (scroller.current === e.pointerId) scroller.current = touches.current.keys().next().value ?? null;
+    if (drawingPointer.current !== e.pointerId || !drawing) return;
+    drawingPointer.current = null;
     const stroke = drawing;
     setDrawing(null);
     setStrokes((s) => [...s, stroke]);
@@ -111,7 +174,7 @@ export function Annotatable({ id, highlighter = false, stickyToolbar, children }
   }
 
   const all = drawing ? [...strokes, drawing] : strokes;
-  const toolButton = (value: DoodleTool, label: string) => (
+  const toolButton = (value: 'pen' | 'highlighter', label: string) => (
     <button
       type="button"
       aria-pressed={tool === value}
@@ -139,7 +202,7 @@ export function Annotatable({ id, highlighter = false, stickyToolbar, children }
             active ? 'bg-coral text-paper' : 'bg-paper hover:bg-merino'
           }`}
         >
-          {active ? '✎ Drawing: on' : '✎ Annotate'}
+          {active ? '✎ Annotating: on' : '✎ Annotate'}
         </button>
 
         {active && (
@@ -150,7 +213,17 @@ export function Annotatable({ id, highlighter = false, stickyToolbar, children }
                 {toolButton('highlighter', 'Highlighter')}
               </div>
             )}
-            {tool === 'pen' && (
+            {highlighting ? (
+              <>
+                <span className="font-mono text-[11px]">Select text to highlight it; tap a highlight to remove it.</span>
+                <button type="button" disabled={highlighter.count === 0} onClick={highlighter.undo} className={smallButton}>
+                  Undo
+                </button>
+                <button type="button" disabled={highlighter.count === 0} onClick={highlighter.clear} className={smallButton}>
+                  Clear highlights
+                </button>
+              </>
+            ) : (
               <>
                 <div className="flex gap-1" role="radiogroup" aria-label="Pen colour">
                   {(Object.keys(COLORS) as DoodleColor[]).map((c) => (
@@ -178,34 +251,34 @@ export function Annotatable({ id, highlighter = false, stickyToolbar, children }
                   />
                   <span className="w-4 tabular-nums">{widthPx}</span>
                 </label>
+                <button
+                  type="button"
+                  disabled={strokes.length === 0}
+                  onClick={() => {
+                    setStrokes((s) => s.slice(0, -1));
+                    setDirty(true);
+                  }}
+                  className={smallButton}
+                >
+                  Undo
+                </button>
+                <button
+                  type="button"
+                  disabled={strokes.length === 0}
+                  onClick={() => {
+                    setStrokes([]);
+                    setDirty(true);
+                  }}
+                  className={smallButton}
+                >
+                  Clear
+                </button>
               </>
             )}
-            <button
-              type="button"
-              disabled={strokes.length === 0}
-              onClick={() => {
-                setStrokes((s) => s.slice(0, -1));
-                setDirty(true);
-              }}
-              className="border-2 border-ink bg-paper px-2 py-1 font-mono text-[11px] font-bold uppercase disabled:opacity-40"
-            >
-              Undo
-            </button>
-            <button
-              type="button"
-              disabled={strokes.length === 0}
-              onClick={() => {
-                setStrokes([]);
-                setDirty(true);
-              }}
-              className="border-2 border-ink bg-paper px-2 py-1 font-mono text-[11px] font-bold uppercase disabled:opacity-40"
-            >
-              Clear
-            </button>
           </>
         )}
 
-        {(active || dirty) && (
+        {(penOn || dirty) && (
           <button
             type="button"
             disabled={!dirty}
@@ -220,15 +293,20 @@ export function Annotatable({ id, highlighter = false, stickyToolbar, children }
             {dirty ? 'Unsaved' : notice}
           </span>
         )}
+        {penOn && (
+          <span className="w-full font-mono text-[10px] text-ink-soft">
+            {stylus ? 'Your stylus draws; a finger scrolls.' : 'On a touch screen, scroll with two fingers.'}
+          </span>
+        )}
       </div>
 
       <div ref={box} className="relative">
-        {children}
+        {typeof children === 'function' ? children({ highlighting }) : children}
         <svg
-          aria-hidden={!active}
-          aria-label={active ? 'Drawing area' : undefined}
-          className={`absolute inset-0 h-full w-full ${active ? 'cursor-crosshair' : ''}`}
-          style={{ pointerEvents: active ? 'auto' : 'none', touchAction: active ? 'none' : 'auto' }}
+          aria-hidden={!penOn}
+          aria-label={penOn ? 'Drawing area' : undefined}
+          className={`absolute inset-0 h-full w-full ${penOn ? 'cursor-crosshair' : ''}`}
+          style={{ pointerEvents: penOn ? 'auto' : 'none', touchAction: penOn ? 'none' : 'auto' }}
           viewBox={`0 0 ${UNITS} ${size.h * scale}`}
           preserveAspectRatio="xMinYMin meet"
           onPointerDown={onPointerDown}
@@ -244,6 +322,7 @@ export function Annotatable({ id, highlighter = false, stickyToolbar, children }
               strokeLinecap="round"
               strokeLinejoin="round"
               strokeWidth={s.width}
+              // Freehand highlighter strokes from before the highlighter marked text still show.
               style={
                 s.tool === 'highlighter'
                   ? { stroke: HIGHLIGHTER.color, opacity: HIGHLIGHTER.opacity }

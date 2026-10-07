@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
+import { Fragment, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import {
   BOOKS,
@@ -13,6 +13,7 @@ import {
 } from '../lib/reading';
 import { ConfirmDialog } from '../components/ui/ConfirmDialog';
 import { Annotatable } from '../components/annotate/Annotatable';
+import { getHighlights, saveHighlights, type TextHighlight } from '../lib/doodles';
 
 const BOOK = BOOKS[0];
 
@@ -136,6 +137,134 @@ export function ReadingPage() {
     };
   }, [popup]);
 
+  // Highlights: saved as they're made, one list per chapter, kept in the order made for Undo.
+  const chapterId = `book:${BOOK.id}:${progress.chapter}`;
+  const [highlights, setHighlights] = useState<TextHighlight[]>(() => getHighlights(chapterId));
+  const [highlightsFor, setHighlightsFor] = useState(chapterId);
+  if (highlightsFor !== chapterId) {
+    setHighlightsFor(chapterId);
+    setHighlights(getHighlights(chapterId));
+  }
+
+  function updateHighlights(next: TextHighlight[]) {
+    setHighlights(next);
+    saveHighlights(chapterId, next);
+  }
+
+  const undoHighlight = () => updateHighlights(highlights.slice(0, -1));
+
+  /** Turns the text selection into highlights, one per paragraph it covers. */
+  function highlightSelection() {
+    const selection = window.getSelection();
+    if (!selection || selection.isCollapsed || selection.rangeCount === 0 || !chapter) return;
+    const range = selection.getRangeAt(0);
+    const offsetIn = (el: HTMLElement, node: Node, offset: number) => {
+      const r = document.createRange();
+      r.setStart(el, 0);
+      r.setEnd(node, offset);
+      return r.toString().length;
+    };
+    const added: TextHighlight[] = [];
+    paragraphs.current.forEach((el, p) => {
+      if (!el || !range.intersectsNode(el)) return;
+      const s = el.contains(range.startContainer) ? offsetIn(el, range.startContainer, range.startOffset) : 0;
+      const e = el.contains(range.endContainer) ? offsetIn(el, range.endContainer, range.endOffset) : chapter.paragraphs[p].length;
+      if (e > s && chapter.paragraphs[p].slice(s, e).trim()) added.push({ p, s, e });
+    });
+    selection.removeAllRanges();
+    if (added.length === 0) return;
+    // Stretching a selection that was just highlighted (dragging its handles on a phone) replaces
+    // that highlight rather than stacking another on it.
+    const last = highlights.at(-1);
+    const extends_ = last && added.length === 1 && added[0].p === last.p && added[0].s <= last.s && added[0].e >= last.e;
+    updateHighlights([...(extends_ ? highlights.slice(0, -1) : highlights), ...added]);
+  }
+
+  /** Removes the highlights covering part of a paragraph, when one is tapped. */
+  function removeHighlight(p: number, s: number, e: number) {
+    updateHighlights(highlights.filter((h) => h.p !== p || h.e <= s || h.s >= e));
+  }
+
+  /** A paragraph's text and hard words, with its highlights marked. */
+  function renderParagraph(pieces: ReturnType<typeof tokenize>, p: number, highlighting: boolean) {
+    // Overlapping highlights merged, so each stretch is marked once.
+    const ranges = highlights
+      .filter((h) => h.p === p)
+      .map((h) => [h.s, h.e])
+      .sort((a, b) => a[0] - b[0])
+      .reduce<number[][]>((out, r) => {
+        const prev = out.at(-1);
+        if (prev && r[0] <= prev[1]) prev[1] = Math.max(prev[1], r[1]);
+        else out.push([...r]);
+        return out;
+      }, []);
+    const marked = (a: number, b: number) => ranges.some(([s, e]) => s < b && e > a);
+    const markClass = 'bg-[#ffd400]/45 text-inherit';
+    const out: ReactNode[] = [];
+    let pos = 0;
+    pieces.forEach((piece, j) => {
+      if (typeof piece === 'string') {
+        // Plain text is cut at each highlight's edges.
+        const cuts = [pos, ...ranges.flat().filter((c) => c > pos && c < pos + piece.length), pos + piece.length];
+        for (let k = 0; k < cuts.length - 1; k++) {
+          const [a, b] = [cuts[k], cuts[k + 1]];
+          const text = piece.slice(a - pos, b - pos);
+          out.push(
+            marked(a, b) ? (
+              <mark
+                key={`${j}-${k}`}
+                className={`${markClass} ${highlighting ? 'cursor-pointer' : ''}`}
+                onClick={highlighting ? () => removeHighlight(p, a, b) : undefined}
+              >
+                {text}
+              </mark>
+            ) : (
+              <Fragment key={`${j}-${k}`}>{text}</Fragment>
+            ),
+          );
+        }
+        pos += piece.length;
+        return;
+      }
+      const [a, b] = [pos, pos + piece.word.length];
+      pos = b;
+      const lit = marked(a, b);
+      out.push(
+        <button
+          key={j}
+          type="button"
+          onClick={(e) => (highlighting ? lit && removeHighlight(p, a, b) : showWord(e, piece.word, piece.head))}
+          className={`cursor-help underline decoration-venice-blue decoration-dotted decoration-2 underline-offset-4 hover:bg-merino-dark ${
+            lit ? markClass : ''
+          } ${highlighting ? 'select-text' : ''}`}
+        >
+          {piece.word}
+        </button>,
+      );
+    });
+    return out;
+  }
+
+  // On a phone, a selection is adjusted by dragging its handles, which doesn't reach the page as
+  // a tap; a selection left still for a moment is highlighted then.
+  useEffect(() => {
+    let timer = 0;
+    const onChange = () => {
+      clearTimeout(timer);
+      timer = window.setTimeout(() => {
+        const selection = window.getSelection();
+        const article = paragraphs.current.find(Boolean)?.parentElement;
+        if (!selection || selection.isCollapsed || !article?.classList.contains('cursor-text')) return;
+        if (article.contains(selection.anchorNode)) highlightSelection();
+      }, 900);
+    };
+    document.addEventListener('selectionchange', onChange);
+    return () => {
+      document.removeEventListener('selectionchange', onChange);
+      clearTimeout(timer);
+    };
+  });
+
   function goToChapter(index: number) {
     setChaptersOpen(false);
     setPopup(null);
@@ -231,33 +360,29 @@ export function ReadingPage() {
                 </p>
               )}
               <h1 className="mb-6 font-mono text-sm font-bold tracking-tight text-venice-blue uppercase">{chapter.title}</h1>
-              <Annotatable id={`book:${BOOK.id}:${progress.chapter}`} highlighter stickyToolbar="top-[4.75rem]">
-              <div className="font-reading text-[17px] leading-8">
-                {tokens.map((pieces, i) => (
-                  <p
-                    key={`${progress.chapter}-${i}`}
-                    ref={(el) => {
-                      paragraphs.current[i] = el;
-                    }}
-                    className="mb-4 indent-6"
+              <Annotatable
+                id={chapterId}
+                stickyToolbar="top-[4.75rem]"
+                highlighter={{ count: highlights.length, undo: undoHighlight, clear: () => updateHighlights([]) }}
+              >
+                {({ highlighting }) => (
+                  <div
+                    className={`font-reading text-[17px] leading-8 ${highlighting ? 'cursor-text select-text' : ''}`}
+                    onPointerUp={highlighting ? () => setTimeout(highlightSelection, 0) : undefined}
                   >
-                    {pieces.map((piece, j) =>
-                      typeof piece === 'string' ? (
-                        <Fragment key={j}>{piece}</Fragment>
-                      ) : (
-                        <button
-                          key={j}
-                          type="button"
-                          onClick={(e) => showWord(e, piece.word, piece.head)}
-                          className="cursor-help underline decoration-venice-blue decoration-dotted decoration-2 underline-offset-4 hover:bg-merino-dark"
-                        >
-                          {piece.word}
-                        </button>
-                      ),
-                    )}
-                  </p>
-                ))}
-              </div>
+                    {tokens.map((pieces, i) => (
+                      <p
+                        key={`${progress.chapter}-${i}`}
+                        ref={(el) => {
+                          paragraphs.current[i] = el;
+                        }}
+                        className="mb-4 indent-6"
+                      >
+                        {renderParagraph(pieces, i, highlighting)}
+                      </p>
+                    ))}
+                  </div>
+                )}
               </Annotatable>
 
               <div className="mt-10 flex gap-3 border-t-2 border-ink pt-5">

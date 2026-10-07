@@ -100,7 +100,19 @@ export function PracticeTestRunnerPage() {
     // Same arrangement as a drill: a fixed-height split with the calculator open, an ordinary
     // scrolling page with it closed.
     <div className={calculatorOpen ? 'flex h-[100dvh] flex-col overflow-hidden' : 'min-h-screen pb-24'}>
-      <div className="bb-header sticky top-0 z-20 flex-none border-b-2 border-ink bg-merino-dark">
+      <div
+        className="bb-header sticky top-0 z-20 flex-none border-b-2 border-ink bg-merino-dark"
+        // The annotation toolbar stays in view just below this header, whose height changes as
+        // its buttons wrap on a narrow screen.
+        ref={(el) => {
+          if (!el) return;
+          const place = () => el.parentElement?.style.setProperty('--annotate-top', `${el.offsetHeight + 8}px`);
+          place();
+          const observer = new ResizeObserver(place);
+          observer.observe(el);
+          return () => observer.disconnect();
+        }}
+      >
         <div className="mx-auto max-w-6xl px-3 py-1.5 sm:px-4 sm:py-2">
           <div className="flex items-center gap-2 sm:gap-3">
             <Button variant="ghost" onClick={exit} className="-ml-1 flex-none">
