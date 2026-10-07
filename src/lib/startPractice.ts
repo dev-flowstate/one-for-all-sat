@@ -11,6 +11,8 @@ export interface PracticeRequest {
   skills: string[];
   /** The level wanted; none means any. */
   difficulty?: Difficulty;
+  /** Only questions whose latest answer was wrong: for redoing mistakes. */
+  onlyWrong?: boolean;
   count: number;
   revealMode: RevealMode;
   timerMode: TimerMode;
@@ -27,13 +29,18 @@ export interface PracticeRequest {
  */
 export async function startPractice(request: PracticeRequest): Promise<boolean> {
   const store = useProgressStore.getState();
-  const inTopics = store.questions.filter((q) => !q.testOnly && request.skills.some((s) => sameSkill(s, q.skill)));
-  const tiers: ((q: QuestionMeta) => boolean)[] = [
-    (q) => statusOf(store.progress, q.id) === 'unattempted' && (!request.difficulty || q.difficulty === request.difficulty),
-    (q) => statusOf(store.progress, q.id) === 'unattempted',
-    (q) => statusOf(store.progress, q.id) === 'incorrect',
-    () => true,
-  ];
+  // A named test's questions are kept out of practice, except to redo the ones it caught.
+  const inTopics = store.questions.filter(
+    (q) => (request.onlyWrong || !q.testOnly) && request.skills.some((s) => sameSkill(s, q.skill)),
+  );
+  const tiers: ((q: QuestionMeta) => boolean)[] = request.onlyWrong
+    ? [(q) => statusOf(store.progress, q.id) === 'incorrect']
+    : [
+        (q) => statusOf(store.progress, q.id) === 'unattempted' && (!request.difficulty || q.difficulty === request.difficulty),
+        (q) => statusOf(store.progress, q.id) === 'unattempted',
+        (q) => statusOf(store.progress, q.id) === 'incorrect',
+        () => true,
+      ];
   const picked: QuestionMeta[] = [];
   for (const tier of tiers) {
     for (const q of shuffle(inTopics.filter(tier))) {

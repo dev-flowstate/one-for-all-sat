@@ -5,6 +5,7 @@ import { useSettingsStore } from '../../store/useSettingsStore';
 import { useVocabStore } from '../../store/useVocabStore';
 import { MIN_ANSWERED, sameSkill, skillStats, type SkillStat } from '../../lib/topicStats';
 import { buildPlan, isOn, localDate, shortSkill, weekday, type PlanDay, type PlanTask } from '../../lib/studyPlan';
+import { analyzeMistakes, describeInsight, type Trend } from '../../lib/mistakes';
 import { startPractice } from '../../lib/startPractice';
 import { BOOKS, getReadingProgress } from '../../lib/reading';
 import { VOCAB_CARD_COUNT } from '../../data/vocab/count';
@@ -106,35 +107,44 @@ export function StudyCalendar() {
     const wordsSeen = Object.values(vocab).filter((s) => s.status !== 'unseen').length;
     return {
       firstToday,
-      firstTodayIds: new Set(firstToday.map((q) => q.id)),
       wordsToday,
       wordsLeft: Math.max(0, VOCAB_CARD_COUNT - wordsSeen) + wordsToday,
     };
   }, [questions, progress, vocab, today]);
 
-  const plan = useMemo(() => {
+  // The plan works from answers as they stood this morning: today's tasks then hold while they're
+  // done, and today's mistakes shape tomorrow's plan.
+  const morning = useMemo(
+    () => Object.fromEntries(Object.entries(progress).filter(([, s]) => !isOn(s.lastAttemptedAt, today))),
+    [progress, today],
+  );
+  const insights = useMemo(() => analyzeMistakes(questions, morning), [questions, morning]);
+
+  const result = useMemo(() => {
     if (!planStart || !satDate || !satAhead || !isLoaded) return null;
     return buildPlan({
       start: planStart,
       today,
       satDate,
       skills: planSkills ?? [],
-      // Questions first answered today still count as left, so today's numbers hold all day.
-      progress: Object.fromEntries(Object.entries(progress).filter(([id]) => !done.firstTodayIds.has(id))),
+      progress: morning,
       questions,
-      stats,
+      insights,
       wordsLeft: done.wordsLeft,
       readingChapter,
     });
-  }, [planStart, satDate, satAhead, isLoaded, today, planSkills, progress, questions, stats, done, readingChapter]);
+  }, [planStart, satDate, satAhead, isLoaded, today, planSkills, morning, questions, insights, done, readingChapter]);
+  const plan = result?.days ?? null;
 
   async function run(task: PlanTask, key: string) {
-    if (task.kind === 'practice' || task.kind === 'quiz') {
+    if (task.kind === 'practice' || task.kind === 'quiz' || task.kind === 'redo') {
       setStarting(key);
       const ok = await startPractice(
         task.kind === 'practice'
           ? { skills: [task.skill], difficulty: task.difficulty, count: task.count, revealMode: 'immediate', timerMode: 'none' }
-          : { skills: task.skills, count: task.count, revealMode: 'end', timerMode: 'countdown', countdownMinutes: task.minutes },
+          : task.kind === 'redo'
+            ? { skills: [task.skill], onlyWrong: true, count: task.count, revealMode: 'immediate', timerMode: 'none' }
+            : { skills: task.skills, count: task.count, revealMode: 'end', timerMode: 'countdown', countdownMinutes: task.minutes },
       );
       setStarting(null);
       if (ok) navigate('/run');
@@ -154,13 +164,17 @@ export function StudyCalendar() {
     switch (task.kind) {
       case 'practice':
         title = `${task.count} ${task.skill} questions`;
-        detail = `${task.difficulty} · ${task.subject === 'math' ? 'Math' : 'Reading & Writing'}`;
+        detail = [task.difficulty, task.subject === 'math' ? 'Math' : 'Reading & Writing', task.note].filter(Boolean).join(' · ');
         progressDone = done.firstToday.filter((q) => sameSkill(q.skill, task.skill)).length;
         progressOf = task.count;
         break;
+      case 'redo':
+        title = `Redo ${task.count} ${task.skill} ${task.count === 1 ? 'question' : 'questions'} you missed`;
+        detail = 'Answers checked as you go, with explanations';
+        break;
       case 'quiz':
         title = `Mini test: ${task.count} mixed questions`;
-        detail = `${task.minutes} minutes, answers at the end, on the topics you've practised`;
+        detail = `${task.minutes} minutes, answers at the end, on what you've practised and what's going wrong`;
         break;
       case 'review':
         title = task.label;
@@ -305,7 +319,17 @@ export function StudyCalendar() {
   const day = plan.find((d) => d.date === (shownDay ?? today)) ?? plan.find((d) => !d.past) ?? plan[0];
   const ahead = plan.filter((d) => !d.past);
   const count = (kind: PlanDay['kind']) => ahead.filter((d) => d.kind === kind).length;
-  const topicCount = planSkills?.length || stats.length;
+  const topicCount = result!.topics.length;
+  const addedCount = result!.topics.filter((t) => !t.picked).length;
+  const trendBadge: Record<Trend, string> = {
+    new: 'bg-merino text-ink',
+    struggling: 'bg-danger text-paper',
+    mixed: 'bg-caution text-ink',
+    solid: 'bg-rock-blue text-ink',
+    mastered: 'bg-success text-paper',
+  };
+  // Topics with something to say: answered at all, or added for being missed.
+  const explained = result!.topics.filter((t) => t.insight.recent.answered > 0 || !t.picked);
 
   return (
     <Card className="mt-6" title={`Study plan · SAT ${satLabel(satDate!)}`}>
@@ -314,6 +338,7 @@ export function StudyCalendar() {
         <strong className="tabular-nums">{count('study') + count('quiz') + count('review')}</strong> study days, with{' '}
         <strong className="tabular-nums">{count('quiz')}</strong> mini tests and{' '}
         <strong className="tabular-nums">{count('test')}</strong> full practice tests.
+        {addedCount > 0 && ` ${addedCount} ${addedCount === 1 ? 'topic was' : 'topics were'} added because you keep missing them.`}
       </p>
 
       <section className="mt-4 border-2 border-ink bg-merino-dark p-3" aria-label="Tasks">
@@ -380,6 +405,32 @@ export function StudyCalendar() {
         what&apos;s left, so a missed day evens out.
       </p>
 
+      <details className="mt-4 border-2 border-ink bg-paper px-3 py-2 text-sm" open={explained.length > 0 && explained.length <= 6}>
+        <summary className="cursor-pointer font-mono text-xs font-bold uppercase">What your mistakes show</summary>
+        <p className="mt-2 text-xs text-ink-soft">
+          Worked out every morning from your answers, in practice, mini tests and full tests, and used to set
+          the day&apos;s plan: how often each topic comes up, at what level, and which missed questions to redo.
+        </p>
+        {explained.length === 0 ? (
+          <p className="mt-2">Answer some questions in your topics and this fills in.</p>
+        ) : (
+          <ul className="mt-2 flex flex-col gap-2">
+            {explained.map(({ insight, picked }) => (
+              <li key={insight.skill} className="border-t-2 border-merino-dark pt-2">
+                <p className="flex flex-wrap items-center gap-2">
+                  <span className="font-bold">{insight.skill}</span>
+                  <span className={`border-2 border-ink px-1.5 font-mono text-[10px] font-bold uppercase ${trendBadge[insight.trend]}`}>
+                    {insight.trend === 'new' ? 'Too early to tell' : insight.trend}
+                  </span>
+                  {!picked && <span className="font-mono text-[10px] font-bold text-danger uppercase">Added</span>}
+                </p>
+                <p className="mt-0.5 text-xs">{describeInsight(insight, picked)}</p>
+              </li>
+            ))}
+          </ul>
+        )}
+      </details>
+
       <details className="mt-4 border-2 border-ink bg-paper px-3 py-2 text-sm">
         <summary className="cursor-pointer font-mono text-xs font-bold uppercase">Why this plan works</summary>
         <ul className="mt-2 list-disc pl-5">
@@ -398,8 +449,8 @@ export function StudyCalendar() {
             <strong>Learning from mistakes:</strong> the day after each full test is for going over what you missed.
           </li>
           <li>
-            <strong>The right level:</strong> each topic starts where your accuracy says and steps up from Easy to
-            Medium to Hard as you go.
+            <strong>Following your mistakes:</strong> topics you&apos;re getting wrong come up more, at the level where
+            your mistakes are, and the questions you missed come back to redo. Topics you&apos;ve mastered come up less.
           </li>
           <li>
             <strong>A light last day,</strong> so you go into the SAT rested.

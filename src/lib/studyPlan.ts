@@ -10,15 +10,17 @@
  *  - Practice testing: a short mixed quiz each Wednesday on the topics practised so far, and
  *    full practice tests, spaced two weeks apart until the last three weeks, then weekly.
  *  - Reviewing mistakes: the day after a full test goes over what it got wrong.
- *  - Rising difficulty: a topic starts at the level its accuracy suggests and steps up every
- *    second time it comes round.
+ *  - Following the mistakes: each topic's latest answers set how often it comes round and at
+ *    what level (see mistakes.ts), wrong answers come back to be redone, and a topic missed
+ *    again and again in tests joins the plan even if it wasn't picked.
  *  - A light last day: the day before the SAT is a short review, not new work.
  */
 import type { Difficulty, QuestionMeta } from '../types/question';
 import type { ProgressMap } from '../types/progress';
 import { statusOf } from './pools';
 import { DOMAINS } from '../data/taxonomy';
-import { sameSkill, type SkillStat } from './topicStats';
+import { sameSkill } from './topicStats';
+import type { TopicInsight } from './mistakes';
 
 /** A Date as YYYY-MM-DD in local time. */
 export function localDate(d: Date): string {
@@ -57,7 +59,8 @@ const QUIZ_MINUTES = 20;
 const BOOK_CHAPTERS = 61;
 
 export type PlanTask =
-  | { kind: 'practice'; skill: string; subject: 'math' | 'reading-writing'; difficulty: Difficulty; count: number }
+  | { kind: 'practice'; skill: string; subject: 'math' | 'reading-writing'; difficulty: Difficulty; count: number; note?: string }
+  | { kind: 'redo'; skill: string; count: number }
   | { kind: 'quiz'; skills: string[]; count: number; minutes: number }
   | { kind: 'review'; label: string; count: number }
   | { kind: 'test' }
@@ -78,11 +81,13 @@ export interface PlanInputs {
   start: string;
   today: string;
   satDate: string;
-  /** The topics to work on, most in need first. */
+  /** The topics picked, or none for all of them. */
   skills: string[];
   questions: QuestionMeta[];
+  /** Answers as of this morning, so the day's tasks hold while they're being done. */
   progress: ProgressMap;
-  stats: SkillStat[];
+  /** What the answers say about each topic. */
+  insights: TopicInsight[];
   /** Words not yet learned, as of this morning. */
   wordsLeft: number;
   /** The book chapter being read now (0-based), or 0 before starting. */
@@ -93,31 +98,61 @@ export function subjectOf(skill: string): 'math' | 'reading-writing' {
   return DOMAINS.find((d) => d.skills.some((s) => sameSkill(s, skill)))?.subject ?? 'math';
 }
 
-/** Where a topic starts, from how it's gone so far: Easy below 50%, Medium below 80%, else Hard.
- *  A topic not yet tried starts Easy. */
-function startingLevel(stat: SkillStat | undefined): number {
-  if (!stat || stat.accuracy === null || stat.answered < 5) return 0;
-  return stat.accuracy < 50 ? 0 : stat.accuracy < 80 ? 1 : 2;
-}
-
 /** Whether a Saturday has a full practice test: every week in the last three, else every other. */
 function isTestSaturday(date: string, satDate: string): boolean {
   const weeksOut = Math.ceil(daysBetween(date, satDate) / 7);
   return weeksOut <= 3 || weeksOut % 2 === 1;
 }
 
-/** Topics in the order they come round: the plan's order, with weak ones in it twice, spread out. */
-function rotation(skills: string[], stats: SkillStat[]): string[] {
-  const weak = skills.filter((s) => {
-    const stat = stats.find((t) => sameSkill(t.skill, s));
-    return stat?.accuracy !== null && stat?.accuracy !== undefined && stat.answered >= 5 && stat.accuracy < 60;
-  });
-  return [...skills, ...weak];
+/** Most added to a plan for being missed again and again, so a bad test doesn't swamp it. */
+const MAX_ADDED = 3;
+
+export interface PlanTopic {
+  insight: TopicInsight;
+  /** Picked by the student, rather than added for being missed. */
+  picked: boolean;
 }
 
-export function buildPlan(input: PlanInputs): PlanDay[] {
-  const { start, today, satDate, questions, progress, stats } = input;
-  const skills = input.skills.length > 0 ? input.skills : DOMAINS.flatMap((d) => d.skills);
+type Subject = 'math' | 'reading-writing';
+
+/**
+ * Each subject's topics in the order they come round, most in need first: struggling ones twice
+ * per round, mastered ones every other round. A null is a turn the subject sits out, which
+ * happens when all it has left is mastered topics; the other subject takes the turn.
+ */
+function rotation(topics: PlanTopic[]): Record<Subject, (string | null)[]> {
+  const need = (t: PlanTopic) => {
+    const { answered, wrong } = t.insight.recent;
+    return answered ? (answered - wrong) / answered : 0.5;
+  };
+  const ordered = [...topics].sort((a, b) => need(a) - need(b)).map((t) => t.insight);
+  const cycleFor = (subject: Subject): (string | null)[] => {
+    const mine = ordered.filter((t) => t.subject === subject);
+    const round = (withMastered: boolean) => [
+      ...mine.filter((t) => t.trend !== 'mastered' || withMastered).map((t) => t.skill),
+      ...mine.filter((t) => t.trend === 'struggling').map((t) => t.skill),
+    ];
+    const second = round(false);
+    return mine.length === 0 ? [] : [...round(true), ...(second.length > 0 ? second : [null])];
+  };
+  return { 'reading-writing': cycleFor('reading-writing'), math: cycleFor('math') };
+}
+
+export function buildPlan(input: PlanInputs): { days: PlanDay[]; topics: PlanTopic[] } {
+  const { start, today, satDate, questions, progress, insights } = input;
+  const picked = input.skills.length > 0 ? input.skills : DOMAINS.flatMap((d) => d.skills);
+  const isPicked = (skill: string) => picked.some((s) => sameSkill(s, skill));
+  // The picked topics, and any others that keep going wrong.
+  const added = insights
+    .filter((t) => !isPicked(t.skill) && t.trend === 'struggling')
+    .sort((a, b) => b.recent.wrong - a.recent.wrong)
+    .slice(0, MAX_ADDED);
+  const topics: PlanTopic[] = [
+    ...insights.filter((t) => isPicked(t.skill)).map((insight) => ({ insight, picked: true })),
+    ...added.map((insight) => ({ insight, picked: false })),
+  ];
+  const skills = topics.map((t) => t.insight.skill);
+  const insightOf = (skill: string) => insights.find((t) => sameSkill(t.skill, skill))!;
 
   // The days and what kind each is.
   const days: PlanDay[] = [];
@@ -133,29 +168,36 @@ export function buildPlan(input: PlanInputs): PlanDay[] {
     days.push({ date, kind, past: date < today, tasks: [] });
   }
 
-  // Topic slots, taken in turn from a Reading and Writing rotation and a Math one.
-  const order = rotation(skills, stats);
-  const queues = {
-    'reading-writing': order.filter((s) => subjectOf(s) === 'reading-writing'),
-    math: order.filter((s) => subjectOf(s) === 'math'),
-  };
+  // Topic slots from today on, taken in turn from a Reading and Writing rotation and a Math one.
+  const queues = rotation(topics);
   const turn = { 'reading-writing': 0, math: 0 };
+  const next = (subject: Subject) => {
+    const queue = queues[subject];
+    return queue.length ? queue[turn[subject]++ % queue.length] : null;
+  };
   const seen = new Map<string, number>();
   const slotsFor = (kind: PlanDayKind) => (kind === 'study' ? 2 : kind === 'quiz' || kind === 'review' ? 1 : 0);
-  let lastSubject: 'math' | 'reading-writing' = 'math';
+  let lastSubject: Subject = 'math';
   const daySkills = days.map((day) => {
     const picked: string[] = [];
+    if (day.past) return picked;
     for (let i = 0; i < slotsFor(day.kind); i++) {
-      // Alternate subjects where both are in the plan.
-      let subject: 'math' | 'reading-writing' = lastSubject === 'math' ? 'reading-writing' : 'math';
-      if (queues[subject].length === 0) subject = subject === 'math' ? 'reading-writing' : 'math';
-      const queue = queues[subject];
-      if (queue.length === 0) break;
-      let skill = queue[turn[subject]++ % queue.length];
+      // Alternate subjects where both are in the plan; a subject sitting this turn out, or with
+      // nothing in the plan, hands it to the other.
+      const first: Subject = lastSubject === 'math' ? 'reading-writing' : 'math';
+      const second: Subject = first === 'math' ? 'reading-writing' : 'math';
+      let subject = first;
+      let skill = next(first);
+      if (skill === null) {
+        subject = second;
+        skill = next(second);
+      }
       // Not the same topic twice in a day, when there's another to take.
-      if (picked.includes(skill) && queue.length > 1) skill = queue[turn[subject]++ % queue.length];
+      if (skill !== null && picked.includes(skill)) skill = next(subject) ?? null;
+      // The turn was the first subject's even when it sat out, so the next one is the other's.
+      lastSubject = first;
+      if (skill === null || picked.includes(skill)) continue;
       picked.push(skill);
-      lastSubject = subject;
     }
     return picked;
   });
@@ -166,6 +208,7 @@ export function buildPlan(input: PlanInputs): PlanDay[] {
   const blocksLeft = days.reduce((n, d, i) => n + (d.past ? 0 : daySkills[i].length), 0);
   const blockSize = Math.min(20, Math.max(8, Math.round(unattempted / Math.max(1, blocksLeft))));
   const wrong = questions.filter((q) => statusOf(progress, q.id) === 'incorrect').length;
+  const struggling = topics.filter((t) => t.insight.trend === 'struggling').map((t) => t.insight.skill);
 
   // Words and chapters, spread over the days left that aren't test days.
   const busy = (kind: PlanDayKind) => kind === 'test' || kind === 'sat' || kind === 'light';
@@ -190,17 +233,29 @@ export function buildPlan(input: PlanInputs): PlanDay[] {
     if (day.kind === 'quiz') {
       tasks.push({
         kind: 'quiz',
-        skills: covered.length > 0 ? [...new Set(covered)] : skills,
+        // What's been practised, and whatever is going wrong.
+        skills: [...new Set([...covered, ...struggling])].length > 0 ? [...new Set([...covered, ...struggling])] : skills,
         count: QUIZ_SIZE,
         minutes: QUIZ_MINUTES,
       });
     }
     for (const skill of daySkills[i]) {
+      const insight = insightOf(skill);
+      // Today's level comes from the mistakes; later days are expected to step up every third
+      // time round, and are worked out again each morning anyway.
       const k = seen.get(skill) ?? 0;
       seen.set(skill, k + 1);
-      const stat = stats.find((s) => sameSkill(s.skill, skill));
-      const level = Math.min(2, startingLevel(stat) + Math.floor(k / 2));
-      tasks.push({ kind: 'practice', skill, subject: subjectOf(skill), difficulty: LEVELS[level], count: blockSize });
+      const level = Math.min(2, insight.level + Math.floor(k / 3));
+      const { answered, wrong: missed } = insight.recent;
+      const note =
+        insight.trend === 'struggling'
+          ? `you missed ${missed} of your last ${answered}`
+          : insight.trend === 'mastered'
+            ? 'mostly right lately'
+            : undefined;
+      tasks.push({ kind: 'practice', skill, subject: subjectOf(skill), difficulty: LEVELS[level], count: blockSize, note });
+      // Wrong answers on the topic come back to be redone, a few at a time.
+      if (insight.wrongIds.length > 0) tasks.push({ kind: 'redo', skill, count: Math.min(5, insight.wrongIds.length) });
       covered.push(skill);
     }
     if (!day.past && !busy(day.kind)) {
@@ -213,7 +268,7 @@ export function buildPlan(input: PlanInputs): PlanDay[] {
     }
     day.tasks = tasks;
   });
-  return days;
+  return { days, topics };
 }
 
 /** Short names for topics, for calendar squares. */
