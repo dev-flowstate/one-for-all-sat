@@ -3,6 +3,7 @@ import type { ProgressMap, ProfileStats } from '../../types/progress';
 import type { LocalProfile } from '../../types/settings';
 import type { VocabProgressMap } from '../../types/vocab';
 import type { ActiveTest, CompletedTest } from '../../types/practiceTest';
+import type { AccountUser } from '../cloud/cloudClient';
 
 const KEYS = {
   profile: 'ofa-sat:profile',
@@ -14,9 +15,11 @@ const KEYS = {
   activeTest: 'ofa-sat:active-test',
   pausedTests: 'ofa-sat:paused-tests',
   testHistory: 'ofa-sat:test-history',
-  // The account this browser's data belongs to. Set while signed in, and what tells the next
-  // visit to load Firebase at all.
+  // The account this browser's data belongs to. Set while signed in, and kept if the session
+  // runs out, so signing in as the same person again merges the two instead of leaving this out.
   accountOwner: 'ofa-sat:account-owner',
+  // The signed-in session: who it is, and the token the Worker gave them.
+  session: 'ofa-sat:session',
   // The shipped bank's revision this browser last stored. Per device, like the bank itself.
   bankRevision: 'ofa-sat:bank-revision',
   questionMeta: 'ofa-sat:question-meta',
@@ -121,6 +124,20 @@ export function getAccountOwner(): string | null {
 export function setAccountOwner(uid: string | null): void {
   if (uid) write(KEYS.accountOwner, uid);
   else remove(KEYS.accountOwner);
+}
+
+export interface StoredSession {
+  token: string;
+  user: AccountUser;
+}
+
+export function getSession(): StoredSession | null {
+  return read<StoredSession | null>(KEYS.session, null);
+}
+
+export function setSession(session: StoredSession | null): void {
+  if (session) write(KEYS.session, session);
+  else remove(KEYS.session);
 }
 
 export function getBankRevision(): number {

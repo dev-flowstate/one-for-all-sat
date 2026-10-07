@@ -31,9 +31,14 @@ export type SyncResult =
  * Stores the shipped bank. Hand-imported questions the bank doesn't have are removed, and any
  * that match a shipped question by wording are reported, so their progress can follow. Stored
  * questions are rewritten only when the bank's revision is newer than `storedRevision`.
+ * `expectedRevision` is the revision the site's index names, which the download must reach.
  */
-export async function syncShippedBank(importedIds: string[], storedRevision: number): Promise<SyncResult> {
-  const result = await fetchShippedBank();
+export async function syncShippedBank(
+  importedIds: string[],
+  storedRevision: number,
+  expectedRevision: number,
+): Promise<SyncResult> {
+  const result = await fetchShippedBank(expectedRevision);
   if (result.status !== 'loaded') return result;
 
   const shippedIds = new Set(result.questions.map((q) => q.id));

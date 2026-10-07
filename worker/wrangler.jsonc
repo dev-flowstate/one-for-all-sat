@@ -1,0 +1,25 @@
+{
+  // Accounts, the leaderboard and the question bank's download, for the site on GitHub Pages.
+  "name": "one-for-all-sat",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-10-01",
+  "observability": { "enabled": true },
+
+  // The site's public folder, served as files. Only the question bank is fetched from here
+  // (see public/_headers); serving these costs nothing and isn't counted as Worker requests.
+  "assets": { "directory": "../public" },
+
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "one-for-all-sat",
+      "database_id": "00000000-0000-0000-0000-000000000000"
+    }
+  ],
+
+  "vars": {
+    // The Google sign-in client the site asks for tokens with. Public, like the site's own copy.
+    "GOOGLE_CLIENT_ID": ""
+  }
+  // SESSION_SECRET, which signs people's sessions, is a secret: `wrangler secret put SESSION_SECRET`.
+}

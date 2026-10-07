@@ -47,3 +47,7 @@ _*.ts
 # Generated from public/question-bank.json by scripts/build-question-index.mjs on every dev
 # start and build.
 public/question-index.json
+
+# Cloudflare Worker: local secrets and wrangler's local state
+.dev.vars
+.wrangler/

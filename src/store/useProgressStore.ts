@@ -115,7 +115,7 @@ export const useProgressStore = create<ProgressStore>((set, get) => ({
     const importedIds = get()
       .questions.filter((q) => q.source === 'imported' && !q.testOnly)
       .map((q) => q.id);
-    const result = await runBankJob('syncShippedBank', importedIds, getBankRevision());
+    const result = await runBankJob('syncShippedBank', importedIds, getBankRevision(), index?.revision ?? 0);
     if (result.status !== 'loaded') {
       if (result.status === 'invalid') {
         console.error('question-bank.json failed validation:', result.issues);

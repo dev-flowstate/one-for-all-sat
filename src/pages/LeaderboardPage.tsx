@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import type { LeaderboardEntry } from '../lib/cloud/firebaseClient';
+import type { LeaderboardEntry } from '../lib/cloud/cloudClient';
 import { useAccountStore } from '../store/useAccountStore';
 import { useSettingsStore } from '../store/useSettingsStore';
 import { Button } from '../components/ui/Button';

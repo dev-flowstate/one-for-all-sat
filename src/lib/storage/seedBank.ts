@@ -1,5 +1,6 @@
 import { questionBankFileSchema } from '../schema';
 import type { Question } from '../../types/question';
+import { API_URL } from '../cloud/config';
 
 /** Where the shipped bank lives, relative to the app's base path. */
 const BANK_FILE = 'question-bank.json';
@@ -12,19 +13,28 @@ export type BankLoadResult =
 /**
  * Loads the question bank that ships with the app, if one is present.
  *
+ * It comes from the account Worker's address when there is one: at 21 MB a download, it's
+ * most of what GitHub Pages' monthly bandwidth goes on, and Cloudflare serves it without that
+ * limit. The site's own copy is used when that fails or is older than `revision` (the one the
+ * site's index names), since the Worker's copy is only as new as its last deploy.
+ *
  * The file is optional by design: a checkout without it still runs on the bundled demo
  * set rather than erroring, so a missing or half-copied file degrades to "fewer questions"
  * instead of a broken app.
  */
-export function fetchShippedBank(): Promise<BankLoadResult> {
+export async function fetchShippedBank(revision = 0): Promise<BankLoadResult> {
+  if (API_URL) {
+    const result = await fetchQuestionFile(BANK_FILE, `${API_URL}/`);
+    if (result.status === 'loaded' && result.revision >= revision) return result;
+  }
   return fetchQuestionFile(BANK_FILE);
 }
 
 /** Loads a question file shipped with the app: the bank, or a named test's questions. */
-export async function fetchQuestionFile(file: string): Promise<BankLoadResult> {
+export async function fetchQuestionFile(file: string, base: string = import.meta.env.BASE_URL): Promise<BankLoadResult> {
   let payload: unknown;
   try {
-    const response = await fetch(`${import.meta.env.BASE_URL}${file}`);
+    const response = await fetch(`${base}${file}`);
     if (!response.ok) return { status: 'absent' };
     payload = await response.json();
   } catch {

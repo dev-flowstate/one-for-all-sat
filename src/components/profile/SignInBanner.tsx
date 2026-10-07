@@ -15,14 +15,14 @@ function GoogleMark() {
 
 /**
  * The home screen's invitation to sign in, for anyone who hasn't. It signs in right here
- * rather than sending people to the profile page, and starts loading Firebase as soon as it
- * shows, so the first tap opens Google's window instead of being blocked as a pop-up.
+ * rather than sending people to the profile page, and starts loading Google's sign-in script as
+ * soon as it shows, so the first tap opens Google's window instead of being blocked as a pop-up.
  */
 export function SignInBanner() {
   const { status, user, ready, error, signIn, prepare } = useAccountStore();
   const shown = status !== 'off' && status !== 'checking' && !user;
 
-  // Loaded once the page has settled rather than straight away, so loading Firebase doesn't
+  // Loaded once the page has settled rather than straight away, so loading the script doesn't
   // hold up a tap made while the page is still starting. It's still in long before anyone
   // reaches the button.
   useEffect(() => {

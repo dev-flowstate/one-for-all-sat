@@ -1,17 +1,15 @@
 /**
- * The Firebase web app's settings, from Project settings → Your apps in the Firebase console.
+ * Where accounts live: the Cloudflare Worker in worker/, which also serves the question bank,
+ * and the Google sign-in client people sign in with (Google Cloud console → APIs & Services →
+ * Credentials).
  *
- * None of this is secret: it only names the project, and every visitor's browser receives it
- * anyway. What keeps each person's data private is the Firestore security rules, which let a
- * signed-in user read and write their own record and nothing else.
+ * Neither is secret: every visitor's browser receives both. What keeps each person's data
+ * private is the Worker, which only hands someone their own account.
  *
- * While `apiKey` is empty, accounts are switched off and the site works as it always has.
+ * While either is empty, accounts are switched off and the site works as it always has. A
+ * local build can point at a local Worker with VITE_API_URL and VITE_GOOGLE_CLIENT_ID.
  */
-export const FIREBASE_CONFIG = {
-  apiKey: 'AIzaSyBR5twrKDrFt-u7T-US7VQYPLnTt3VlvAg',
-  authDomain: 'one-for-all-sat.firebaseapp.com',
-  projectId: 'one-for-all-sat',
-  appId: '1:398110949450:web:25c67d060805994a7ca6b3',
-};
+export const API_URL: string = import.meta.env.VITE_API_URL || '';
+export const GOOGLE_CLIENT_ID: string = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
 
-export const cloudConfigured = FIREBASE_CONFIG.apiKey !== '';
+export const cloudConfigured = API_URL !== '' && GOOGLE_CLIENT_ID !== '';

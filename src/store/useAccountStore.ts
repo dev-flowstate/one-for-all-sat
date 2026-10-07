@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import type { ActiveTest, CompletedTest } from '../types/practiceTest';
-import type { AccountUser, LeaderboardEntry } from '../lib/cloud/firebaseClient';
+import * as cloud from '../lib/cloud/cloudClient';
+import type { AccountUser, LeaderboardEntry } from '../lib/cloud/cloudClient';
 import { cloudConfigured } from '../lib/cloud/config';
 import { mergeAccountData, type AccountData } from '../lib/cloud/merge';
 import {
@@ -10,6 +11,7 @@ import {
   getPausedTests,
   getProfile,
   getProgress,
+  getSession,
   getStats,
   getTestHistory,
   getVocabProgress,
@@ -26,10 +28,10 @@ import { useSettingsStore } from './useSettingsStore';
 import { upgradeSavedHistory, upgradeSavedTest, usePracticeTestStore } from './usePracticeTestStore';
 
 export type AccountStatus =
-  /** No Firebase project configured: accounts don't exist on this build. */
+  /** No account Worker configured: accounts don't exist on this build. */
   | 'off'
   | 'signed-out'
-  /** Waiting to hear from Firebase whether a saved sign-in is still good. */
+  /** Waiting to hear from the Worker whether a saved sign-in is still good. */
   | 'checking'
   | 'syncing'
   | 'synced'
@@ -39,10 +41,10 @@ interface AccountState {
   status: AccountStatus;
   user: AccountUser | null;
   error: string | null;
-  /** Firebase has finished starting up, so a tap on "Sign in" can open the window at once. */
+  /** Google's sign-in script has loaded, so a tap on "Sign in" can open the window at once. */
   ready: boolean;
   init: () => void;
-  /** Starts downloading Firebase, so a later tap on "Sign in" doesn't have to wait for it. */
+  /** Starts downloading Google's sign-in script, so a later tap on "Sign in" doesn't wait. */
   prepare: () => void;
   signIn: () => Promise<void>;
   signOut: () => Promise<void>;
@@ -52,13 +54,11 @@ interface AccountState {
   fetchLeaderboard: (count: number) => Promise<(LeaderboardEntry & { uid: string })[]>;
 }
 
-type Client = typeof import('../lib/cloud/firebaseClient');
+/** Changes are saved at most this often, since a practice test changes something every second.
+ *  Each save is a request to the Worker, so this is what most decides how many people it can
+ *  serve; anything newer is saved when the page is left, and is in the browser meanwhile. */
+const SAVE_INTERVAL_MS = 60_000;
 
-/** Changes are saved at most this often, since a practice test changes something every second. */
-const SAVE_INTERVAL_MS = 10_000;
-
-let clientPromise: Promise<Client> | null = null;
-let loadedClient: Client | null = null;
 /** Finished tests already in the account, by when they finished, with the number they have there. */
 let savedTests = new Map<string, number>();
 let saveTimer: ReturnType<typeof setTimeout> | null = null;
@@ -130,51 +130,43 @@ function testsToSave(history: CompletedTest[]): CompletedTest[] {
   return history.filter((t) => savedTests.get(t.completedAt) !== t.number);
 }
 
+/** The leaderboard entry to send with a save, undefined when it's the same as last sent. */
+function leaderboardChange(data: AccountData, user: AccountUser) {
+  const entry = leaderboardEntry(data, user);
+  const key = entry ? JSON.stringify({ ...entry, updatedAt: '' }) : 'hidden';
+  return { entry: key === sentLeaderboard ? undefined : entry, key };
+}
+
+const SIGNED_OUT_MESSAGE = 'You were signed out. Sign in again to keep saving to your account.';
+
 export const useAccountStore = create<AccountState>((set, get) => {
-  function loadClient(): Promise<Client> {
-    clientPromise ??= import('../lib/cloud/firebaseClient').then((client) => {
-      client.watchUser((user) => {
-        // The first call comes once Firebase has finished starting up. On phones and in Safari
-        // that includes loading the helper page the sign-in window needs; until it's loaded, a
-        // tap reaches the window too late and the browser blocks it as a pop-up.
-        if (!get().ready) set({ ready: true });
-        if (user) void connect(user);
-        else if (get().status === 'checking') set({ status: 'signed-out' });
-      });
-      loadedClient = client;
-      return client;
-    });
-    return clientPromise;
+  /** A session that has run out: saving stops, and what's in this browser stays as it is. */
+  function endSession() {
+    if (saveTimer) clearTimeout(saveTimer);
+    saveTimer = null;
+    stopWatchingStores?.();
+    stopWatchingStores = null;
+    connectedUid = null;
+    sentLeaderboard = null;
+    cloud.signOut();
+    set({ user: null, status: 'signed-out', error: SIGNED_OUT_MESSAGE });
   }
 
-  /** Kept apart from the account save: a refused leaderboard write (rules not yet published,
-   *  say) must never stop someone's progress from being saved. It's retried on the next save. */
-  async function syncLeaderboard(client: Client, user: AccountUser, data: AccountData) {
-    const entry = leaderboardEntry(data, user);
-    const key = entry ? JSON.stringify({ ...entry, updatedAt: '' }) : 'hidden';
-    if (key === sentLeaderboard) return;
-    try {
-      await client.writeLeaderboardEntry(user.uid, entry);
-      sentLeaderboard = key;
-    } catch {
-      // Left for the next save.
-    }
-  }
-
-  async function save() {
+  async function save(closing = false) {
     saveTimer = null;
     const { user } = get();
     if (!user) return;
-    const client = await loadClient();
     const data = readLocal(user.email);
     const tests = testsToSave(data.history);
+    const leaderboard = leaderboardChange(data, user);
     set({ status: 'syncing' });
     try {
-      await client.writeAccount(user.uid, data, tests);
+      await cloud.writeAccount(data, tests, leaderboard.entry, closing);
       for (const t of tests) savedTests.set(t.completedAt, t.number);
+      if (leaderboard.entry !== undefined) sentLeaderboard = leaderboard.key;
       set({ status: 'synced', error: null });
-      void syncLeaderboard(client, user, data);
-    } catch {
+    } catch (err) {
+      if (err instanceof cloud.CloudError && err.code === 'signed-out') return endSession();
       // Tried again with the next change.
       set({ status: 'error', error: "Couldn't save to your account. It will try again with your next answer." });
     }
@@ -187,7 +179,7 @@ export const useAccountStore = create<AccountState>((set, get) => {
   function flush() {
     if (!saveTimer) return;
     clearTimeout(saveTimer);
-    void save();
+    void save(true);
   }
 
   function watchStores() {
@@ -214,13 +206,12 @@ export const useAccountStore = create<AccountState>((set, get) => {
     connectingUid = user.uid;
     set({ user, status: 'syncing', error: null });
     try {
-      const client = await loadClient();
-      const cloud = await client.readAccount(user.uid);
+      const saved = await cloud.readAccount();
       const owner = getAccountOwner();
       // What's in this browser belongs to someone else when another account signed in here
       // before, so it's left out. Otherwise it's this person's, and joins their account.
       const local = owner && owner !== user.uid ? { ...EMPTY } : readLocal(user.email);
-      const merged = cloud ? mergeAccountData(local, cloud) : local;
+      const merged = saved ? mergeAccountData(local, saved) : local;
       merged.email = user.email;
       if (!merged.profile && user.name) {
         merged.profile = { nickname: user.name.split(' ')[0], avatar: DEFAULT_AVATARS[0], createdAt: new Date().toISOString() };
@@ -228,14 +219,16 @@ export const useAccountStore = create<AccountState>((set, get) => {
 
       writeLocal(merged);
       setAccountOwner(user.uid);
-      savedTests = new Map((cloud?.history ?? []).map((t) => [t.completedAt, t.number]));
-      await client.writeAccount(user.uid, merged, testsToSave(merged.history));
+      savedTests = new Map((saved?.history ?? []).map((t) => [t.completedAt, t.number]));
+      const leaderboard = leaderboardChange(merged, user);
+      await cloud.writeAccount(merged, testsToSave(merged.history), leaderboard.entry);
       for (const t of merged.history) savedTests.set(t.completedAt, t.number);
+      sentLeaderboard = leaderboard.key;
       watchStores();
       connectedUid = user.uid;
       set({ status: 'synced' });
-      void syncLeaderboard(client, user, merged);
-    } catch {
+    } catch (err) {
+      if (err instanceof cloud.CloudError && err.code === 'signed-out') return endSession();
       set({ status: 'error', error: "Couldn't reach your account. Your progress is still saved in this browser." });
     } finally {
       connectingUid = null;
@@ -243,41 +236,41 @@ export const useAccountStore = create<AccountState>((set, get) => {
   }
 
   return {
-    // Someone signed in on this browser before starts as "checking", not "signed out": the
-    // latter showed the home screen's sign-in banner for a frame before hiding it again, and
-    // the jump it gave everything below was the page's layout shift.
-    status: !cloudConfigured ? 'off' : getAccountOwner() ? 'checking' : 'signed-out',
+    // Someone signed in on this browser starts as "checking", not "signed out": the latter
+    // showed the home screen's sign-in banner for a frame before hiding it again, and the jump
+    // it gave everything below was the page's layout shift.
+    status: !cloudConfigured ? 'off' : getSession() ? 'checking' : 'signed-out',
     user: null,
     error: null,
     ready: false,
 
     init: () => {
-      // Firebase only loads for someone who signed in on this browser before.
-      if (!cloudConfigured || !getAccountOwner()) return;
+      const user = cloud.sessionUser();
+      if (!cloudConfigured || !user) return;
       set({ status: 'checking' });
-      void loadClient();
+      void connect(user);
     },
 
     prepare: () => {
-      if (cloudConfigured) void loadClient();
+      if (!cloudConfigured || get().ready) return;
+      cloud.loadGoogle().then(
+        () => set({ ready: true }),
+        () => set({ error: "Couldn't load Google sign-in. Check your connection and reload the page." }),
+      );
     },
 
     signIn: async () => {
       set({ error: null });
       try {
-        // Phone browsers, Safari above all, only let a page open a window while the tap that
-        // asked for it is still being handled. Waiting on a download first uses that up and
-        // the sign-in window is blocked, so the window opens straight away whenever Firebase
-        // is already here, which prepare() sees to.
-        const client = loadedClient ?? (await loadClient());
-        await client.signInWithGoogle();
-        // The watcher picks the new user up and connects.
+        // The window opens straight away when Google's script is already here, which
+        // prepare() sees to; see signInWithGoogle.
+        await connect(await cloud.signInWithGoogle());
       } catch (err) {
-        const code = (err as { code?: string }).code;
-        if (code === 'auth/popup-closed-by-user' || code === 'auth/cancelled-popup-request') return;
+        const code = err instanceof cloud.CloudError ? err.code : 'failed';
+        if (code === 'cancelled') return;
         set({
           error:
-            code === 'auth/popup-blocked'
+            code === 'popup-blocked'
               ? 'Your browser blocked the sign-in window. Tap Sign in with Google again. If it is blocked a second time, allow pop-ups for this site.'
               : "Couldn't sign in. Check your connection and try again.",
         });
@@ -289,8 +282,7 @@ export const useAccountStore = create<AccountState>((set, get) => {
         clearTimeout(saveTimer);
         await save();
       }
-      const client = await loadClient();
-      await client.signOut();
+      cloud.signOut();
       stopWatchingStores?.();
       stopWatchingStores = null;
       connectedUid = null;
@@ -305,8 +297,7 @@ export const useAccountStore = create<AccountState>((set, get) => {
 
     fetchLeaderboard: async (count) => {
       if (!cloudConfigured) return [];
-      const client = await loadClient();
-      return client.readLeaderboard(count);
+      return cloud.readLeaderboard(count);
     },
 
     retry: () => {
