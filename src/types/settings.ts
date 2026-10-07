@@ -24,6 +24,8 @@ export interface LocalProfile {
   satDate?: string;
   /** The day the study calendar was made (YYYY-MM-DD); there's no calendar without it. */
   studyPlanStart?: string;
+  /** The study plan's topics, most in need first. Empty or missing means every topic. */
+  studyPlanSkills?: string[];
 }
 
 export const DEFAULT_AVATARS = ['🦉', '📘', '🧮', '✏️', '🎯', '⭐', '🚀', '🧠'] as const;

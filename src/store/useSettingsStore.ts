@@ -8,7 +8,8 @@ interface SettingsStore {
   saveProfile: (nickname: string, avatar: string) => void;
   setHideFromLeaderboard: (hidden: boolean) => void;
   setSatDate: (date: string | undefined) => void;
-  setStudyPlanStart: (date: string | undefined) => void;
+  /** Makes the study plan from a start date and its topics, or removes it with undefined. */
+  setStudyPlan: (start: string | undefined, skills?: string[]) => void;
 }
 
 export const useSettingsStore = create<SettingsStore>((set, get) => {
@@ -32,6 +33,6 @@ export const useSettingsStore = create<SettingsStore>((set, get) => {
     },
     setHideFromLeaderboard: (hidden) => update({ hideFromLeaderboard: hidden }),
     setSatDate: (date) => update({ satDate: date }),
-    setStudyPlanStart: (date) => update({ studyPlanStart: date }),
+    setStudyPlan: (start, skills) => update({ studyPlanStart: start, studyPlanSkills: start ? skills : undefined }),
   };
 });
