@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Navigate, useNavigate } from 'react-router-dom';
+import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { useSessionStore } from '../store/useSessionStore';
 import { Card } from '../components/ui/Card';
 import { TestRunnerToolbar } from '../components/test-runner/TestRunnerToolbar';
@@ -16,6 +16,7 @@ import { CalculatorSplit } from '../components/test-runner/CalculatorSplit';
  */
 export function TestRunnerPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const config = useSessionStore((s) => s.config);
   const queue = useSessionStore((s) => s.queue);
   const lastResult = useSessionStore((s) => s.lastResult);
@@ -27,7 +28,7 @@ export function TestRunnerPage() {
   const goToIndex = useSessionStore((s) => s.goToIndex);
 
   const [calculatorOpen, setCalculatorOpen] = useState(false);
-  /** Set when leaving for home on purpose. Navigating is applied after the session is cleared,
+  /** Set when leaving without answering, on purpose. Navigating is applied after the session is cleared,
    *  and without this the empty session would bounce the page to the last results instead. */
   const [leaving, setLeaving] = useState(false);
 
@@ -57,7 +58,10 @@ export function TestRunnerPage() {
     if (answered === 0) {
       setLeaving(true);
       useSessionStore.getState().clearSession();
-      navigate('/');
+      // Back to where the questions were picked: the setup page or the study plan. Opened here
+      // directly, there's nothing before it, so it's the setup page.
+      if (location.key === 'default') navigate('/setup', { replace: true });
+      else navigate(-1);
       return;
     }
     const kept = answered === 1 ? 'The question you answered is' : `The ${answered} questions you answered are`;
