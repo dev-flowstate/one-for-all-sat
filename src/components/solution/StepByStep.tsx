@@ -60,7 +60,7 @@ function SolutionPanel({ questionId, onClose }: { questionId: string; onClose: (
     <aside
       role="dialog"
       aria-label="Step-by-step solution"
-      className="fixed inset-x-0 bottom-0 z-50 flex max-h-[75dvh] flex-col border-t-2 border-ink bg-paper text-ink shadow-[0_-6px_0_var(--color-ink)] sm:inset-x-auto sm:top-0 sm:right-0 sm:max-h-none sm:w-[26rem] sm:border-t-0 sm:border-l-2 sm:shadow-[-6px_0_0_var(--color-ink)]"
+      className="fixed inset-x-0 bottom-0 z-50 flex max-h-[75dvh] flex-col border-t-2 border-ink bg-paper text-ink shadow-[0_-6px_0_var(--color-ink)] sm:inset-x-auto sm:top-20 sm:right-6 sm:bottom-auto sm:max-h-[calc(100dvh-7rem)] sm:w-[24rem] sm:border-2 sm:shadow-[6px_6px_0_var(--color-ink)]"
     >
       <header className="flex flex-none items-center gap-2 border-b-2 border-ink bg-venice-blue px-4 py-3 text-merino">
         <h2 className="flex-1 font-mono text-xs font-bold tracking-tight uppercase">Step-by-step</h2>
