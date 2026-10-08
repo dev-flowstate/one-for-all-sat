@@ -45,7 +45,18 @@ export function CalculatorSplit({ calculatorOpen, onCloseCalculator, children }:
     <div ref={splitRef} className={calculatorOpen ? 'flex min-h-0 flex-1 flex-col lg:flex-row' : ''}>
       <div
         className={calculatorOpen ? 'min-h-0 overflow-y-auto lg:order-3' : ''}
-        style={calculatorOpen ? { flexBasis: `${questionShare}%`, flexGrow: 0, flexShrink: 0 } : undefined}
+        style={
+          calculatorOpen
+            ? {
+                flexBasis: `${questionShare}%`,
+                flexGrow: 0,
+                flexShrink: 0,
+                // This pane scrolls by itself, below the page's header, so the annotation bar
+                // sticks to its top rather than leaving room for the header over the question.
+                ['--annotate-top' as string]: '0.5rem',
+              }
+            : undefined
+        }
       >
         {children}
       </div>
