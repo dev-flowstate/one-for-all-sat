@@ -5,6 +5,7 @@ import { Card } from '../ui/Card';
 import { Badge } from '../ui/Badge';
 import { Toggle } from '../ui/Toggle';
 import { MathText } from '../math/MathText';
+import { StepByStepButton } from '../solution/StepByStep';
 import { renderHighlighted } from '../../lib/highlighter/renderHighlighted';
 
 /** Difficulty keeps its semantics (Easy/Medium/Hard) but reads as a solid block, not a tint. */
@@ -90,11 +91,14 @@ export function QuestionReviewCard({
       {answerSummary && <div className="mb-4">{answerSummary}</div>}
 
       <div className={hideExplanation ? 'hidden' : ''}>
-        <Toggle
-          active={showExplanation}
-          onToggle={() => setShowExplanation((v) => !v)}
-          label={showExplanation ? 'Hide explanation' : 'Show explanation'}
-        />
+        <div className="flex flex-wrap items-center gap-3">
+          <Toggle
+            active={showExplanation}
+            onToggle={() => setShowExplanation((v) => !v)}
+            label={showExplanation ? 'Hide explanation' : 'Show explanation'}
+          />
+          <StepByStepButton questionId={question.id} />
+        </div>
         {showExplanation && (
           <div className="mt-3 border-2 border-ink bg-merino">
             <div className="border-b-2 border-ink bg-venice-blue px-3 py-1 font-mono text-[11px] font-semibold tracking-tight text-merino uppercase">

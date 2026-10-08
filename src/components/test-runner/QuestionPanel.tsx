@@ -103,7 +103,7 @@ export function QuestionPanel({ question, revealMode, isLast, onNext, onBack }: 
 
       {submitted && answered && revealMode === 'immediate' && (
         <div className="mt-5">
-          <AnswerFeedback outcome={answered.outcome} explanation={question.explanation} />
+          <AnswerFeedback outcome={answered.outcome} explanation={question.explanation} questionId={question.id} />
         </div>
       )}
       {(onBack || (submitted && answered)) && (
