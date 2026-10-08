@@ -1,4 +1,5 @@
-import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { useLayoutEffect } from 'react';
+import { HashRouter, Routes, Route, Navigate, useLocation, useNavigationType } from 'react-router-dom';
 import { HomePage } from './pages/HomePage';
 import { SetupPage } from './pages/SetupPage';
 import { TestRunnerPage } from './pages/TestRunnerPage';
@@ -18,9 +19,20 @@ import { LeaderboardPage } from './pages/LeaderboardPage';
 import { ResourcesPage } from './pages/ResourcesPage';
 import { ReadingPage } from './pages/ReadingPage';
 
+/** A newly opened page starts at its top; going back keeps the browser's own position. */
+function ScrollToTop() {
+  const { pathname } = useLocation();
+  const navigationType = useNavigationType();
+  useLayoutEffect(() => {
+    if (navigationType !== 'POP') window.scrollTo(0, 0);
+  }, [pathname, navigationType]);
+  return null;
+}
+
 export function AppRouter() {
   return (
     <HashRouter>
+      <ScrollToTop />
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/setup" element={<SetupPage />} />
