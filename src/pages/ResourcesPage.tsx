@@ -6,6 +6,8 @@ const VIDEOS = [
   { id: '9BywVy2S3ec', title: 'Master SAT grammar' },
   { id: 'khcXLyWCGFU', title: 'Go through every SAT question type' },
   { id: 'e-O4nwVHQ-Y', title: 'The best Desmos guide' },
+  { id: 'VpRITQkoeO8', title: 'SAT Algebra explained' },
+  { id: 'wPnE8hqMhSk', title: 'SAT Trigonometry and Geometry explained' },
 ];
 
 export function ResourcesPage() {
