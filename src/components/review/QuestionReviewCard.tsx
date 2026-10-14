@@ -7,6 +7,7 @@ import { Toggle } from '../ui/Toggle';
 import { MathText } from '../math/MathText';
 import { StepByStepButton } from '../solution/StepByStep';
 import { renderHighlighted } from '../../lib/highlighter/renderHighlighted';
+import { splitPrompt } from '../../lib/promptParts';
 import { QuestionImage } from '../ui/QuestionImage';
 
 /** Difficulty keeps its semantics (Easy/Medium/Hard) but reads as a solid block, not a tint. */
@@ -37,6 +38,10 @@ export function QuestionReviewCard({
   hideExplanation = false,
 }: QuestionReviewCardProps) {
   const [showExplanation, setShowExplanation] = useState(false);
+  // Without a separate passage, the underlines count from the start of the text split off the
+  // front of the prompt, as the question screen splits it, so split it the same way here.
+  const parts = !question.passage && question.underlines?.length ? splitPrompt(question.prompt) : null;
+  const underlinedStimulus = parts?.stimulus ? { stimulus: parts.stimulus, stem: parts.stem } : null;
 
   return (
     <Card>
@@ -85,7 +90,15 @@ export function QuestionReviewCard({
       {/* Skip a prompt that lost graphic-only content — the image carries the real question. */}
       {!(question.promptIsPartial && question.images?.length) && (
         <p className="prose-reading mb-4 whitespace-pre-wrap">
-          <MathText text={question.prompt} />
+          {underlinedStimulus ? (
+            <>
+              {renderHighlighted(underlinedStimulus.stimulus, [], question.underlines)}
+              {'\n'}
+              <MathText text={underlinedStimulus.stem} />
+            </>
+          ) : (
+            <MathText text={question.prompt} />
+          )}
         </p>
       )}
 
