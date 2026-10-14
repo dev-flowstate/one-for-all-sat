@@ -7,6 +7,7 @@ import { Button } from '../components/ui/Button';
 import { Toggle } from '../components/ui/Toggle';
 import { QuestionReviewCard } from '../components/review/QuestionReviewCard';
 import { AnswerComparison } from '../components/results/AnswerComparison';
+import { CountUp } from '../components/fx/CountUp';
 
 /** The headline verdict: a solid block of colour is the whole point of the score panel. */
 function verdictFor(accuracy: number): { label: string; tone: string } {
@@ -53,7 +54,7 @@ export function ResultsPage() {
           <p className="text-[11px] font-semibold tracking-tight text-ink-soft uppercase">You scored</p>
           <p className="mt-2 flex items-baseline justify-center gap-2 leading-none">
             <span className="text-6xl font-bold tracking-tight tabular-nums sm:text-8xl">
-              {lastResult.correctCount}
+              <CountUp value={lastResult.correctCount} />
             </span>
             <span className="text-2xl font-bold tracking-tight text-ink-soft tabular-nums sm:text-4xl">
               / {totalAnswered}
@@ -62,7 +63,7 @@ export function ResultsPage() {
           <p
             className={`mt-5 inline-block border-2 border-ink px-3 py-1 text-xs font-semibold tracking-tight uppercase tabular-nums ${verdict.tone}`}
           >
-            {accuracy}% · {verdict.label}
+            <CountUp value={accuracy} suffix="%" /> · {verdict.label}
           </p>
         </div>
 
@@ -70,15 +71,21 @@ export function ResultsPage() {
         <dl className="grid grid-cols-3 gap-[2px] bg-ink">
           <div className="bg-merino-dark px-3 py-2.5 text-center">
             <dt className="text-[10px] font-semibold tracking-tight text-ink-soft uppercase">Correct</dt>
-            <dd className="text-xl font-bold tabular-nums sm:text-2xl">{lastResult.correctCount}</dd>
+            <dd className="text-xl font-bold tabular-nums sm:text-2xl">
+              <CountUp value={lastResult.correctCount} />
+            </dd>
           </div>
           <div className="bg-merino-dark px-3 py-2.5 text-center">
             <dt className="text-[10px] font-semibold tracking-tight text-ink-soft uppercase">Missed</dt>
-            <dd className="text-xl font-bold tabular-nums sm:text-2xl">{lastResult.incorrectCount}</dd>
+            <dd className="text-xl font-bold tabular-nums sm:text-2xl">
+              <CountUp value={lastResult.incorrectCount} />
+            </dd>
           </div>
           <div className="bg-merino-dark px-3 py-2.5 text-center">
             <dt className="text-[10px] font-semibold tracking-tight text-ink-soft uppercase">Points</dt>
-            <dd className="text-xl font-bold tabular-nums sm:text-2xl">{lastResult.totalPoints}</dd>
+            <dd className="text-xl font-bold tabular-nums sm:text-2xl">
+              <CountUp value={lastResult.totalPoints} />
+            </dd>
           </div>
         </dl>
       </header>

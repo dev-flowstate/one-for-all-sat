@@ -14,6 +14,7 @@ import { TopicRow } from '../components/topics/TopicRow';
 import { SignInBanner } from '../components/profile/SignInBanner';
 import { StudyCalendar } from '../components/plan/StudyCalendar';
 import { ReadingCard } from '../components/reading/ReadingCard';
+import { CountUp } from '../components/fx/CountUp';
 
 export function HomePage() {
   const { questions, progress, stats, isLoaded, bundledCount, importedCount } = useProgressStore();
@@ -148,7 +149,7 @@ export function HomePage() {
                   {pool.label}
                 </p>
                 <p className="px-2 py-4 text-center text-3xl font-bold tabular-nums sm:py-6 sm:text-5xl">
-                  {isLoaded ? pool.value : placeholder}
+                  {isLoaded ? <CountUp value={pool.value} /> : placeholder}
                 </p>
               </div>
             ))}
@@ -159,11 +160,11 @@ export function HomePage() {
           <dl className="mt-3 grid grid-cols-2 gap-[2px] border-2 border-ink bg-ink sm:mt-4 sm:grid-cols-3">
             <div className="bg-merino-dark px-3 py-2.5">
               <dt className="text-[10px] font-semibold tracking-tight text-ink-soft uppercase">Total points</dt>
-              <dd className="text-lg font-bold tabular-nums">{isLoaded ? stats.points : placeholder}</dd>
+              <dd className="text-lg font-bold tabular-nums">{isLoaded ? <CountUp value={stats.points} /> : placeholder}</dd>
             </div>
             <div className="bg-merino-dark px-3 py-2.5">
               <dt className="text-[10px] font-semibold tracking-tight text-ink-soft uppercase">Best streak</dt>
-              <dd className="text-lg font-bold tabular-nums">{isLoaded ? stats.bestStreak : placeholder}</dd>
+              <dd className="text-lg font-bold tabular-nums">{isLoaded ? <CountUp value={stats.bestStreak} /> : placeholder}</dd>
             </div>
             <div className="col-span-2 bg-merino-dark px-3 py-2.5 sm:col-span-1">
               <dt className="text-[10px] font-semibold tracking-tight text-ink-soft uppercase">Question bank</dt>

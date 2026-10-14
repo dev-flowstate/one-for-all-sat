@@ -1,6 +1,8 @@
+import type { MouseEvent } from 'react';
 import type { Choice, ChoiceId } from '../../types/question';
 import type { RevealMode } from '../../types/settings';
 import { MathText } from '../math/MathText';
+import { sparkAt } from '../../lib/sparks';
 
 interface McqChoicesProps {
   choices: Choice[];
@@ -43,7 +45,20 @@ export function McqChoices({
             isSelected={isSelected}
             isCorrect={showCorrectness && correctChoice === choice.id}
             isWrongSelection={showCorrectness && isSelected && correctChoice !== choice.id}
-            onClick={() => onChoiceClick(choice.id)}
+            onClick={(e) => {
+              // A keyboard press reports (0, 0); spark from the button's middle instead.
+              if (!submitted && !crossed) {
+                const r = e.currentTarget.getBoundingClientRect();
+                const keyboard = e.clientX === 0 && e.clientY === 0;
+                sparkAt(keyboard ? r.left + r.width / 2 : e.clientX, keyboard ? r.top + r.height / 2 : e.clientY, {
+                  colors: ['--color-caution', '--color-ink'],
+                  radius: 34,
+                  size: 12,
+                  durationMs: 500,
+                });
+              }
+              onChoiceClick(choice.id);
+            }}
           />
         );
       })}
@@ -58,7 +73,7 @@ interface ChoiceButtonProps {
   isSelected: boolean;
   isCorrect: boolean;
   isWrongSelection: boolean;
-  onClick: () => void;
+  onClick: (e: MouseEvent<HTMLButtonElement>) => void;
 }
 
 const HARD_SHADOW = 'shadow-[4px_4px_0_var(--color-ink)]';

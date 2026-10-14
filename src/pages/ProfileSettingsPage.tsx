@@ -10,6 +10,7 @@ import { useSettingsStore } from '../store/useSettingsStore';
 import { useProgressStore } from '../store/useProgressStore';
 import { useAccountStore } from '../store/useAccountStore';
 import { DEFAULT_AVATARS } from '../types/settings';
+import { CountUp } from '../components/fx/CountUp';
 
 export function ProfileSettingsPage() {
   const profile = useSettingsStore((s) => s.profile);
@@ -45,11 +46,11 @@ export function ProfileSettingsPage() {
     }
   }
 
-  const statEntries: { label: string; value: string | number }[] = [
+  const statEntries: { label: string; value: number; suffix?: string }[] = [
     { label: 'Points', value: stats.points },
     { label: 'Attempted', value: stats.questionsAttempted },
     { label: 'Correct', value: stats.correctCount },
-    { label: 'Accuracy', value: `${accuracy}%` },
+    { label: 'Accuracy', value: accuracy, suffix: '%' },
     { label: 'Streak', value: stats.currentStreak },
     { label: 'Best streak', value: stats.bestStreak },
   ];
@@ -116,7 +117,9 @@ export function ProfileSettingsPage() {
           {statEntries.map((stat) => (
             <div key={stat.label} className="bg-merino-dark px-3 py-2.5">
               <dt className="text-[10px] font-semibold tracking-tight text-ink-soft uppercase">{stat.label}</dt>
-              <dd className="text-xl font-bold tabular-nums">{stat.value}</dd>
+              <dd className="text-xl font-bold tabular-nums">
+                <CountUp value={stat.value} suffix={stat.suffix} />
+              </dd>
             </div>
           ))}
         </dl>

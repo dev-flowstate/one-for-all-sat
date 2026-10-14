@@ -1,4 +1,6 @@
+import { useEffect, useRef } from 'react';
 import type { AttemptOutcome } from '../../types/progress';
+import { sparkFrom } from '../../lib/sparks';
 import { MathText } from '../math/MathText';
 import { StepByStepButton } from '../solution/StepByStep';
 
@@ -15,9 +17,23 @@ interface AnswerFeedbackProps {
  */
 export function AnswerFeedback({ outcome, explanation, questionId }: AnswerFeedbackProps) {
   const correct = outcome === 'correct';
+  const bar = useRef<HTMLParagraphElement>(null);
+  // A bigger, brighter burst over the verdict bar when the answer is right.
+  useEffect(() => {
+    if (correct && bar.current)
+      sparkFrom(bar.current, {
+        colors: ['--color-success', '--color-caution', '--color-venice-blue'],
+        count: 12,
+        radius: 60,
+        size: 16,
+        width: 4,
+        durationMs: 650,
+      });
+  }, [correct]);
   return (
     <div className="border-2 border-ink shadow-[4px_4px_0_var(--color-ink)]">
       <p
+        ref={bar}
         className={`flex items-center gap-2 border-b-2 border-ink px-3 py-2 font-mono text-xs font-bold tracking-tight uppercase text-paper ${
           correct ? 'bg-success' : 'bg-danger'
         }`}
