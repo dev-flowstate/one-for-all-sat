@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useAccountStore } from '../../store/useAccountStore';
 import { useSettingsStore } from '../../store/useSettingsStore';
 import { Toggle } from '../ui/Toggle';
@@ -14,15 +14,10 @@ const STATUS_TEXT: Record<string, string> = {
 
 /** Signing in with Google, so progress follows you between devices. */
 export function AccountCard() {
-  const { status, user, error, ready, signIn, signOut, retry, prepare } = useAccountStore();
+  const { status, user, error, signIn, signOut, retry } = useAccountStore();
   const [confirmSignOut, setConfirmSignOut] = useState(false);
   const hidden = useSettingsStore((s) => s.profile?.hideFromLeaderboard === true);
   const setHideFromLeaderboard = useSettingsStore((s) => s.setHideFromLeaderboard);
-
-  // Fetched as soon as the card shows, so the sign-in window can open the moment it's tapped.
-  useEffect(() => {
-    if (!user) prepare();
-  }, [user, prepare]);
 
   if (status === 'off') return null;
 
@@ -75,13 +70,13 @@ export function AccountCard() {
             Sign in with Google to save your progress to your account, so it follows you to any device. Signing in is
             optional: without it, progress stays in this browser only.
           </p>
-          {(status === 'checking' || !ready) && (
+          {status === 'checking' && (
             <p className="mt-3 font-mono text-xs font-semibold tracking-tight text-ink-soft uppercase" role="status">
-              {status === 'checking' ? STATUS_TEXT.checking : 'Getting sign-in ready…'}
+              {STATUS_TEXT.checking}
             </p>
           )}
           {error && <p className="mt-3 text-sm font-semibold text-danger">{error}</p>}
-          <Button className="mt-4" onClick={() => void signIn()} disabled={status === 'checking' || !ready}>
+          <Button className="mt-4" onClick={signIn} disabled={status === 'checking'}>
             Sign in with Google
           </Button>
         </>

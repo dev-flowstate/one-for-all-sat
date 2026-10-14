@@ -32,6 +32,22 @@
           saved === 'dark' || saved === 'bluebook' || saved === 'minecraft' || saved === 'sakura' ? saved : 'light';
       })();
     </script>
+    <script>
+      // Back from Google's sign-in page: its answer, token and all, moves out of the address into
+      // this tab's storage before anything else reads the address, and the page that was open
+      // comes back. Kept in step with src/lib/cloud/cloudClient.ts, which finishes signing in.
+      (function () {
+        var hash = location.hash;
+        if (!/[#&](access_token|error)=/.test(hash) || !/[#&]state=/.test(hash)) return;
+        var back = '';
+        try {
+          sessionStorage.setItem('ofa-sat:oauth-return', hash.slice(1));
+          back = sessionStorage.getItem('ofa-sat:oauth-back') || '';
+          sessionStorage.removeItem('ofa-sat:oauth-back');
+        } catch (e) {}
+        history.replaceState(null, '', location.pathname + location.search + back);
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

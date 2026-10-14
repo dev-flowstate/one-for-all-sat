@@ -43,12 +43,9 @@ interface AccountState {
   status: AccountStatus;
   user: AccountUser | null;
   error: string | null;
-  /** Google's sign-in script has loaded, so a tap on "Sign in" can open the window at once. */
-  ready: boolean;
   init: () => void;
-  /** Starts downloading Google's sign-in script, so a later tap on "Sign in" doesn't wait. */
-  prepare: () => void;
-  signIn: () => Promise<void>;
+  /** Sends this tab to Google's sign-in page; init() finishes signing in when it comes back. */
+  signIn: () => void;
   signOut: () => Promise<void>;
   /** After an error: connects again, or saves again if already connected. */
   retry: () => void;
@@ -151,6 +148,7 @@ function leaderboardChange(data: AccountData, user: AccountUser) {
 }
 
 const SIGNED_OUT_MESSAGE = 'You were signed out. Sign in again to keep saving to your account.';
+const SIGN_IN_FAILED_MESSAGE = "Couldn't sign in. Check your connection and try again.";
 
 export const useAccountStore = create<AccountState>((set, get) => {
   /** A session that has run out: saving stops, and what's in this browser stays as it is. */
@@ -263,42 +261,29 @@ export const useAccountStore = create<AccountState>((set, get) => {
     // Someone signed in on this browser starts as "checking", not "signed out": the latter
     // showed the home screen's sign-in banner for a frame before hiding it again, and the jump
     // it gave everything below was the page's layout shift.
-    status: !cloudConfigured ? 'off' : getSession() ? 'checking' : 'signed-out',
+    status: !cloudConfigured ? 'off' : getSession() || cloud.backFromGoogle() ? 'checking' : 'signed-out',
     user: null,
     error: null,
-    ready: false,
 
     init: () => {
+      if (!cloudConfigured) return;
+      if (cloud.backFromGoogle()) {
+        set({ status: 'checking' });
+        cloud.finishGoogleSignIn().then(connect, (err) => {
+          const cancelled = err instanceof cloud.CloudError && err.code === 'cancelled';
+          set({ status: 'signed-out', error: cancelled ? null : SIGN_IN_FAILED_MESSAGE });
+        });
+        return;
+      }
       const user = cloud.sessionUser();
-      if (!cloudConfigured || !user) return;
+      if (!user) return;
       set({ status: 'checking' });
       void connect(user);
     },
 
-    prepare: () => {
-      if (!cloudConfigured || get().ready) return;
-      cloud.loadGoogle().then(
-        () => set({ ready: true }),
-        () => set({ error: "Couldn't load Google sign-in. Check your connection and reload the page." }),
-      );
-    },
-
-    signIn: async () => {
+    signIn: () => {
       set({ error: null });
-      try {
-        // The window opens straight away when Google's script is already here, which
-        // prepare() sees to; see signInWithGoogle.
-        await connect(await cloud.signInWithGoogle());
-      } catch (err) {
-        const code = err instanceof cloud.CloudError ? err.code : 'failed';
-        if (code === 'cancelled') return;
-        set({
-          error:
-            code === 'popup-blocked'
-              ? 'Your browser blocked the sign-in window. Tap Sign in with Google again. If it is blocked a second time, allow pop-ups for this site.'
-              : "Couldn't sign in. Check your connection and try again.",
-        });
-      }
+      cloud.startGoogleSignIn();
     },
 
     signOut: async () => {

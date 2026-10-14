@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import { useAccountStore } from '../../store/useAccountStore';
 
 /** Google's four-colour "G", as its sign-in button guidelines ask. */
@@ -15,25 +14,11 @@ function GoogleMark() {
 
 /**
  * The home screen's invitation to sign in, for anyone who hasn't. It signs in right here
- * rather than sending people to the profile page, and starts loading Google's sign-in script as
- * soon as it shows, so the first tap opens Google's window instead of being blocked as a pop-up.
+ * rather than sending people to the profile page.
  */
 export function SignInBanner() {
-  const { status, user, ready, error, signIn, prepare } = useAccountStore();
+  const { status, user, error, signIn } = useAccountStore();
   const shown = status !== 'off' && status !== 'checking' && !user;
-
-  // Loaded once the page has settled rather than straight away, so loading the script doesn't
-  // hold up a tap made while the page is still starting. It's still in long before anyone
-  // reaches the button.
-  useEffect(() => {
-    if (!shown) return;
-    if (!('requestIdleCallback' in window)) {
-      const timer = setTimeout(prepare, 1500);
-      return () => clearTimeout(timer);
-    }
-    const handle = requestIdleCallback(prepare, { timeout: 3000 });
-    return () => cancelIdleCallback(handle);
-  }, [shown, prepare]);
 
   if (!shown) return null;
 
@@ -54,12 +39,11 @@ export function SignInBanner() {
         </div>
         <button
           type="button"
-          onClick={() => void signIn()}
-          disabled={!ready}
-          className="press flex min-h-12 flex-none items-center justify-center gap-3 border-2 border-ink bg-paper px-5 py-3 font-mono text-sm font-bold tracking-tight text-ink shadow-[4px_4px_0_var(--color-ink)] hover:bg-merino disabled:cursor-wait disabled:opacity-70"
+          onClick={signIn}
+          className="press flex min-h-12 flex-none items-center justify-center gap-3 border-2 border-ink bg-paper px-5 py-3 font-mono text-sm font-bold tracking-tight text-ink shadow-[4px_4px_0_var(--color-ink)] hover:bg-merino"
         >
           <GoogleMark />
-          {ready ? 'Sign in with Google' : 'Getting ready…'}
+          Sign in with Google
         </button>
       </div>
       {error && (

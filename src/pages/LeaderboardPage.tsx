@@ -19,13 +19,12 @@ const PODIUM = ['bg-coral text-paper', 'bg-venice-blue text-merino', 'bg-rock-bl
  * nickname, an avatar and two counts; they update as people practise.
  */
 export function LeaderboardPage() {
-  const { status, user, ready, error, signIn, prepare, fetchLeaderboard } = useAccountStore();
+  const { status, user, error, signIn, fetchLeaderboard } = useAccountStore();
   const hidden = useSettingsStore((s) => s.profile?.hideFromLeaderboard === true);
   const [rows, setRows] = useState<Row[] | null>(null);
   const [failed, setFailed] = useState(false);
 
   useEffect(() => {
-    prepare();
     let live = true;
     fetchLeaderboard(TOP)
       // Ties on questions answered go to whoever got more right.
@@ -34,7 +33,7 @@ export function LeaderboardPage() {
     return () => {
       live = false;
     };
-  }, [prepare, fetchLeaderboard]);
+  }, [fetchLeaderboard]);
 
   const signedOut = status !== 'off' && status !== 'checking' && !user;
 
@@ -51,8 +50,8 @@ export function LeaderboardPage() {
       {signedOut && (
         <div className="mb-5 flex flex-col gap-3 border-2 border-ink bg-venice-blue px-4 py-4 text-merino shadow-[4px_4px_0_var(--color-ink)] sm:flex-row sm:items-center">
           <p className="flex-1 text-sm font-semibold">Sign in with Google to get on the board.</p>
-          <Button variant="secondary" className="flex-none" disabled={!ready} onClick={() => void signIn()}>
-            {ready ? 'Sign in with Google' : 'Getting ready…'}
+          <Button variant="secondary" className="flex-none" onClick={signIn}>
+            Sign in with Google
           </Button>
         </div>
       )}

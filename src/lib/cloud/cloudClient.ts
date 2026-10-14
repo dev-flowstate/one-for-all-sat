@@ -1,9 +1,9 @@
 /**
- * Everything that talks to the account Worker (worker/), and Google's sign-in window.
+ * Everything that talks to the account Worker (worker/), and Google's sign-in page.
  *
- * Signing in: Google's script opens its window and hands back an access token, which the
- * Worker checks with Google and swaps for a session of its own. That session is kept in this
- * browser, so later visits go straight to the Worker without Google.
+ * Signing in: this tab goes to Google's sign-in page, which sends it back with an access token.
+ * The Worker checks the token with Google and swaps it for a session of its own. That session is
+ * kept in this browser, so later visits go straight to the Worker without Google.
  */
 import type { CompletedTest } from '../../types/practiceTest';
 import { getSession, setSession, type StoredSession } from '../storage/localStorage';
@@ -28,7 +28,7 @@ export interface LeaderboardEntry {
 }
 
 /** Why signing in or saving failed, for the messages people see. */
-export type CloudErrorCode = 'cancelled' | 'popup-blocked' | 'signed-out' | 'failed';
+export type CloudErrorCode = 'cancelled' | 'signed-out' | 'failed';
 
 export class CloudError extends Error {
   readonly code: CloudErrorCode;
@@ -57,87 +57,78 @@ async function api<T>(path: string, init: RequestInit = {}, auth = false): Promi
   return (response.status === 204 ? undefined : await response.json()) as T;
 }
 
-// ---- Google's sign-in window ---------------------------------------------------------------
+// ---- Google's sign-in page -----------------------------------------------------------------
+//
+// The whole tab goes to Google and comes back, rather than Google opening a window of its own:
+// on iPhones that window stayed open on a blank page after signing in. Google puts the token in
+// the # part of the address it sends the tab back to, which index.html moves into session
+// storage before anything else reads the address. Kept in step with index.html.
 
-interface TokenClient {
-  requestAccessToken(): void;
-}
+/** Proves a return from Google is the sign-in this tab started. */
+const STATE_KEY = 'ofa-sat:oauth-state';
+/** The page to come back to, as the # part of its address. */
+const BACK_KEY = 'ofa-sat:oauth-back';
+/** What Google sent back. */
+const RETURN_KEY = 'ofa-sat:oauth-return';
 
-declare global {
-  interface Window {
-    google?: {
-      accounts: {
-        oauth2: {
-          initTokenClient(config: {
-            client_id: string;
-            scope: string;
-            callback: (response: { access_token?: string; error?: string }) => void;
-            error_callback: (error: { type: string }) => void;
-          }): TokenClient;
-        };
-      };
-    };
+function readTab(key: string): string | null {
+  try {
+    return sessionStorage.getItem(key);
+  } catch {
+    return null;
   }
 }
 
-let googleLoading: Promise<void> | null = null;
-let tokenClient: TokenClient | null = null;
-/** The sign-in waiting on Google's window. */
-let waiting: { resolve: (token: string) => void; reject: (error: CloudError) => void } | null = null;
-
-function settle(token: string | null, code: CloudErrorCode = 'failed') {
-  if (token) waiting?.resolve(token);
-  else waiting?.reject(new CloudError(code));
-  waiting = null;
+/** Reads a value kept for this tab and forgets it. */
+function takeTab(key: string): string | null {
+  const value = readTab(key);
+  try {
+    sessionStorage.removeItem(key);
+  } catch {
+    // Nothing was kept.
+  }
+  return value;
 }
 
-/** Downloads Google's sign-in script, so a later tap on "Sign in" can open the window at once. */
-export function loadGoogle(): Promise<void> {
-  googleLoading ??= new Promise<void>((resolve, reject) => {
-    const script = document.createElement('script');
-    script.src = 'https://accounts.google.com/gsi/client';
-    script.async = true;
-    script.onload = () => {
-      tokenClient = window.google!.accounts.oauth2.initTokenClient({
-        client_id: GOOGLE_CLIENT_ID,
-        scope: 'openid email profile',
-        callback: (response) => settle(response.access_token ?? null, response.error === 'access_denied' ? 'cancelled' : 'failed'),
-        error_callback: (error) =>
-          settle(null, error.type === 'popup_failed_to_open' ? 'popup-blocked' : error.type === 'popup_closed' ? 'cancelled' : 'failed'),
-      });
-      resolve();
-    };
-    script.onerror = () => {
-      // Tried again on the next call.
-      googleLoading = null;
-      script.remove();
-      reject(new CloudError('failed'));
-    };
-    document.head.append(script);
+/** Sends this tab to Google's sign-in page, which sends it back here signed in. */
+export function startGoogleSignIn(): void {
+  const state = Array.from(crypto.getRandomValues(new Uint8Array(16)), (b) => b.toString(16).padStart(2, '0')).join('');
+  try {
+    sessionStorage.setItem(STATE_KEY, state);
+    sessionStorage.setItem(BACK_KEY, location.hash);
+  } catch {
+    // The return is turned away for want of the state, which says so.
+  }
+  const params = new URLSearchParams({
+    client_id: GOOGLE_CLIENT_ID,
+    redirect_uri: location.origin + import.meta.env.BASE_URL,
+    response_type: 'token',
+    scope: 'openid email profile',
+    state,
+    prompt: 'select_account',
   });
-  return googleLoading;
+  location.assign(`https://accounts.google.com/o/oauth2/v2/auth?${params}`);
+}
+
+/** Whether this page load is Google sending the tab back from its sign-in page. */
+export function backFromGoogle(): boolean {
+  return readTab(RETURN_KEY) !== null;
 }
 
 /**
- * Opens Google's sign-in window and starts a session. Phone browsers, Safari above all, only
- * let a page open a window while the tap that asked for it is still being handled, so when
- * Google's script is already here the window opens before anything is awaited.
+ * Finishes the sign-in Google has just sent this tab back from: checks it's the one this tab
+ * started, then swaps Google's token for a session. Rejects with "cancelled" when the person
+ * chose not to sign in.
  */
-export function signInWithGoogle(): Promise<AccountUser> {
-  const accessToken = new Promise<string>((resolve, reject) => {
-    const open = () => {
-      waiting?.reject(new CloudError('cancelled'));
-      waiting = { resolve, reject };
-      tokenClient!.requestAccessToken();
-    };
-    if (tokenClient) open();
-    else loadGoogle().then(open, reject);
-  });
-  return accessToken.then(async (token) => {
-    const session = await api<StoredSession>('/api/session', { method: 'POST', body: JSON.stringify({ accessToken: token }) });
-    setSession(session);
-    return session.user;
-  });
+export async function finishGoogleSignIn(): Promise<AccountUser> {
+  const returned = new URLSearchParams(takeTab(RETURN_KEY) ?? '');
+  const state = takeTab(STATE_KEY);
+  if (!state || returned.get('state') !== state) throw new CloudError('failed');
+  const accessToken = returned.get('access_token');
+  if (!accessToken) throw new CloudError(returned.get('error') === 'access_denied' ? 'cancelled' : 'failed');
+  const session = await api<StoredSession>('/api/session', { method: 'POST', body: JSON.stringify({ accessToken }) });
+  setSession(session);
+  return session.user;
 }
 
 /** The person this browser has a session for, if any. */
