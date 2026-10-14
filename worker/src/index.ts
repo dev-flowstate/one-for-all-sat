@@ -8,6 +8,8 @@
  *   GET  /api/account      the signed-in person's saved data
  *   PUT  /api/account      saves it, finished tests and their leaderboard entry included
  *   GET  /api/leaderboard  the top 100, for anyone
+ *   GET  /api/doodles      the signed-in person's doodles, deleted ones as null
+ *   PUT  /api/doodles      saves some, each only if newer than the copy already saved
  */
 
 interface Env {
@@ -61,6 +63,8 @@ async function route(request: Request, env: Env): Promise<Response> {
   if (pathname === '/api/account' && method === 'GET') return readAccount(request, env);
   if (pathname === '/api/account' && method === 'PUT') return writeAccount(request, env);
   if (pathname === '/api/leaderboard' && method === 'GET') return readLeaderboard(env);
+  if (pathname === '/api/doodles' && method === 'GET') return readDoodles(request, env);
+  if (pathname === '/api/doodles' && method === 'PUT') return writeDoodles(request, env);
   throw new HttpError(404, 'Not found');
 }
 
@@ -269,6 +273,45 @@ async function writeAccount(request: Request, env: Env): Promise<Response> {
     );
   }
 
+  if (statements.length > 0) await env.DB.batch(statements);
+  return new Response(null, { status: 204 });
+}
+
+// ---- Doodles ---------------------------------------------------------------------------------
+
+async function readDoodles(request: Request, env: Env): Promise<Response> {
+  const uid = await requireUser(request, env);
+  const { results } = await env.DB.prepare('SELECT id, strokes, saved_at FROM doodles WHERE user_id = ?')
+    .bind(uid)
+    .all<{ id: string; strokes: string | null; saved_at: string }>();
+  // Put together as text, like the account: stored strokes are sent as they are.
+  const items = results.map((r) => `{"id":${JSON.stringify(r.id)},"savedAt":${JSON.stringify(r.saved_at)},"strokes":${r.strokes ?? 'null'}}`);
+  return new Response(`[${items.join(',')}]`, { headers: { 'Content-Type': 'application/json' } });
+}
+
+/** Each doodle is written only when it's newer than the saved copy, so an older device can't
+ *  undo a newer drawing, or bring back one deleted elsewhere. */
+async function writeDoodles(request: Request, env: Env): Promise<Response> {
+  const uid = await requireUser(request, env);
+  const { items } = (await readJson(request)) as { items?: unknown };
+  if (!Array.isArray(items) || items.length > MAX_TESTS_PER_SAVE) throw new HttpError(400, 'Bad doodles');
+  const statements = items.map((item) => {
+    if (
+      !isObject(item) ||
+      typeof item.id !== 'string' ||
+      item.id.length > 200 ||
+      typeof item.savedAt !== 'string' ||
+      item.savedAt.length > 64 ||
+      !(item.strokes === null || Array.isArray(item.strokes))
+    ) {
+      throw new HttpError(400, 'Bad doodle');
+    }
+    return env.DB.prepare(
+      `INSERT INTO doodles (user_id, id, strokes, saved_at) VALUES (?, ?, ?, ?)
+       ON CONFLICT (user_id, id) DO UPDATE SET strokes = excluded.strokes, saved_at = excluded.saved_at
+       WHERE excluded.saved_at > doodles.saved_at`,
+    ).bind(uid, item.id, item.strokes === null ? null : sized(JSON.stringify(item.strokes)), item.savedAt);
+  });
   if (statements.length > 0) await env.DB.batch(statements);
   return new Response(null, { status: 204 });
 }

@@ -1,5 +1,4 @@
-# Read by Cloudflare, which serves the question bank from the Worker's address (see worker/)
-# so its 21 MB downloads don't count against GitHub Pages' bandwidth. GitHub Pages ignores
-# this file.
+# Read by Cloudflare, which serves the question bank from the Worker's address (see worker/),
+# compressed as each browser prefers. GitHub Pages ignores this file.
 /question-bank.json
   Access-Control-Allow-Origin: *

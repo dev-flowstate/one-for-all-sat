@@ -107,8 +107,107 @@ export function logDoodle() {
   });
 }
 
+// ---- Several devices --------------------------------------------------------------------------
+// Each device counts what's done on it, and the account keeps every device's log apart: adding
+// two already-combined logs together on each sync would count the same day again and again.
+
+const DEVICE_KEY = 'ofa-sat:device';
+/** The logs of this account's other devices, as the account last had them. */
+const OTHERS_KEY = 'ofa-sat:activity-others';
+
+/** This browser's id among the account's devices, made up the first time it's needed. */
+export function deviceId(): string {
+  try {
+    let id = localStorage.getItem(DEVICE_KEY);
+    if (!id) {
+      id = crypto.randomUUID();
+      localStorage.setItem(DEVICE_KEY, id);
+    }
+    return id;
+  } catch {
+    return 'this-device';
+  }
+}
+
+export type DeviceActivity = Record<string, Record<string, DayActivity>>;
+
+function readOthers(): DeviceActivity {
+  try {
+    return JSON.parse(localStorage.getItem(OTHERS_KEY) ?? '{}') as DeviceActivity;
+  } catch {
+    return {};
+  }
+}
+
+/** This device's log, under its id, for the account. */
+export function ownActivity(): DeviceActivity {
+  return { [deviceId()]: read().days };
+}
+
+/** The account's logs: this device's own is replaced by the account's copy only when it has none. */
+export function setAccountActivity(all: DeviceActivity) {
+  const mine = deviceId();
+  const others = { ...all };
+  const own = others[mine];
+  delete others[mine];
+  try {
+    localStorage.setItem(OTHERS_KEY, JSON.stringify(others));
+  } catch {
+    // Storage full: the other devices' days just don't show here.
+  }
+  const file = read();
+  if (own && Object.keys(file.days).length === 0) {
+    file.days = own;
+    write(file);
+  }
+}
+
+/** Signing out, or another person's account on this browser. */
+export function clearActivity() {
+  for (const key of [KEY, OTHERS_KEY]) {
+    try {
+      localStorage.removeItem(key);
+    } catch {
+      // Nothing to clear.
+    }
+  }
+}
+
+function add(into: DayActivity, d: DayActivity) {
+  into.answered += d.answered;
+  into.correct += d.correct;
+  into.words += d.words;
+  into.wordsRight += d.wordsRight;
+  into.tests += d.tests;
+  into.doodles += d.doodles;
+  for (const [skill, [n, right]] of Object.entries(d.topics)) {
+    const t = (into.topics[skill] ??= [0, 0]);
+    t[0] += n;
+    t[1] += right;
+  }
+}
+
+/**
+ * Every device's days together. Days counted live are added up; a day only rebuilt from latest
+ * attempts (which every device can do from the same synced progress) takes the fullest rebuild,
+ * and only when no device counted that day live.
+ */
 export function getActivity(): Record<string, DayActivity> {
-  return read().days;
+  const logs = [read().days, ...Object.values(readOthers())];
+  const out: Record<string, DayActivity> = {};
+  const live = new Set<string>();
+  for (const days of logs) for (const [day, d] of Object.entries(days)) if (!d.rebuilt) live.add(day);
+  for (const days of logs) {
+    for (const [day, d] of Object.entries(days)) {
+      if (live.has(day)) {
+        if (d.rebuilt) continue;
+        add((out[day] ??= emptyDay()), d);
+      } else if (!out[day] || d.answered > out[day].answered) {
+        out[day] = { ...d, topics: { ...d.topics } };
+      }
+    }
+  }
+  return out;
 }
 
 /**

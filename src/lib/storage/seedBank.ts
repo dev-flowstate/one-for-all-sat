@@ -13,9 +13,9 @@ export type BankLoadResult =
 /**
  * Loads the question bank that ships with the app, if one is present.
  *
- * It comes from the account Worker's address when there is one: at 21 MB a download, it's
- * most of what GitHub Pages' monthly bandwidth goes on, and Cloudflare serves it without that
- * limit. The site's own copy is used when that fails or is older than `revision` (the one the
+ * It comes from the account Worker's address when there is one: Cloudflare compresses it in
+ * the best format each browser accepts (zstd, brotli or gzip), where GitHub Pages only has gzip,
+ * and its downloads don't count against GitHub Pages' bandwidth. The site's own copy is used when that fails or is older than `revision` (the one the
  * site's index names), since the Worker's copy is only as new as its last deploy.
  *
  * The file is optional by design: a checkout without it still runs on the bundled demo

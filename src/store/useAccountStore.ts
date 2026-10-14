@@ -22,6 +22,8 @@ import {
   setVocabProgress,
 } from '../lib/storage/localStorage';
 import { DEFAULT_AVATARS } from '../types/settings';
+import { clearActivity, ownActivity, setAccountActivity } from '../lib/activity';
+import { clearDoodles, markDoodlesSent, mergeDoodles, onDoodleChange, pendingDoodleRecords } from '../lib/doodles';
 import { useProgressStore } from './useProgressStore';
 import { useVocabStore } from './useVocabStore';
 import { useSettingsStore } from './useSettingsStore';
@@ -81,6 +83,7 @@ function readLocal(email: string | null): AccountData {
     activeTest: getActiveTest(),
     pausedTests: getPausedTests(),
     history: getTestHistory(),
+    activity: ownActivity(),
   };
 }
 
@@ -98,6 +101,7 @@ function writeLocal(data: AccountData) {
     paused: (data.pausedTests ?? []).map((t) => upgradeSavedTest(t) as ActiveTest),
     history: upgradeSavedHistory(data.history),
   });
+  setAccountActivity(data.activity ?? {});
 }
 
 const EMPTY: AccountData = {
@@ -109,7 +113,16 @@ const EMPTY: AccountData = {
   activeTest: null,
   pausedTests: [],
   history: [],
+  activity: {},
 };
+
+/** Sends the doodles waiting to go, after the account itself. */
+async function sendPendingDoodles() {
+  const pending = pendingDoodleRecords();
+  if (pending.length === 0) return;
+  await cloud.writeDoodles(pending);
+  markDoodlesSent(pending);
+}
 
 /** What the leaderboard shows of someone: their nickname and avatar, and how many questions
  *  they've answered. Null when they've chosen to stay off it. */
@@ -162,6 +175,7 @@ export const useAccountStore = create<AccountState>((set, get) => {
     set({ status: 'syncing' });
     try {
       await cloud.writeAccount(data, tests, leaderboard.entry, closing);
+      await sendPendingDoodles();
       for (const t of tests) savedTests.set(t.completedAt, t.number);
       if (leaderboard.entry !== undefined) sentLeaderboard = leaderboard.key;
       set({ status: 'synced', error: null });
@@ -191,6 +205,7 @@ export const useAccountStore = create<AccountState>((set, get) => {
       usePracticeTestStore.subscribe(
         (s, p) => (s.active !== p.active || s.paused !== p.paused || s.history !== p.history) && scheduleSave(),
       ),
+      onDoodleChange(scheduleSave),
     ];
     // Leaving the page is the last chance to save what's waiting on the timer.
     const onHide = () => document.visibilityState === 'hidden' && flush();
@@ -210,7 +225,12 @@ export const useAccountStore = create<AccountState>((set, get) => {
       const owner = getAccountOwner();
       // What's in this browser belongs to someone else when another account signed in here
       // before, so it's left out. Otherwise it's this person's, and joins their account.
-      const local = owner && owner !== user.uid ? { ...EMPTY } : readLocal(user.email);
+      const someoneElses = !!owner && owner !== user.uid;
+      if (someoneElses) {
+        clearActivity();
+        clearDoodles();
+      }
+      const local = someoneElses ? { ...EMPTY } : readLocal(user.email);
       const merged = saved ? mergeAccountData(local, saved) : local;
       merged.email = user.email;
       if (!merged.profile && user.name) {
@@ -224,6 +244,10 @@ export const useAccountStore = create<AccountState>((set, get) => {
       await cloud.writeAccount(merged, testsToSave(merged.history), leaderboard.entry);
       for (const t of merged.history) savedTests.set(t.completedAt, t.number);
       sentLeaderboard = leaderboard.key;
+      // Doodles: the account's newer ones come here, and this browser's newer ones go there.
+      const toSend = mergeDoodles(await cloud.readDoodles());
+      await cloud.writeDoodles(toSend);
+      markDoodlesSent(toSend);
       watchStores();
       connectedUid = user.uid;
       set({ status: 'synced' });
@@ -291,6 +315,8 @@ export const useAccountStore = create<AccountState>((set, get) => {
       // The progress is safe in the account. Leaving it here would hand it to whoever signs in
       // on this browser next.
       writeLocal({ ...EMPTY });
+      clearActivity();
+      clearDoodles();
       setAccountOwner(null);
       set({ user: null, status: 'signed-out', error: null });
     },

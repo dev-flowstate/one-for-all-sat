@@ -8,6 +8,7 @@
 import type { CompletedTest } from '../../types/practiceTest';
 import { getSession, setSession, type StoredSession } from '../storage/localStorage';
 import type { AccountData } from './merge';
+import type { DoodleRecord } from '../doodles';
 import { API_URL, GOOGLE_CLIENT_ID } from './config';
 
 export interface AccountUser {
@@ -177,6 +178,19 @@ export async function writeAccount(
     const tests = testsToWrite.slice(i, i + TESTS_PER_SAVE);
     const body = JSON.stringify(i === 0 ? { account, tests, leaderboard } : { tests });
     await api<void>('/api/account', { method: 'PUT', body, keepalive: closing && body.length < KEEPALIVE_LIMIT }, true);
+  }
+}
+
+/** The account's doodles, deleted ones with null strokes. */
+export function readDoodles(): Promise<DoodleRecord[]> {
+  return api<DoodleRecord[]>('/api/doodles', {}, true);
+}
+
+/** Saves doodles, a few dozen per request; the Worker keeps whichever copy is newer. */
+export async function writeDoodles(records: DoodleRecord[]): Promise<void> {
+  for (let i = 0; i < records.length; i += TESTS_PER_SAVE) {
+    const items = records.slice(i, i + TESTS_PER_SAVE);
+    await api<void>('/api/doodles', { method: 'PUT', body: JSON.stringify({ items }) }, true);
   }
 }
 

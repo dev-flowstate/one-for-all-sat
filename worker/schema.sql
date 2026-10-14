@@ -31,3 +31,13 @@ CREATE TABLE IF NOT EXISTS leaderboard (
 
 -- So the top 100 is read straight off the index instead of every entry.
 CREATE INDEX IF NOT EXISTS leaderboard_rank ON leaderboard (answered DESC, correct DESC);
+
+-- Doodles, one row each: a drawing can run to tens of kB, so they'd soon outgrow the account's
+-- row. `strokes` is null for one deleted, so the deletion reaches the person's other devices.
+CREATE TABLE IF NOT EXISTS doodles (
+  user_id TEXT NOT NULL,
+  id TEXT NOT NULL,
+  strokes TEXT,
+  saved_at TEXT NOT NULL,
+  PRIMARY KEY (user_id, id)
+) WITHOUT ROWID;

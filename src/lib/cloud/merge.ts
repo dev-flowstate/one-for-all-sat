@@ -2,6 +2,7 @@ import type { ProgressMap, ProfileStats } from '../../types/progress';
 import type { VocabProgressMap } from '../../types/vocab';
 import type { ActiveTest, CompletedTest } from '../../types/practiceTest';
 import type { LocalProfile } from '../../types/settings';
+import type { DeviceActivity } from '../activity';
 
 /** Everything saved to a person's account. */
 export interface AccountData {
@@ -17,6 +18,8 @@ export interface AccountData {
    *  be more than one. */
   pausedTests?: ActiveTest[];
   history: CompletedTest[];
+  /** Each device's activity log, by device. Missing from accounts saved before it was kept. */
+  activity?: DeviceActivity;
 }
 
 /**
@@ -60,6 +63,8 @@ export function mergeAccountData(local: AccountData, cloud: AccountData): Accoun
     activeTest,
     pausedTests,
     history,
+    // Each device's log is its own, so this one's comes from here and the rest from the account.
+    activity: { ...cloud.activity, ...local.activity },
   };
 }
 

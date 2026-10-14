@@ -13,13 +13,13 @@
     {
       "binding": "DB",
       "database_name": "one-for-all-sat",
-      "database_id": "00000000-0000-0000-0000-000000000000"
+      "database_id": "1984deca-514d-4b7c-9fb6-02a4258354ec"
     }
   ],
 
   "vars": {
     // The Google sign-in client the site asks for tokens with. Public, like the site's own copy.
-    "GOOGLE_CLIENT_ID": ""
+    "GOOGLE_CLIENT_ID": "398110949450-9eqtlblesgln2n0hqqkk2jb54v2rdnbf.apps.googleusercontent.com"
   }
   // SESSION_SECRET, which signs people's sessions, is a secret: `wrangler secret put SESSION_SECRET`.
 }
