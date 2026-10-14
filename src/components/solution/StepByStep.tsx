@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from 'react';
 import { createPortal } from 'react-dom';
 import { fetchSolutions, type Solution } from '../../lib/solutions';
 import { MathText } from '../math/MathText';
@@ -12,9 +12,11 @@ const METHOD_LABEL: Record<Solution['method'], string> = {
 /** The "Step-by-step solution" button, and the panel it opens on the right. */
 export function StepByStepButton({ questionId }: { questionId: string }) {
   const [open, setOpen] = useState(false);
+  const button = useRef<HTMLButtonElement>(null);
   return (
     <>
       <button
+        ref={button}
         type="button"
         onClick={() => setOpen(true)}
         className="press inline-flex min-h-10 items-center gap-2 border-2 border-ink bg-venice-blue px-3 py-2 font-mono text-xs font-bold tracking-tight text-merino uppercase shadow-[3px_3px_0_var(--color-ink)] hover:brightness-110"
@@ -22,13 +24,64 @@ export function StepByStepButton({ questionId }: { questionId: string }) {
         <span aria-hidden="true">≡</span>
         Step-by-step solution
       </button>
-      {open && createPortal(<SolutionPanel questionId={questionId} onClose={() => setOpen(false)} />, document.body)}
+      {open &&
+        createPortal(
+          <SolutionPanel
+            questionId={questionId}
+            anchor={button.current?.closest<HTMLElement>('.panel') ?? null}
+            onClose={() => setOpen(false)}
+          />,
+          document.body,
+        )}
     </>
   );
 }
 
-function SolutionPanel({ questionId, onClose }: { questionId: string; onClose: () => void }) {
+const GAP = 24;
+const MIN_WIDTH = 320;
+const MAX_WIDTH = 416;
+
+/**
+ * On a computer, the panel sits in the empty space to the right of the question's card, level
+ * with its top. Null when that space is too narrow; the panel then floats at the top right.
+ */
+function useBesideStyle(anchor: HTMLElement | null): CSSProperties | null {
+  const [style, setStyle] = useState<CSSProperties | null>(null);
+  useLayoutEffect(() => {
+    if (!anchor) return;
+    const place = () => {
+      if (!window.matchMedia('(min-width: 640px)').matches) return setStyle(null);
+      const rect = anchor.getBoundingClientRect();
+      const room = document.documentElement.clientWidth - rect.right - GAP * 2;
+      if (room < MIN_WIDTH) return setStyle(null);
+      const top = Math.max(GAP, rect.top);
+      setStyle({
+        left: rect.right + GAP,
+        right: 'auto',
+        top,
+        bottom: 'auto',
+        width: Math.min(room, MAX_WIDTH),
+        maxHeight: window.innerHeight - top - GAP,
+      });
+    };
+    place();
+    window.addEventListener('resize', place);
+    return () => window.removeEventListener('resize', place);
+  }, [anchor]);
+  return style;
+}
+
+function SolutionPanel({
+  questionId,
+  anchor,
+  onClose,
+}: {
+  questionId: string;
+  anchor: HTMLElement | null;
+  onClose: () => void;
+}) {
   const [solution, setSolution] = useState<Solution | null | undefined>(undefined);
+  const beside = useBesideStyle(anchor);
   const [failed, setFailed] = useState(false);
   const [shown, setShown] = useState(1);
   const end = useRef<HTMLDivElement>(null);
@@ -60,6 +113,7 @@ function SolutionPanel({ questionId, onClose }: { questionId: string; onClose: (
     <aside
       role="dialog"
       aria-label="Step-by-step solution"
+      style={beside ?? undefined}
       className="fixed inset-x-0 bottom-0 z-50 flex max-h-[75dvh] flex-col border-t-2 border-ink bg-paper text-ink shadow-[0_-6px_0_var(--color-ink)] sm:inset-x-auto sm:top-20 sm:right-6 sm:bottom-auto sm:max-h-[calc(100dvh-7rem)] sm:w-[24rem] sm:border-2 sm:shadow-[6px_6px_0_var(--color-ink)]"
     >
       <header className="flex flex-none items-center gap-2 border-b-2 border-ink bg-venice-blue px-4 py-3 text-merino">
