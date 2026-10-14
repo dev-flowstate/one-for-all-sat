@@ -426,6 +426,120 @@
     3px 12px 0 rgb(0 0 0 / 0.35);
 }
 
+/*
+ * Sakura: cherry blossoms at dawn. Blush and cream surfaces, the teal of a flower-shop front
+ * for title bars, bark brown for text, a rounded face for the interface (passages keep Inter,
+ * for reading), soft rounded panels, a blossoming branch in the corner and petals drifting
+ * down behind everything. The drift moves one fixed layer by transform alone, so it costs
+ * the page next to nothing, and it stops for anyone who has asked for less motion.
+ */
+:root[data-theme='sakura'] {
+  --color-merino: #fdf0f1;
+  --color-merino-dark: #f8dbe2;
+  --color-paper: #fffaf8;
+
+  --color-ink: #4b3440;
+  --color-ink-soft: #86697a;
+
+  --color-rock-blue: #f6bfcd;
+  --color-rock-blue-dark: #ef9fb5;
+  --color-venice-blue: #3d7a75;
+  --color-venice-blue-dark: #2e625e;
+
+  --color-coral: #c9557c;
+  --color-coral-dark: #ad4166;
+
+  --color-success: #3f7d52;
+  --color-success-bg: #e2f1e4;
+  --color-danger: #bb3f58;
+  --color-danger-bg: #fbe2e7;
+  --color-caution: #c98a2e;
+
+  --font-mono: 'Quicksand', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --font-sans: 'Quicksand', 'Segoe UI', system-ui, -apple-system, sans-serif;
+}
+
+:root[data-theme='sakura'] body {
+  background: linear-gradient(to bottom, #fbdfe7 0%, #fff1ec 40%, #fdf3f4 75%, #f6eaf1 100%) fixed;
+}
+
+:root[data-theme='sakura'] body::before,
+:root[data-theme='sakura'] body::after {
+  content: '';
+  position: fixed;
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* Petals: one tile, wider and taller than the screen by a tile, slid down and across by
+   exactly one tile per loop, so the loop never shows a seam. */
+:root[data-theme='sakura'] body::before {
+  top: -600px;
+  left: -420px;
+  right: 0;
+  height: calc(100vh + 600px);
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='420' height='600'%3E%3Cdefs%3E%3Cpath id='p' d='M0-10C7-10 10-2 7 5 5 10 1.5 9 0 6.5-1.5 9-5 10-7 5-10-2-7-10 0-10Z'/%3E%3C/defs%3E%3Cuse href='%23p' fill='%23fbd9e2' fill-opacity='0.78' transform='translate(40 60) rotate(77) scale(0.78)'/%3E%3Cuse href='%23p' fill='%23f6b4c6' fill-opacity='0.68' transform='translate(190 30) rotate(274) scale(0.6)'/%3E%3Cuse href='%23p' fill='%23f9cad7' fill-opacity='0.56' transform='translate(330 110) rotate(259) scale(0.59)'/%3E%3Cuse href='%23p' fill='%23f9cad7' fill-opacity='0.58' transform='translate(95 210) rotate(35) scale(0.85)'/%3E%3Cuse href='%23p' fill='%23f6b4c6' fill-opacity='0.88' transform='translate(260 250) rotate(289) scale(0.85)'/%3E%3Cuse href='%23p' fill='%23f6b4c6' fill-opacity='0.75' transform='translate(380 330) rotate(298) scale(0.99)'/%3E%3Cuse href='%23p' fill='%23f6b4c6' fill-opacity='0.74' transform='translate(30 380) rotate(113) scale(0.83)'/%3E%3Cuse href='%23p' fill='%23f9cad7' fill-opacity='0.74' transform='translate(170 430) rotate(214) scale(0.64)'/%3E%3Cuse href='%23p' fill='%23f9cad7' fill-opacity='0.59' transform='translate(300 520) rotate(286) scale(0.95)'/%3E%3Cuse href='%23p' fill='%23f19bb3' fill-opacity='0.58' transform='translate(120 560) rotate(96) scale(0.95)'/%3E%3Cuse href='%23p' fill='%23f6b4c6' fill-opacity='0.77' transform='translate(230 140) rotate(288) scale(1.05)'/%3E%3Cuse href='%23p' fill='%23fbd9e2' fill-opacity='0.82' transform='translate(355 455) rotate(272) scale(0.9)'/%3E%3C/svg%3E") repeat;
+  animation: sakura-fall 45s linear infinite;
+  will-change: transform;
+}
+
+@keyframes sakura-fall {
+  to {
+    transform: translate3d(420px, 600px, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root[data-theme='sakura'] body::before {
+    animation: none;
+  }
+}
+
+/* The branch, reaching in from the top-right corner. */
+:root[data-theme='sakura'] body::after {
+  top: 0;
+  right: 0;
+  width: min(380px, 60vw);
+  aspect-ratio: 380 / 250;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 380 250'%3E%3Cdefs%3E%3Cpath id='p' d='M0-10C7-10 10-2 7 5 5 10 1.5 9 0 6.5-1.5 9-5 10-7 5-10-2-7-10 0-10Z'/%3E%3Cg id='f'%3E%3Cuse href='%23p' transform='rotate(0) translate(0 -9)'/%3E%3Cuse href='%23p' transform='rotate(72) translate(0 -9)'/%3E%3Cuse href='%23p' transform='rotate(144) translate(0 -9)'/%3E%3Cuse href='%23p' transform='rotate(216) translate(0 -9)'/%3E%3Cuse href='%23p' transform='rotate(288) translate(0 -9)'/%3E%3C/g%3E%3C/defs%3E%3Cg fill='none' stroke='%236b4a3f' stroke-linecap='round'%3E%3Cpath stroke-width='9' d='M380-10C330 30 300 40 250 70 210 95 170 100 120 140 95 160 70 170 40 175'/%3E%3Cpath stroke-width='5' d='M300 45C290 80 300 110 285 150'/%3E%3Cpath stroke-width='4' d='M210 92C190 70 175 60 150 55'/%3E%3Cpath stroke-width='3.5' d='M120 140C110 175 115 200 100 225'/%3E%3C/g%3E%3Cg transform='translate(350 20) scale(1.2)'%3E%3Cuse href='%23f' fill='%23f29ab2'/%3E%3Ccircle r='3.6' fill='%23fff3c4'/%3E%3C/g%3E%3Cg transform='translate(320 48) scale(1.0)'%3E%3Cuse href='%23f' fill='%23f29ab2'/%3E%3Ccircle r='3.6' fill='%23fff3c4'/%3E%3C/g%3E%3Cg transform='translate(290 62) scale(1.1)'%3E%3Cuse href='%23f' fill='%23fac9d6'/%3E%3Ccircle r='3.6' fill='%23fff3c4'/%3E%3C/g%3E%3Cg transform='translate(262 58) scale(0.9)'%3E%3Cuse href='%23f' fill='%23fac9d6'/%3E%3Ccircle r='3.6' fill='%23fff3c4'/%3E%3C/g%3E%3Cg transform='translate(300 100) scale(1.0)'%3E%3Cuse href='%23f' fill='%23f4a6bc'/%3E%3Ccircle r='3.6' fill='%23fff3c4'/%3E%3C/g%3E%3Cg transform='translate(286 140) scale(1.15)'%3E%3Cuse href='%23f' fill='%23f4a6bc'/%3E%3Ccircle r='3.6' fill='%23fff3c4'/%3E%3C/g%3E%3Cg transform='translate(240 82) scale(1.0)'%3E%3Cuse href='%23f' fill='%23f4a6bc'/%3E%3Ccircle r='3.6' fill='%23fff3c4'/%3E%3C/g%3E%3Cg transform='translate(200 100) scale(1.1)'%3E%3Cuse href='%23f' fill='%23f7b7c8'/%3E%3Ccircle r='3.6' fill='%23fff3c4'/%3E%3C/g%3E%3Cg transform='translate(160 58) scale(0.95)'%3E%3Cuse href='%23f' fill='%23fac9d6'/%3E%3Ccircle r='3.6' fill='%23fff3c4'/%3E%3C/g%3E%3Cg transform='translate(176 118) scale(0.9)'%3E%3Cuse href='%23f' fill='%23f29ab2'/%3E%3Ccircle r='3.6' fill='%23fff3c4'/%3E%3C/g%3E%3Cg transform='translate(140 128) scale(1.1)'%3E%3Cuse href='%23f' fill='%23fac9d6'/%3E%3Ccircle r='3.6' fill='%23fff3c4'/%3E%3C/g%3E%3Cg transform='translate(110 150) scale(1.0)'%3E%3Cuse href='%23f' fill='%23f29ab2'/%3E%3Ccircle r='3.6' fill='%23fff3c4'/%3E%3C/g%3E%3Cg transform='translate(80 160) scale(0.9)'%3E%3Cuse href='%23f' fill='%23fac9d6'/%3E%3Ccircle r='3.6' fill='%23fff3c4'/%3E%3C/g%3E%3Cg transform='translate(50 172) scale(1.0)'%3E%3Cuse href='%23f' fill='%23f7b7c8'/%3E%3Ccircle r='3.6' fill='%23fff3c4'/%3E%3C/g%3E%3Cg transform='translate(104 200) scale(0.95)'%3E%3Cuse href='%23f' fill='%23f7b7c8'/%3E%3Ccircle r='3.6' fill='%23fff3c4'/%3E%3C/g%3E%3Cg transform='translate(100 228) scale(0.8)'%3E%3Cuse href='%23f' fill='%23f29ab2'/%3E%3Ccircle r='3.6' fill='%23fff3c4'/%3E%3C/g%3E%3Cg transform='translate(228 40) scale(0.7)'%3E%3Cuse href='%23f' fill='%23f4a6bc'/%3E%3Ccircle r='3.6' fill='%23fff3c4'/%3E%3C/g%3E%3Cg transform='translate(330 80) scale(0.8)'%3E%3Cuse href='%23f' fill='%23fac9d6'/%3E%3Ccircle r='3.6' fill='%23fff3c4'/%3E%3C/g%3E%3C/svg%3E") no-repeat top right / contain;
+  opacity: 0.95;
+}
+
+:root[data-theme='sakura'] :is(.border-ink, .panel, .panel-raised, .panel-flat, .qtable, .qtable-head, .qtable-cell) {
+  border-color: #dcaebd;
+}
+
+:root[data-theme='sakura'] [class*='divide-ink'] > * {
+  border-color: #dcaebd;
+}
+
+:root[data-theme='sakura'] :is(.panel, .panel-raised, .panel-flat) {
+  border-radius: 14px;
+  overflow: clip;
+}
+
+:root[data-theme='sakura'] :is(.panel, .panel-raised, [class*='shadow-[']) {
+  /* A soft blush glow in place of the hard ink shadow, with a hint of it kept in pink. */
+  box-shadow:
+    3px 3px 0 #f3c3d0,
+    0 12px 26px -14px rgb(173 65 102 / 0.4);
+}
+
+:root[data-theme='sakura'] :is(button, input, select, textarea) {
+  border-radius: 10px;
+}
+
+:root[data-theme='sakura'] .bb-cardbar {
+  background-image: linear-gradient(90deg, var(--color-venice-blue), #4f8d86);
+}
+
+/* The home screen's name: SAT in blossom pink. */
+:root[data-theme='sakura'] .mc-logo-accent {
+  background: linear-gradient(135deg, #f4a6bc, #c9557c);
+  color: #fffaf8;
+  border-radius: 10px;
+}
+
 html,
 body,
 #root {

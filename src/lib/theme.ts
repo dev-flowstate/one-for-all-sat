@@ -1,12 +1,13 @@
 import { useState } from 'react';
 
-export type Theme = 'light' | 'dark' | 'bluebook' | 'minecraft';
+export type Theme = 'light' | 'dark' | 'bluebook' | 'minecraft' | 'sakura';
 
 export const THEMES: { id: Theme; label: string; description: string }[] = [
   { id: 'light', label: 'Light', description: 'Cream paper and ink, the site’s own look.' },
   { id: 'dark', label: 'Dark', description: 'The same look, dark, for night studying.' },
   { id: 'bluebook', label: 'Bluebook', description: 'Blue and white, like the real test app.' },
   { id: 'minecraft', label: 'Minecraft-style', description: 'Sky, grass and dirt, in blocky pixels.' },
+  { id: 'sakura', label: 'Sakura', description: 'Cherry blossoms at dawn, with petals drifting by.' },
 ];
 
 /** Light unless another has been picked; the choice is remembered on this device. Kept in step
@@ -18,7 +19,7 @@ const DAY_THEME_KEY = 'ofa-sat:day-theme';
 
 function currentTheme(): Theme {
   const value = document.documentElement.dataset.theme;
-  return value === 'dark' || value === 'bluebook' || value === 'minecraft' ? value : 'light';
+  return value === 'dark' || value === 'bluebook' || value === 'minecraft' || value === 'sakura' ? value : 'light';
 }
 
 function remember(key: string, value: string) {
@@ -32,7 +33,7 @@ function remember(key: string, value: string) {
 function dayTheme(): Theme {
   try {
     const value = localStorage.getItem(DAY_THEME_KEY);
-    return value === 'bluebook' || value === 'minecraft' ? value : 'light';
+    return value === 'bluebook' || value === 'minecraft' || value === 'sakura' ? value : 'light';
   } catch {
     return 'light';
   }
