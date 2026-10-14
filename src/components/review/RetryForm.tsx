@@ -10,6 +10,7 @@ import { GridInInput } from '../test-runner/GridInInput';
 import { distinctAnswers } from '../../lib/scoring/answerDisplay';
 import { Toggle } from '../ui/Toggle';
 import { CalculatorPanel } from '../test-runner/CalculatorPanel';
+import { QuestionImage } from '../ui/QuestionImage';
 
 interface RetryFormProps {
   question: Question;
@@ -113,7 +114,7 @@ export function RetryForm({ question, onCancel, onRevealed }: RetryFormProps) {
                 {choice.id}
               </span>
               {choice.image ? (
-                <img
+                <QuestionImage
                   src={choice.image}
                   alt=""
                   className="max-h-12 w-auto border-2 border-ink bg-white object-contain object-left"

@@ -3,6 +3,7 @@ import type { Question } from '../../types/question';
 import { HighlightableText } from './HighlightableText';
 import { splitPrompt } from '../../lib/promptParts';
 import { Annotatable } from '../annotate/Annotatable';
+import { QuestionImage } from '../ui/QuestionImage';
 
 interface QuestionLayoutProps {
   question: Question;
@@ -40,7 +41,7 @@ export function QuestionLayout({ question, children }: QuestionLayoutProps) {
       {/* White-background PNGs, so they need a border to sit on the cream paper
           rather than float in it. */}
       {question.images.map((img, i) => (
-        <img key={i} src={img.src} alt={img.alt ?? ''} className="max-w-full self-start border-2 border-ink bg-white" />
+        <QuestionImage key={i} src={img.src} alt={img.alt ?? ''} className="max-w-full self-start border-2 border-ink bg-white" />
       ))}
     </div>
   );

@@ -7,6 +7,7 @@ import { Toggle } from '../ui/Toggle';
 import { MathText } from '../math/MathText';
 import { StepByStepButton } from '../solution/StepByStep';
 import { renderHighlighted } from '../../lib/highlighter/renderHighlighted';
+import { QuestionImage } from '../ui/QuestionImage';
 
 /** Difficulty keeps its semantics (Easy/Medium/Hard) but reads as a solid block, not a tint. */
 const DIFFICULTY_CLASSES: Record<Question['difficulty'], string> = {
@@ -75,7 +76,7 @@ export function QuestionReviewCard({
           {question.images.map((img, i) => (
             /* Rendered figures are white PNGs — frame them so they don't float on the paper. */
             <div key={i} className="border-2 border-ink bg-white p-2">
-              <img src={img.src} alt={img.alt ?? ''} className="mx-auto block max-w-full" />
+              <QuestionImage src={img.src} alt={img.alt ?? ''} className="mx-auto block max-w-full" />
             </div>
           ))}
         </div>

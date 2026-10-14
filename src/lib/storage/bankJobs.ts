@@ -1,6 +1,7 @@
 /**
  * The heavy parts of keeping the question bank: downloading, checking and storing the shipped
- * bank (about 21 MB, mostly images), and reading every stored question to list their details.
+ * bank (about 3 MB; its figures are separate files in public/qimg), and reading every stored
+ * question to list their details.
  * They run in a worker (bankWorker.ts), so the page stays responsive to taps meanwhile, and
  * only small results come back: ids and each question's category.
  */

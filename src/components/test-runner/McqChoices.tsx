@@ -3,6 +3,7 @@ import type { Choice, ChoiceId } from '../../types/question';
 import type { RevealMode } from '../../types/settings';
 import { MathText } from '../math/MathText';
 import { sparkAt } from '../../lib/sparks';
+import { QuestionImage } from '../ui/QuestionImage';
 
 interface McqChoicesProps {
   choices: Choice[];
@@ -130,7 +131,7 @@ function ChoiceButton({ choice, crossed, disabled, isSelected, isCorrect, isWron
         className={`min-w-0 flex-1 prose-reading leading-snug ${crossed ? 'line-through decoration-2' : ''}`}
       >
         {choice.image ? (
-          <img
+          <QuestionImage
             src={choice.image}
             alt=""
             className="max-h-12 w-auto border-2 border-ink bg-white object-contain object-left"

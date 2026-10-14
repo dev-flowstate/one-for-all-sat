@@ -2,6 +2,7 @@ import type { Question } from '../../types/question';
 import type { SessionAnswer } from '../../types/progress';
 import { MathText } from '../math/MathText';
 import { distinctAnswers } from '../../lib/scoring/answerDisplay';
+import { QuestionImage } from '../ui/QuestionImage';
 
 interface AnswerComparisonProps {
   question: Question;
@@ -33,7 +34,7 @@ export function AnswerComparison({ question, answer }: AnswerComparisonProps) {
               {/* Wraps the verdict tag under the choice text when the row gets narrow. */}
               <div className="flex min-w-0 flex-1 flex-wrap items-center justify-between gap-2 px-3 py-2">
                 {choice.image ? (
-                  <img
+                  <QuestionImage
                     src={choice.image}
                     alt=""
                     className="max-h-12 w-auto border-2 border-ink bg-white object-contain object-left"
