@@ -8,6 +8,7 @@ import { RetryForm } from '../components/review/RetryForm';
 import { getWrongPool, getRightPool } from '../lib/pools';
 import { useLoadedQuestions } from '../lib/useLoadedQuestions';
 import { QuestionPlaceholder } from '../components/review/QuestionPlaceholder';
+import { useReviewFilters } from '../components/review/ReviewFilters';
 
 export function WrongTabPage() {
   const navigate = useNavigate();
@@ -20,7 +21,8 @@ export function WrongTabPage() {
   const rightCount = useMemo(() => getRightPool(questions, progress).length, [questions, progress]);
   // Every wrong question in full. They're usually loaded already: the app fetches them in the
   // background just after it starts.
-  const wrongIds = useMemo(() => wrongPool.map((q) => q.id), [wrongPool]);
+  const { filtered, controls } = useReviewFilters(wrongPool, progress);
+  const wrongIds = useMemo(() => filtered.map((q) => q.id), [filtered]);
   const { loaded } = useLoadedQuestions(wrongIds);
 
   const [retryingId, setRetryingId] = useState<string | null>(null);
@@ -88,8 +90,12 @@ export function WrongTabPage() {
         </div>
       ) : (
         <>
+          {controls}
+          {filtered.length === 0 && (
+        <p className="panel p-4 text-sm text-ink-soft">Nothing matches these filters. Clear them to see the whole list.</p>
+          )}
           <div className="flex flex-col gap-4">
-            {wrongPool.map(({ id }) => {
+            {filtered.map(({ id }) => {
               const question = loaded[id];
               if (!question) return <QuestionPlaceholder key={id} />;
               return (

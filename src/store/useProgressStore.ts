@@ -22,6 +22,7 @@ import {
 } from '../lib/storage/db';
 import { runBankJob } from '../lib/storage/runBankJob';
 import { fetchBankIndex, fetchQuestionFile } from '../lib/storage/seedBank';
+import { logAmend, logAnswers } from '../lib/activity';
 
 interface ProgressStore {
   /** Every stored question's details, without its text and images: enough for counts, pools
@@ -194,6 +195,11 @@ export const useProgressStore = create<ProgressStore>((set, get) => ({
       };
     }
     setProgress(progress);
+    const skillOf = new Map(get().questions.map((q) => [q.id, q.skill]));
+    logAnswers(
+      result.answers.map((a) => ({ skill: skillOf.get(a.questionId) ?? 'Other', correct: a.outcome === 'correct' })),
+      result.completedAt,
+    );
 
     const stats = { ...get().stats };
     stats.points += result.totalPoints;
@@ -217,6 +223,7 @@ export const useProgressStore = create<ProgressStore>((set, get) => ({
     if (!prev || prev.status === outcome) return;
     const progress = { ...get().progress, [questionId]: { ...prev, status: outcome, lastOutcome: outcome } };
     setProgress(progress);
+    logAmend(get().questions.find((q) => q.id === questionId)?.skill ?? 'Other', outcome === 'correct');
     const stats = { ...get().stats };
     stats.correctCount += outcome === 'correct' ? 1 : -1;
     stats.points = Math.max(0, stats.points + pointsDelta);

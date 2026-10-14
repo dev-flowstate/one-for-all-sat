@@ -12,6 +12,7 @@ import {
 import { BREAK_MINUTES } from '../lib/practiceTest/buildTest';
 import { gradeTest, isCorrect } from '../lib/practiceTest/score';
 import { useProgressStore } from './useProgressStore';
+import { logTest } from '../lib/activity';
 
 interface PracticeTestState {
   /** The test that's open: the one the runner shows. */
@@ -116,6 +117,7 @@ export const usePracticeTestStore = create<PracticeTestState>((set, get) => {
       correctCount: result.answers.filter((a) => a.outcome === 'correct').length,
       incorrectCount: result.answers.filter((a) => a.outcome === 'incorrect').length,
     });
+    logTest();
     set({ active: null, history: [...history, result], justFinished: result.number });
   }
 

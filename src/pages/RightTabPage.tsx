@@ -7,6 +7,7 @@ import { QuestionReviewCard } from '../components/review/QuestionReviewCard';
 import { getWrongPool, getRightPool } from '../lib/pools';
 import { useLoadedQuestions } from '../lib/useLoadedQuestions';
 import { QuestionPlaceholder } from '../components/review/QuestionPlaceholder';
+import { useReviewFilters } from '../components/review/ReviewFilters';
 
 /** How many right questions are shown at first, and added each time the list nears its end. */
 const PAGE = 20;
@@ -23,12 +24,19 @@ export function RightTabPage() {
 
   // Right questions can run to hundreds, each with its text and images, so they're loaded a page
   // at a time as the list is scrolled rather than all on opening the tab.
+  const { filtered, controls, filterKey } = useReviewFilters(rightPool, progress);
   const [shown, setShown] = useState(PAGE);
-  const visible = useMemo(() => rightPool.slice(0, shown), [rightPool, shown]);
+  // A new filter starts the list from its first page again.
+  const [shownFor, setShownFor] = useState(filterKey);
+  if (shownFor !== filterKey) {
+    setShownFor(filterKey);
+    setShown(PAGE);
+  }
+  const visible = useMemo(() => filtered.slice(0, shown), [filtered, shown]);
   const visibleIds = useMemo(() => visible.map((q) => q.id), [visible]);
   const { loaded, ready } = useLoadedQuestions(visibleIds);
   const sentinel = useRef<HTMLDivElement>(null);
-  const more = ready && shown < rightPool.length;
+  const more = ready && shown < filtered.length;
 
   useEffect(() => {
     const target = sentinel.current;
@@ -87,6 +95,11 @@ export function RightTabPage() {
           </Link>
         </div>
       ) : (
+        <>
+        {controls}
+        {filtered.length === 0 && (
+        <p className="panel p-4 text-sm text-ink-soft">Nothing matches these filters. Clear them to see the whole list.</p>
+        )}
         <div className="flex flex-col gap-4">
           {visible.map(({ id }) => {
             const question = loaded[id];
@@ -105,6 +118,7 @@ export function RightTabPage() {
           })}
           {more && <div ref={sentinel} aria-hidden="true" className="h-px" />}
         </div>
+        </>
       )}
     </div>
   );

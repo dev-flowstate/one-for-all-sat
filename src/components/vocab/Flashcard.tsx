@@ -4,7 +4,8 @@ import { Annotatable } from '../annotate/Annotatable';
 interface FlashcardProps {
   card: VocabCard;
   isFlipped: boolean;
-  onFlip: () => void;
+  /** Left out where the card is only shown, turned to its meaning (the Saved doodles page). */
+  onFlip?: () => void;
 }
 
 /**
@@ -50,6 +51,7 @@ export function Flashcard({ card, isFlipped, onFlip }: FlashcardProps) {
             <span className="border-2 border-ink bg-merino-dark px-1.5 py-0.5 text-[11px] font-semibold tracking-tight">
               {card.partOfSpeech}
             </span>
+            {onFlip && (
             <button
               type="button"
               onClick={onFlip}
@@ -58,6 +60,7 @@ export function Flashcard({ card, isFlipped, onFlip }: FlashcardProps) {
             >
               ↺ Word
             </button>
+            )}
           </div>
 
           <Annotatable id={`vocab:${card.id}`}>

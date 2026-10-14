@@ -1,4 +1,5 @@
 /** Saved pen and highlighter drawings over questions and book chapters. */
+import { logDoodle } from './activity';
 
 export type DoodleTool = 'pen' | 'highlighter';
 export type DoodleColor = 'ink' | 'red' | 'blue';
@@ -38,14 +39,53 @@ export function getDoodle(id: string): Stroke[] {
 /** Saves a drawing; an empty one removes it. False when the browser's storage is full. */
 export function saveDoodle(id: string, strokes: Stroke[]): boolean {
   const all = readAll();
-  if (strokes.length === 0) delete all[id];
-  else all[id] = strokes;
+  const times = readTimes();
+  if (strokes.length === 0) {
+    delete all[id];
+    delete times[id];
+  } else {
+    all[id] = strokes;
+    times[id] = new Date().toISOString();
+  }
   try {
     localStorage.setItem(KEY, JSON.stringify(all));
-    return true;
   } catch {
     return false;
   }
+  try {
+    localStorage.setItem(TIMES_KEY, JSON.stringify(times));
+  } catch {
+    // Only the sort order of the Saved doodles page depends on it.
+  }
+  if (strokes.length > 0) logDoodle();
+  return true;
+}
+
+/** When each doodle was last saved; doodles saved before this was kept have none. */
+const TIMES_KEY = 'ofa-sat:doodle-times';
+
+function readTimes(): Record<string, string> {
+  try {
+    return JSON.parse(localStorage.getItem(TIMES_KEY) ?? '{}') as Record<string, string>;
+  } catch {
+    return {};
+  }
+}
+
+export interface SavedDoodle {
+  /** q:<question id>, vocab:<word id> or book:<book>:<chapter>. */
+  id: string;
+  strokes: number;
+  savedAt?: string;
+}
+
+/** Every saved doodle, newest first; ones from before save times were kept come last. */
+export function listDoodles(): SavedDoodle[] {
+  const times = readTimes();
+  return Object.entries(readAll())
+    .filter(([, strokes]) => strokes.length > 0)
+    .map(([id, strokes]) => ({ id, strokes: strokes.length, savedAt: times[id] }))
+    .sort((a, b) => (b.savedAt ?? '').localeCompare(a.savedAt ?? ''));
 }
 
 /** A highlighted stretch of a book paragraph, by character offsets in its text. */

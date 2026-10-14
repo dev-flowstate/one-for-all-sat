@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import type { VocabCard, VocabProgressMap } from '../types/vocab';
 import { getVocabProgress, setVocabProgress } from '../lib/storage/localStorage';
 import { getUnseenDeck, getWrongDeck, getRightDeck, shuffle } from '../lib/vocab/pools';
+import { logWord } from '../lib/activity';
 
 export type VocabDeckSource = 'unseen' | 'wrong' | 'right' | 'all';
 export type VocabOutcome = 'right' | 'wrong';
@@ -106,6 +107,7 @@ export const useVocabStore = create<VocabStore>((set, get) => ({
       },
     };
     setVocabProgress(nextProgress);
+    logWord(outcome === 'right');
 
     // Right retires the card. Wrong sends it to the back so it comes round once more —
     // but only once, otherwise a word you can't recall would loop forever.

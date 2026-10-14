@@ -18,6 +18,9 @@ import { TopicsPage } from './pages/TopicsPage';
 import { LeaderboardPage } from './pages/LeaderboardPage';
 import { ResourcesPage } from './pages/ResourcesPage';
 import { ReadingPage } from './pages/ReadingPage';
+import { DoodlesPage } from './pages/DoodlesPage';
+import { ActivityPage } from './pages/ActivityPage';
+import { SiteMenu } from './components/nav/SiteMenu';
 
 /** A newly opened page starts at its top; going back keeps the browser's own position. */
 function ScrollToTop() {
@@ -33,6 +36,7 @@ export function AppRouter() {
   return (
     <HashRouter>
       <ScrollToTop />
+      <SiteMenu />
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/setup" element={<SetupPage />} />
@@ -52,6 +56,8 @@ export function AppRouter() {
         <Route path="/leaderboard" element={<LeaderboardPage />} />
         <Route path="/resources" element={<ResourcesPage />} />
         <Route path="/read" element={<ReadingPage />} />
+        <Route path="/doodles" element={<DoodlesPage />} />
+        <Route path="/activity" element={<ActivityPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </HashRouter>
