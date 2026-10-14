@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { CalculatorPanel } from './CalculatorPanel';
 import { SplitDivider } from './SplitDivider';
 
@@ -22,6 +22,9 @@ interface CalculatorSplitProps {
   onCloseCalculator: () => void;
   /** The question side of the split. */
   children: ReactNode;
+  /** The question shown. A new one starts at its top, rather than at wherever the last one was
+   *  scrolled to (usually down by its Next button). */
+  scrollKey?: string;
 }
 
 /**
@@ -34,16 +37,23 @@ interface CalculatorSplitProps {
  * The sides swap with CSS `order`, not by moving elements: moving the calculator would reload
  * Desmos and lose whatever was typed into it.
  */
-export function CalculatorSplit({ calculatorOpen, onCloseCalculator, children }: CalculatorSplitProps) {
+export function CalculatorSplit({ calculatorOpen, onCloseCalculator, children, scrollKey }: CalculatorSplitProps) {
   /** Percentage of the split given to the question. Above half, because the question is what
    *  you're actually answering — the calculator is the aid. */
   const [questionShare, setQuestionShare] = useState(55);
   const splitRef = useRef<HTMLDivElement>(null);
   const isWide = useIsWide();
+  const questionPane = useRef<HTMLDivElement>(null);
+
+  useLayoutEffect(() => {
+    window.scrollTo(0, 0);
+    questionPane.current?.scrollTo(0, 0);
+  }, [scrollKey]);
 
   return (
     <div ref={splitRef} className={calculatorOpen ? 'flex min-h-0 flex-1 flex-col lg:flex-row' : ''}>
       <div
+        ref={questionPane}
         className={calculatorOpen ? 'min-h-0 overflow-y-auto lg:order-3' : ''}
         style={
           calculatorOpen

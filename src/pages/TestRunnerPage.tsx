@@ -112,7 +112,11 @@ export function TestRunnerPage() {
         onTimerExpire={finishFlow}
       />
 
-      <CalculatorSplit calculatorOpen={calculatorOpen} onCloseCalculator={() => setCalculatorOpen(false)}>
+      <CalculatorSplit
+        calculatorOpen={calculatorOpen}
+        onCloseCalculator={() => setCalculatorOpen(false)}
+        scrollKey={question.id}
+      >
         <TestRunnerLayout>
           <Card className="bb-question-card" title="Question">
             <QuestionPanel

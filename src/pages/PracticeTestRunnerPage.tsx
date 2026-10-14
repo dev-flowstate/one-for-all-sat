@@ -160,7 +160,11 @@ export function PracticeTestRunnerPage() {
       {/* Bluebook's strip under the header; shown only in the Bluebook theme. */}
       <p className="bb-only bb-banner flex-none">THIS IS A PRACTICE TEST</p>
 
-      <CalculatorSplit calculatorOpen={calculatorOpen} onCloseCalculator={() => setCalculatorOpen(false)}>
+      <CalculatorSplit
+        calculatorOpen={calculatorOpen}
+        onCloseCalculator={() => setCalculatorOpen(false)}
+        scrollKey={question?.id}
+      >
         {onReview ? (
           <ModuleReview test={test} moduleIndex={moduleIndex} />
         ) : (
