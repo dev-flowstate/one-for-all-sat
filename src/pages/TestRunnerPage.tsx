@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { startTransition, useEffect, useState } from 'react';
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { useSessionStore } from '../store/useSessionStore';
 import { Card } from '../components/ui/Card';
@@ -106,7 +106,8 @@ export function TestRunnerPage() {
         onToggleHighlighter={toggleHighlighter}
         showCalculatorToggle={question.subject === 'math'}
         calculatorOpen={calculatorOpen}
-        onToggleCalculator={() => setCalculatorOpen((v) => !v)}
+        // A transition: switching the layout is redrawn at low priority, so the tap is answered first.
+        onToggleCalculator={() => startTransition(() => setCalculatorOpen((v) => !v))}
         timerMode={config.timerMode}
         countdownMinutes={config.countdownMinutes}
         onTimerExpire={finishFlow}
@@ -114,7 +115,7 @@ export function TestRunnerPage() {
 
       <CalculatorSplit
         calculatorOpen={calculatorOpen}
-        onCloseCalculator={() => setCalculatorOpen(false)}
+        onCloseCalculator={() => startTransition(() => setCalculatorOpen(false))}
         scrollKey={question.id}
       >
         <TestRunnerLayout>

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { startTransition, useEffect, useMemo, useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import type { Question } from '../types/question';
 import { testQuestionIds, usePracticeTestStore } from '../store/usePracticeTestStore';
@@ -151,7 +151,12 @@ export function PracticeTestRunnerPage() {
             <Toggle active={highlighterActive} onToggle={toggleHighlighter} label="Highlighter" />
             <Toggle active={crosserActive} onToggle={toggleCrosser} label="Answer Eliminator" />
             {isMath && (
-              <Toggle active={calculatorOpen} onToggle={() => setCalculatorOpen((v) => !v)} label="Calculator" />
+              <Toggle
+                active={calculatorOpen}
+                // A transition: switching the layout is redrawn at low priority, so the tap is answered first.
+                onToggle={() => startTransition(() => setCalculatorOpen((v) => !v))}
+                label="Calculator"
+              />
             )}
           </div>
         </div>
@@ -162,7 +167,7 @@ export function PracticeTestRunnerPage() {
 
       <CalculatorSplit
         calculatorOpen={calculatorOpen}
-        onCloseCalculator={() => setCalculatorOpen(false)}
+        onCloseCalculator={() => startTransition(() => setCalculatorOpen(false))}
         scrollKey={question?.id}
       >
         {onReview ? (

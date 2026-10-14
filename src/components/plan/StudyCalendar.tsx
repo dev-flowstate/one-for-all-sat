@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { memo, useDeferredValue, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useProgressStore } from '../../store/useProgressStore';
 import { useSettingsStore } from '../../store/useSettingsStore';
@@ -14,6 +14,14 @@ import { Button } from '../ui/Button';
 import { Card } from '../ui/Card';
 import { ConfirmDialog } from '../ui/ConfirmDialog';
 import { TopicPicker } from '../setup/TopicPicker';
+import type { QuestionMeta } from '../../types/question';
+import type { ProgressMap } from '../../types/progress';
+import type { VocabProgressMap } from '../../types/vocab';
+
+/** What the plan is first drawn from, before the deferred pass with the real data. */
+const EMPTY_QUESTIONS: QuestionMeta[] = [];
+const EMPTY_PROGRESS: ProgressMap = {};
+const EMPTY_VOCAB: VocabProgressMap = {};
 
 const WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 /** Below this share right, after enough answers, a topic counts as weak for the plan. */
@@ -75,17 +83,20 @@ function cellLabel(day: PlanDay): string {
  * questions, short quizzes, full practice tests, words to learn and chapters to read. Every
  * task opens straight onto its questions.
  */
-export function StudyCalendar() {
+export const StudyCalendar = memo(function StudyCalendar() {
   const navigate = useNavigate();
   const profile = useSettingsStore((s) => s.profile);
   const satDate = profile?.satDate;
   const planStart = profile?.studyPlanStart;
   const planSkills = profile?.studyPlanSkills;
   const { setSatDate, setStudyPlan } = useSettingsStore.getState();
-  const questions = useProgressStore((s) => s.questions);
-  const progress = useProgressStore((s) => s.progress);
-  const isLoaded = useProgressStore((s) => s.isLoaded);
-  const vocab = useVocabStore((s) => s.progress);
+  // Deferred: the plan is worked out from every question and drawn as ~450 elements, so when
+  // the bank or progress loads it's redrawn at low priority, and a tap meanwhile is answered
+  // first instead of waiting behind it. It shows as loading until the first pass is in.
+  const questions = useDeferredValue(useProgressStore((s) => s.questions), EMPTY_QUESTIONS);
+  const progress = useDeferredValue(useProgressStore((s) => s.progress), EMPTY_PROGRESS);
+  const isLoaded = useDeferredValue(useProgressStore((s) => s.isLoaded), false);
+  const vocab = useDeferredValue(useVocabStore((s) => s.progress), EMPTY_VOCAB);
   const [editing, setEditing] = useState(false);
   const [selected, setSelected] = useState<string[]>(planSkills ?? []);
   const [confirmRemove, setConfirmRemove] = useState(false);
@@ -508,5 +519,4 @@ export function StudyCalendar() {
       </ConfirmDialog>
     </Card>
   );
-}
-
+});
