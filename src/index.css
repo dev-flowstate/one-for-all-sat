@@ -427,117 +427,764 @@
 }
 
 /*
- * Sakura: cherry blossoms at dawn. Blush and cream surfaces, the teal of a flower-shop front
- * for title bars, bark brown for text, a rounded face for the interface (passages keep Inter,
- * for reading), soft rounded panels, a blossoming branch in the corner and petals drifting
- * down behind everything. The drift moves one fixed layer by transform alone, so it costs
- * the page next to nothing, and it stops for anyone who has asked for less motion.
+ * Sakura: a spring morning on watercolour paper. Warm cream paper with a faint grain, a real
+ * cherry branch reaching in from the top-right corner, a misty rose Fuji and pale sun in the
+ * bottom-right, and a few real petals drifting down behind the cards. Near-black ink, one deep
+ * crimson for actions and highlights, blush for soft fills; an elegant serif for headings,
+ * Montserrat for the interface, and Inter kept for questions and passages.
+ *
+ * The pictures are photographs, cut out and toned here; all are CC0 (sources, authors and
+ * licences in public/sakura/CREDITS.txt):
+ *   branch.*  — "20150318Prunus serrulata1.jpg" by AnRo0002, Wikimedia Commons, CC0 1.0.
+ *               https://commons.wikimedia.org/wiki/File:20150318Prunus_serrulata1.jpg
+ *   fuji.*    — "Fuji Kawaguchi 475.JPG" by Marion & Christoph Aistleitner, Wikimedia Commons,
+ *               CC0 1.0. https://commons.wikimedia.org/wiki/File:Fuji_Kawaguchi_475.JPG
+ *   petal-*.* — "20150427Prunus serrulata6.jpg" by AnRo0002, Wikimedia Commons, CC0 1.0.
+ *               https://commons.wikimedia.org/wiki/File:20150427Prunus_serrulata6.jpg
+ *
+ * Every rule is scoped to this theme, so none of the pictures is fetched in any other. The
+ * scenery sits on fixed layers behind the page; only the petals move, by translate and transform
+ * alone, and they're left out for anyone who has asked for less motion.
  */
 :root[data-theme='sakura'] {
-  --color-merino: #fdf0f1;
-  --color-merino-dark: #f8dbe2;
-  --color-paper: #fffaf8;
+  --color-merino: #f8f2ea;
+  --color-merino-dark: #f3e5df;
+  --color-paper: #fffcf8;
 
-  --color-ink: #4b3440;
-  --color-ink-soft: #86697a;
+  --color-ink: #2b2125;
+  --color-ink-soft: #6d5d62;
 
-  --color-rock-blue: #f6bfcd;
-  --color-rock-blue-dark: #ef9fb5;
-  --color-venice-blue: #3d7a75;
-  --color-venice-blue-dark: #2e625e;
+  --color-rock-blue: #f6e1e4;
+  --color-rock-blue-dark: #efd0d6;
+  --color-venice-blue: #8e1d40;
+  --color-venice-blue-dark: #741532;
 
-  --color-coral: #c9557c;
-  --color-coral-dark: #ad4166;
+  --color-coral: #a0153e;
+  --color-coral-dark: #86102f;
 
-  --color-success: #3f7d52;
-  --color-success-bg: #e2f1e4;
-  --color-danger: #bb3f58;
-  --color-danger-bg: #fbe2e7;
-  --color-caution: #c98a2e;
+  --color-success: #2e6a4c;
+  --color-success-bg: #e2eee6;
+  --color-danger: #b23a2c;
+  --color-danger-bg: #f9e3df;
+  --color-caution: #9a6a12;
 
-  --font-mono: 'Quicksand', 'Segoe UI', system-ui, -apple-system, sans-serif;
-  --font-sans: 'Quicksand', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --font-mono: 'Montserrat', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --font-sans: 'Montserrat', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --font-reading: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+
+  /* Theme-only helpers: the display serif, hairlines, control outlines (3:1 on paper), blush. */
+  --sakura-serif: 'Cormorant Garamond', Garamond, 'Times New Roman', serif;
+  --sakura-line: #eadbd5;
+  --sakura-edge: #998289;
+  --sakura-blush: #fbeef0;
+  --sakura-shadow: 0 1px 2px rgb(70 30 45 / 0.05), 0 14px 34px -22px rgb(120 40 64 / 0.32);
+  --sakura-shadow-sm: 0 1px 2px rgb(70 30 45 / 0.06), 0 8px 18px -12px rgb(120 40 64 / 0.3);
 }
 
+/* Paper: cream with a fine grain, drawn once as a tiny tile. */
 :root[data-theme='sakura'] body {
-  background: linear-gradient(to bottom, #fbdfe7 0%, #fff1ec 40%, #fdf3f4 75%, #f6eaf1 100%) fixed;
+  background-color: var(--color-merino);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .42 0 0 0 0 .3 0 0 0 0 .26 .24 0 0 0 -.09'/%3E%3C/filter%3E%3Cfilter id='m'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.035' numOctaves='3' seed='7' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .6 0 0 0 0 .42 0 0 0 0 .4 .16 0 0 0 -.06'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23m)'/%3E%3Crect width='180' height='180' filter='url(%23g)'/%3E%3C/svg%3E");
+  background-size: 180px 180px;
 }
 
+:root[data-theme='sakura']::before,
+:root[data-theme='sakura']::after,
 :root[data-theme='sakura'] body::before,
-:root[data-theme='sakura'] body::after {
+:root[data-theme='sakura'] body::after,
+:root[data-theme='sakura'] #root::before,
+:root[data-theme='sakura'] #root::after {
   content: '';
   position: fixed;
   z-index: -1;
   pointer-events: none;
+  background-repeat: no-repeat;
 }
 
-/* Petals: one tile, wider and taller than the screen by a tile, slid down and across by
-   exactly one tile per loop, so the loop never shows a seam. */
+/* Bottom right: the pale sun and the misty mountain over its lake, faded into the paper. On a
+   wide screen the summit sits in the margin beside the page; on a narrow one it's centred low,
+   to be found between and below the cards. */
+:root[data-theme='sakura']::before {
+  --fuji-w: min(640px, 112vw);
+  right: -16vw;
+  bottom: 0;
+  width: var(--fuji-w);
+  aspect-ratio: 900 / 572;
+  background-image:
+    url('/sakura/fuji.webp'),
+    radial-gradient(circle calc(var(--fuji-w) * 0.055) at 25% 9%, rgb(240 184 195 / 0.5) 86%, rgb(240 184 195 / 0)),
+    radial-gradient(circle calc(var(--fuji-w) * 0.085) at 25% 9%, rgb(247 214 220 / 0.4), rgb(247 214 220 / 0));
+  background-image:
+    image-set(url('/sakura/fuji.avif') type('image/avif'), url('/sakura/fuji.webp') type('image/webp')),
+    radial-gradient(circle calc(var(--fuji-w) * 0.055) at 25% 9%, rgb(240 184 195 / 0.5) 86%, rgb(240 184 195 / 0)),
+    radial-gradient(circle calc(var(--fuji-w) * 0.085) at 25% 9%, rgb(247 214 220 / 0.4), rgb(247 214 220 / 0));
+  background-position: right bottom;
+  background-size: contain, 100% 100%, 100% 100%;
+  opacity: 0.85;
+}
+
+@media (min-width: 1024px) {
+  :root[data-theme='sakura']::before {
+    --fuji-w: clamp(440px, 46vw, 680px);
+    /* Summit (39% across the picture) in the middle of the margin beside a 58rem page. */
+    right: calc((100vw - 58rem) / 4 - 0.61 * var(--fuji-w));
+  }
+}
+
+/* Top right: the branch, reaching in from the corner. It fades out toward the page so text
+   never has to sit on a busy part of the photo. */
 :root[data-theme='sakura'] body::before {
-  top: -600px;
-  left: -420px;
+  top: 0;
   right: 0;
-  height: calc(100vh + 600px);
-  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='420' height='600'%3E%3Cdefs%3E%3Cpath id='p' d='M0-10C7-10 10-2 7 5 5 10 1.5 9 0 6.5-1.5 9-5 10-7 5-10-2-7-10 0-10Z'/%3E%3C/defs%3E%3Cuse href='%23p' fill='%23fbd9e2' fill-opacity='0.78' transform='translate(40 60) rotate(77) scale(0.78)'/%3E%3Cuse href='%23p' fill='%23f6b4c6' fill-opacity='0.68' transform='translate(190 30) rotate(274) scale(0.6)'/%3E%3Cuse href='%23p' fill='%23f9cad7' fill-opacity='0.56' transform='translate(330 110) rotate(259) scale(0.59)'/%3E%3Cuse href='%23p' fill='%23f9cad7' fill-opacity='0.58' transform='translate(95 210) rotate(35) scale(0.85)'/%3E%3Cuse href='%23p' fill='%23f6b4c6' fill-opacity='0.88' transform='translate(260 250) rotate(289) scale(0.85)'/%3E%3Cuse href='%23p' fill='%23f6b4c6' fill-opacity='0.75' transform='translate(380 330) rotate(298) scale(0.99)'/%3E%3Cuse href='%23p' fill='%23f6b4c6' fill-opacity='0.74' transform='translate(30 380) rotate(113) scale(0.83)'/%3E%3Cuse href='%23p' fill='%23f9cad7' fill-opacity='0.74' transform='translate(170 430) rotate(214) scale(0.64)'/%3E%3Cuse href='%23p' fill='%23f9cad7' fill-opacity='0.59' transform='translate(300 520) rotate(286) scale(0.95)'/%3E%3Cuse href='%23p' fill='%23f19bb3' fill-opacity='0.58' transform='translate(120 560) rotate(96) scale(0.95)'/%3E%3Cuse href='%23p' fill='%23f6b4c6' fill-opacity='0.77' transform='translate(230 140) rotate(288) scale(1.05)'/%3E%3Cuse href='%23p' fill='%23fbd9e2' fill-opacity='0.82' transform='translate(355 455) rotate(272) scale(0.9)'/%3E%3C/svg%3E") repeat;
-  animation: sakura-fall 45s linear infinite;
-  will-change: transform;
+  width: min(380px, 70vw);
+  aspect-ratio: 760 / 583;
+  background-image: url('/sakura/branch.webp');
+  background-image: image-set(url('/sakura/branch.avif') type('image/avif'), url('/sakura/branch.webp') type('image/webp'));
+  background-position: right top;
+  background-size: contain;
+  -webkit-mask-image: radial-gradient(115% 100% at 100% 0%, #000 38%, transparent 74%);
+  mask-image: radial-gradient(115% 100% at 100% 0%, #000 38%, transparent 74%);
 }
 
-@keyframes sakura-fall {
+@media (min-width: 1024px) {
+  :root[data-theme='sakura'] body::before {
+    /* As wide as the margin beside the page, and a little more. */
+    width: clamp(320px, (100vw - 56rem) / 2 + 200px, 620px);
+    -webkit-mask-image: radial-gradient(120% 110% at 100% 0%, #000 50%, transparent 85%);
+    mask-image: radial-gradient(120% 110% at 100% 0%, #000 50%, transparent 85%);
+  }
+}
+
+/* Words that sit straight on the paper (page titles and their notes) get a soft paper halo, so
+   they stay crisp where a twig or the mountain shows behind them. */
+:root[data-theme='sakura'] :is(h1, h1 + p, header > p) {
+  text-shadow:
+    0 0 2px var(--color-merino),
+    0 0 10px var(--color-merino);
+}
+
+/*
+ * Petals: four real ones, each falling on its own path. Two animations each — a slow fall on
+ * `translate` and a sway-and-tumble on `transform` — so the drift is smooth while the petal
+ * rocks and turns over. Negative delays mean they're already mid-air when a page opens.
+ */
+:root[data-theme='sakura']::after,
+:root[data-theme='sakura'] body::after,
+:root[data-theme='sakura'] #root::before,
+:root[data-theme='sakura'] #root::after {
+  top: -48px;
+  width: 22px;
+  height: 21px;
+  background-image: url('/sakura/petal-1.webp');
+  background-image: image-set(url('/sakura/petal-1.avif') type('image/avif'), url('/sakura/petal-1.webp') type('image/webp'));
+  background-size: contain;
+  will-change: transform, translate;
+  animation:
+    sakura-fall-a 27s linear -6s infinite,
+    sakura-sway 3.8s ease-in-out -1s infinite alternate;
+}
+
+:root[data-theme='sakura'] body::after {
+  left: 80vw;
+}
+
+:root[data-theme='sakura'] #root::before {
+  left: 62vw;
+  width: 30px;
+  height: 14px;
+  background-image: url('/sakura/petal-2.webp');
+  background-image: image-set(url('/sakura/petal-2.avif') type('image/avif'), url('/sakura/petal-2.webp') type('image/webp'));
+  animation:
+    sakura-fall-b 34s linear -19s infinite,
+    sakura-sway 4.6s ease-in-out -2.3s infinite alternate;
+}
+
+:root[data-theme='sakura'] #root::after {
+  left: 94vw;
+  width: 15px;
+  height: 14px;
+  opacity: 0.8;
+  animation:
+    sakura-fall-b 41s linear -31s infinite,
+    sakura-sway 3.2s ease-in-out infinite alternate;
+}
+
+:root[data-theme='sakura']::after {
+  left: 46vw;
+  width: 24px;
+  height: 11px;
+  opacity: 0.9;
+  background-image: url('/sakura/petal-2.webp');
+  background-image: image-set(url('/sakura/petal-2.avif') type('image/avif'), url('/sakura/petal-2.webp') type('image/webp'));
+  animation:
+    sakura-fall-a 38s linear -12s infinite,
+    sakura-sway 5.2s ease-in-out -3s infinite alternate;
+}
+
+@keyframes sakura-fall-a {
   to {
-    transform: translate3d(420px, 600px, 0);
+    translate: -38vw calc(100vh + 96px);
+  }
+}
+
+@keyframes sakura-fall-b {
+  to {
+    translate: -52vw calc(100vh + 96px);
+  }
+}
+
+@keyframes sakura-sway {
+  from {
+    transform: translateX(-22px) rotate(-30deg) rotateX(15deg);
+  }
+  to {
+    transform: translateX(22px) rotate(40deg) rotateX(165deg);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  :root[data-theme='sakura'] body::before {
+  :root[data-theme='sakura']::after,
+  :root[data-theme='sakura'] body::after,
+  :root[data-theme='sakura'] #root::before,
+  :root[data-theme='sakura'] #root::after {
+    display: none;
     animation: none;
   }
 }
 
-/* The branch, reaching in from the top-right corner. */
-:root[data-theme='sakura'] body::after {
-  top: 0;
-  right: 0;
-  width: min(380px, 60vw);
-  aspect-ratio: 380 / 250;
-  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 380 250'%3E%3Cdefs%3E%3Cpath id='p' d='M0-10C7-10 10-2 7 5 5 10 1.5 9 0 6.5-1.5 9-5 10-7 5-10-2-7-10 0-10Z'/%3E%3Cg id='f'%3E%3Cuse href='%23p' transform='rotate(0) translate(0 -9)'/%3E%3Cuse href='%23p' transform='rotate(72) translate(0 -9)'/%3E%3Cuse href='%23p' transform='rotate(144) translate(0 -9)'/%3E%3Cuse href='%23p' transform='rotate(216) translate(0 -9)'/%3E%3Cuse href='%23p' transform='rotate(288) translate(0 -9)'/%3E%3C/g%3E%3C/defs%3E%3Cg fill='none' stroke='%236b4a3f' stroke-linecap='round'%3E%3Cpath stroke-width='9' d='M380-10C330 30 300 40 250 70 210 95 170 100 120 140 95 160 70 170 40 175'/%3E%3Cpath stroke-width='5' d='M300 45C290 80 300 110 285 150'/%3E%3Cpath stroke-width='4' d='M210 92C190 70 175 60 150 55'/%3E%3Cpath stroke-width='3.5' d='M120 140C110 175 115 200 100 225'/%3E%3C/g%3E%3Cg transform='translate(350 20) scale(1.2)'%3E%3Cuse href='%23f' fill='%23f29ab2'/%3E%3Ccircle r='3.6' fill='%23fff3c4'/%3E%3C/g%3E%3Cg transform='translate(320 48) scale(1.0)'%3E%3Cuse href='%23f' fill='%23f29ab2'/%3E%3Ccircle r='3.6' fill='%23fff3c4'/%3E%3C/g%3E%3Cg transform='translate(290 62) scale(1.1)'%3E%3Cuse href='%23f' fill='%23fac9d6'/%3E%3Ccircle r='3.6' fill='%23fff3c4'/%3E%3C/g%3E%3Cg transform='translate(262 58) scale(0.9)'%3E%3Cuse href='%23f' fill='%23fac9d6'/%3E%3Ccircle r='3.6' fill='%23fff3c4'/%3E%3C/g%3E%3Cg transform='translate(300 100) scale(1.0)'%3E%3Cuse href='%23f' fill='%23f4a6bc'/%3E%3Ccircle r='3.6' fill='%23fff3c4'/%3E%3C/g%3E%3Cg transform='translate(286 140) scale(1.15)'%3E%3Cuse href='%23f' fill='%23f4a6bc'/%3E%3Ccircle r='3.6' fill='%23fff3c4'/%3E%3C/g%3E%3Cg transform='translate(240 82) scale(1.0)'%3E%3Cuse href='%23f' fill='%23f4a6bc'/%3E%3Ccircle r='3.6' fill='%23fff3c4'/%3E%3C/g%3E%3Cg transform='translate(200 100) scale(1.1)'%3E%3Cuse href='%23f' fill='%23f7b7c8'/%3E%3Ccircle r='3.6' fill='%23fff3c4'/%3E%3C/g%3E%3Cg transform='translate(160 58) scale(0.95)'%3E%3Cuse href='%23f' fill='%23fac9d6'/%3E%3Ccircle r='3.6' fill='%23fff3c4'/%3E%3C/g%3E%3Cg transform='translate(176 118) scale(0.9)'%3E%3Cuse href='%23f' fill='%23f29ab2'/%3E%3Ccircle r='3.6' fill='%23fff3c4'/%3E%3C/g%3E%3Cg transform='translate(140 128) scale(1.1)'%3E%3Cuse href='%23f' fill='%23fac9d6'/%3E%3Ccircle r='3.6' fill='%23fff3c4'/%3E%3C/g%3E%3Cg transform='translate(110 150) scale(1.0)'%3E%3Cuse href='%23f' fill='%23f29ab2'/%3E%3Ccircle r='3.6' fill='%23fff3c4'/%3E%3C/g%3E%3Cg transform='translate(80 160) scale(0.9)'%3E%3Cuse href='%23f' fill='%23fac9d6'/%3E%3Ccircle r='3.6' fill='%23fff3c4'/%3E%3C/g%3E%3Cg transform='translate(50 172) scale(1.0)'%3E%3Cuse href='%23f' fill='%23f7b7c8'/%3E%3Ccircle r='3.6' fill='%23fff3c4'/%3E%3C/g%3E%3Cg transform='translate(104 200) scale(0.95)'%3E%3Cuse href='%23f' fill='%23f7b7c8'/%3E%3Ccircle r='3.6' fill='%23fff3c4'/%3E%3C/g%3E%3Cg transform='translate(100 228) scale(0.8)'%3E%3Cuse href='%23f' fill='%23f29ab2'/%3E%3Ccircle r='3.6' fill='%23fff3c4'/%3E%3C/g%3E%3Cg transform='translate(228 40) scale(0.7)'%3E%3Cuse href='%23f' fill='%23f4a6bc'/%3E%3Ccircle r='3.6' fill='%23fff3c4'/%3E%3C/g%3E%3Cg transform='translate(330 80) scale(0.8)'%3E%3Cuse href='%23f' fill='%23fac9d6'/%3E%3Ccircle r='3.6' fill='%23fff3c4'/%3E%3C/g%3E%3C/svg%3E") no-repeat top right / contain;
-  opacity: 0.95;
-}
-
-:root[data-theme='sakura'] :is(.border-ink, .panel, .panel-raised, .panel-flat, .qtable, .qtable-head, .qtable-cell) {
-  border-color: #dcaebd;
+/* Hairlines instead of ink rules; outlines of things you can tick or type in stay visible. */
+:root[data-theme='sakura'] :is(.border-ink, .panel, .panel-raised, .panel-flat) {
+  border-color: var(--sakura-line);
 }
 
 :root[data-theme='sakura'] [class*='divide-ink'] > * {
-  border-color: #dcaebd;
+  border-color: var(--sakura-line);
 }
 
+:root[data-theme='sakura'] table.border-2 tbody tr > * {
+  border-top: 1px solid var(--sakura-line);
+}
+
+:root[data-theme='sakura'] table.border-2 {
+  border-collapse: separate;
+  border-spacing: 0;
+  overflow: clip;
+  border-radius: 12px;
+}
+
+:root[data-theme='sakura'] :is(.border-2, .panel, .panel-raised, .panel-flat) {
+  border-width: 1px;
+}
+
+:root[data-theme='sakura'] .border-b-2 {
+  border-bottom-width: 1px;
+}
+
+:root[data-theme='sakura'] .border-t-2 {
+  border-top-width: 1px;
+}
+
+:root[data-theme='sakura'] .border-l-2 {
+  border-left-width: 1px;
+}
+
+:root[data-theme='sakura'] .border-r-2 {
+  border-right-width: 1px;
+}
+
+:root[data-theme='sakura'] :is(.qtable, .qtable-head, .qtable-cell) {
+  border-color: #cdb8b9;
+}
+
+:root[data-theme='sakura'] :is(input:not([type='range']), select, textarea, label > span.h-5.w-5) {
+  border-color: var(--sakura-edge);
+}
+
+:root[data-theme='sakura'] label > span.h-5.w-5 {
+  border-radius: 6px;
+}
+
+/* Cards: soft, rounded paper with a gentle shadow. */
 :root[data-theme='sakura'] :is(.panel, .panel-raised, .panel-flat) {
-  border-radius: 14px;
+  border-radius: 18px;
   overflow: clip;
 }
 
-:root[data-theme='sakura'] :is(.panel, .panel-raised, [class*='shadow-[']) {
-  /* A soft blush glow in place of the hard ink shadow, with a hint of it kept in pink. */
+:root[data-theme='sakura'] .panel {
+  box-shadow: var(--sakura-shadow);
+}
+
+:root[data-theme='sakura'] .panel-raised {
   box-shadow:
-    3px 3px 0 #f3c3d0,
-    0 12px 26px -14px rgb(173 65 102 / 0.4);
+    0 2px 4px rgb(70 30 45 / 0.04),
+    0 24px 50px -28px rgb(120 40 64 / 0.36);
+}
+
+:root[data-theme='sakura'] [class*='shadow-['] {
+  box-shadow: var(--sakura-shadow-sm);
 }
 
 :root[data-theme='sakura'] :is(button, input, select, textarea) {
-  border-radius: 10px;
+  border-radius: 12px;
 }
 
-:root[data-theme='sakura'] .bb-cardbar {
-  background-image: linear-gradient(90deg, var(--color-venice-blue), #4f8d86);
+/* Buttons and button-like links: pills that lift a little on hover and settle when pressed. */
+:root[data-theme='sakura'] :is([class*='bb-btn-'], a.press, button.press, [role='switch']):not(.text-left, .flex-wrap) {
+  border-radius: 999px;
 }
 
-/* The home screen's name: SAT in blossom pink. */
+:root[data-theme='sakura'] .press:is(.text-left, .flex-wrap):not(.bb-choice) {
+  border-radius: 14px;
+}
+
+:root[data-theme='sakura'] .press {
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease,
+    background-color 160ms ease,
+    border-color 160ms ease;
+}
+
+:root[data-theme='sakura'] .press:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+:root[data-theme='sakura'] .press:active:not(:disabled) {
+  transform: translateY(1px) scale(0.985);
+}
+
+:root[data-theme='sakura'] .bb-btn-primary {
+  border-color: transparent;
+  box-shadow:
+    0 1px 2px rgb(110 16 46 / 0.2),
+    0 12px 26px -14px rgb(160 21 62 / 0.75);
+}
+
+:root[data-theme='sakura'] .bb-btn-secondary {
+  border-color: #f0d3d9;
+}
+
+/* Grading buttons: soft green and red with coloured words, so the pair stays calm. */
+:root[data-theme='sakura'] .bb-btn-success {
+  border-color: rgb(46 106 76 / 0.35);
+  background-color: var(--color-success-bg);
+  color: var(--color-success);
+}
+
+:root[data-theme='sakura'] .bb-btn-danger {
+  border-color: rgb(178 58 44 / 0.35);
+  background-color: var(--color-danger-bg);
+  color: var(--color-danger);
+}
+
+:root[data-theme='sakura'] :is(.bb-btn-success, .bb-btn-danger):hover:not(:disabled) {
+  filter: none;
+  border-color: currentColor;
+}
+
+:root[data-theme='sakura'] [class*='bb-btn-']:not(.bb-btn-ghost) {
+  font-weight: 600;
+}
+
+/* Sentence case, as on paper; small labels stay as spaced capitals, the poster's eyebrow. */
+:root[data-theme='sakura'] .uppercase {
+  text-transform: none;
+}
+
+:root[data-theme='sakura'] .tracking-tight {
+  letter-spacing: 0;
+}
+
+:root[data-theme='sakura'] .uppercase:is(.text-\[10px\], .text-\[11px\]) {
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-weight: 600;
+}
+
+/* …but not the controls inside such a label. */
+:root[data-theme='sakura'] .uppercase:is(.text-\[10px\], .text-\[11px\]) :is(select, input, textarea) {
+  letter-spacing: normal;
+  font-weight: 500;
+}
+
+/* Headings in the display serif. */
+:root[data-theme='sakura'] :is(h1:not(.text-sm), h2.text-lg) {
+  font-family: var(--sakura-serif);
+  font-weight: 600;
+  letter-spacing: -0.005em;
+}
+
+:root[data-theme='sakura'] h1.text-2xl {
+  font-size: 2.25rem;
+  line-height: 1.05;
+}
+
+:root[data-theme='sakura'] h2.text-lg {
+  font-size: 1.5rem;
+  line-height: 1.15;
+}
+
+@media (min-width: 640px) {
+  :root[data-theme='sakura'] h1.sm\:text-3xl {
+    font-size: 2.85rem;
+  }
+}
+
+/* The home screen's name, poster-style: a spaced crimson eyebrow with a short rule, the name
+   in the serif with SAT in crimson italic, and the welcome in italic over a brush stroke. */
+:root[data-theme='sakura'] .mc-logo {
+  font-family: var(--sakura-serif);
+  font-size: 2.9rem;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -0.01em;
+}
+
+@media (min-width: 640px) {
+  :root[data-theme='sakura'] .mc-logo {
+    font-size: 4.4rem;
+  }
+}
+
 :root[data-theme='sakura'] .mc-logo-accent {
-  background: linear-gradient(135deg, #f4a6bc, #c9557c);
-  color: #fffaf8;
-  border-radius: 10px;
+  background: none;
+  padding: 0 0.04em 0 0;
+  color: var(--color-coral);
+  font-style: italic;
+}
+
+:root[data-theme='sakura'] p:has(+ .mc-logo) {
+  color: var(--color-coral);
+  letter-spacing: 0.24em;
+}
+
+:root[data-theme='sakura'] p:has(+ .mc-logo)::after {
+  content: '';
+  display: block;
+  width: 30px;
+  height: 1.5px;
+  margin-top: 0.6rem;
+  background-color: var(--color-coral);
+}
+
+:root[data-theme='sakura'] .mc-logo + p {
+  display: inline-block;
+  margin-top: 1.1rem;
+  padding: 0.2rem 1.1rem 0.3rem 0.7rem;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 60' preserveAspectRatio='none'%3E%3Cfilter id='r' x='-5%25' y='-30%25' width='110%25' height='160%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.012 .35' numOctaves='3' seed='4'/%3E%3CfeDisplacementMap in='SourceGraphic' scale='14'/%3E%3C/filter%3E%3Cg filter='url(%23r)'%3E%3Cpath d='M6 30C70 16 170 12 260 16s120 4 136 10l-2 22c-70 6-180 6-270 5S20 52 8 46z' fill='%23f3c9d1' fill-opacity='.62'/%3E%3Cpath d='M18 33c90-9 220-10 360-4l-4 9c-120-4-250-1-352 6z' fill='%23eeb3c0' fill-opacity='.4'/%3E%3C/g%3E%3C/svg%3E") center / 100% 100% no-repeat;
+  color: var(--color-ink);
+  font-family: var(--sakura-serif);
+  font-size: 1.35rem;
+  font-style: italic;
+  font-weight: 600;
+}
+
+/* The home screen's small buttons: line icons inside soft blush circles. */
+:root[data-theme='sakura'] header :is(a, button).press > svg {
+  box-sizing: content-box;
+  width: 1.15rem;
+  height: 1.15rem;
+  padding: 0.4rem;
+  border-radius: 999px;
+  background-color: var(--sakura-blush);
+  stroke-width: 1.75;
+}
+
+:root[data-theme='sakura'] header :is(a, button).press {
+  padding-block: 0.3rem;
+  padding-left: 0.3rem;
+}
+
+/* Card title bars become the poster's eyebrow: spaced crimson capitals after a short rule. */
+:root[data-theme='sakura'] .bb-cardbar {
+  gap: 0.65rem;
+  border-bottom-width: 1px;
+  border-color: var(--sakura-line);
+  background: transparent;
+  padding: 0.85rem 1.1rem 0.7rem;
+}
+
+:root[data-theme='sakura'] :is(.bb-cardbar, .bb-cardbar *) {
+  color: var(--color-coral);
+}
+
+:root[data-theme='sakura'] :is(.bb-cardbar .uppercase, h2.bb-cardbar) {
+  text-transform: uppercase;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+}
+
+:root[data-theme='sakura'] .bb-cardbar > [aria-hidden='true'] {
+  width: 20px;
+  height: 1.5px;
+  flex: none;
+  background-color: var(--color-coral);
+}
+
+:root[data-theme='sakura'] .bb-cardbar > [aria-hidden='true'] > * {
+  display: none;
+}
+
+/* Blush notes in place of solid colour blocks: the sign-in invitation and the countdown. */
+:root[data-theme='sakura'] .bb-soft {
+  border-color: #f0d6dc;
+  background-color: var(--sakura-blush);
+  color: var(--color-ink);
+}
+
+:root[data-theme='sakura'] .bb-soft [class*='text-merino'] {
+  color: var(--color-ink-soft);
+}
+
+:root[data-theme='sakura'] .bb-soft .uppercase {
+  color: var(--color-coral);
+}
+
+:root[data-theme='sakura'] section.bb-soft {
+  border-radius: 18px;
+}
+
+:root[data-theme='sakura'] [role='timer'].bb-soft {
+  border-radius: 14px;
+}
+
+/* The dark status strips turn into quiet labels on the paper. */
+:root[data-theme='sakura'] .bg-ink:is(.border-b-2, .border-2):not([class*='gap-[2px]'], .aspect-video) {
+  background-color: transparent;
+  color: var(--color-ink-soft);
+}
+
+:root[data-theme='sakura'] .bg-ink:is(.border-b-2, .border-2):not([class*='gap-[2px]'], .aspect-video) [class*='text-merino'] {
+  color: var(--color-ink-soft);
+}
+
+:root[data-theme='sakura'] .bg-ink.border-b-2 > [aria-hidden='true'] {
+  display: none;
+}
+
+/* Grids ruled by gaps over an ink fill: the rules become hairlines too. */
+:root[data-theme='sakura'] .bg-ink[class*='gap-[2px]'] {
+  background-color: var(--sakura-line);
+}
+
+:root[data-theme='sakura'] dl.bg-ink[class*='gap-[2px]'],
+:root[data-theme='sakura'] .bg-ink[class*='gap-[2px]'].border-2 {
+  border-radius: 16px;
+  overflow: clip;
+}
+
+/* Answer choices: paper cards; the chosen one in blush with a crimson edge; once graded, a
+   soft green or red wash with a matching edge rather than a solid block. */
+:root[data-theme='sakura'] .bb-choice {
+  border-color: #dcc5c8;
+  border-radius: 16px;
+}
+
+:root[data-theme='sakura'] .bb-choice[data-selected='true'] {
+  border-color: var(--color-coral);
+  background-color: var(--sakura-blush);
+  box-shadow:
+    0 0 0 1px var(--color-coral),
+    var(--sakura-shadow-sm);
+  color: var(--color-ink);
+}
+
+:root[data-theme='sakura'] .bb-choice.bg-success {
+  border-color: var(--color-success);
+  background-color: var(--color-success-bg);
+  box-shadow: 0 0 0 1px var(--color-success);
+  color: var(--color-ink);
+}
+
+:root[data-theme='sakura'] .bb-choice.bg-danger {
+  border-color: var(--color-danger);
+  background-color: var(--color-danger-bg);
+  box-shadow: 0 0 0 1px var(--color-danger);
+  color: var(--color-ink);
+}
+
+:root[data-theme='sakura'] .bb-choice.bg-success .bb-letter {
+  border-color: var(--color-success);
+  background-color: var(--color-success);
+  color: var(--color-paper);
+}
+
+:root[data-theme='sakura'] .bb-choice.bg-danger .bb-letter {
+  border-color: var(--color-danger);
+  background-color: var(--color-danger);
+  color: var(--color-paper);
+}
+
+:root[data-theme='sakura'] .bb-letter {
+  border-color: var(--sakura-edge);
+  border-radius: 999px;
+  background-color: var(--color-paper);
+  color: var(--color-ink);
+}
+
+:root[data-theme='sakura'] .bb-choice[data-selected='true'] .bb-letter {
+  border-color: var(--color-coral);
+  background-color: var(--color-coral);
+  color: var(--color-paper);
+}
+
+/* Tabs: a soft pill track with the open tab filled. */
+:root[data-theme='sakura'] div.flex.border-ink:has(> button[aria-pressed]) {
+  gap: 4px;
+  border-radius: 999px;
+  padding: 4px;
+}
+
+:root[data-theme='sakura'] div.flex.border-ink:has(> button[aria-pressed]) > button {
+  border: 0;
+  border-radius: 999px;
+}
+
+/* Progress bars and small chips. */
+:root[data-theme='sakura'] :is(.h-2, .h-2\.5, .h-3).border-ink {
+  overflow: hidden;
+  border-radius: 999px;
+  background-color: #f1e3dd;
+}
+
+:root[data-theme='sakura'] span.inline-flex.border-ink.text-\[11px\] {
+  border-radius: 999px;
+  padding-inline: 0.6rem;
+}
+
+/* Other boxed blocks round off like the cards; small boxed labels become pills. */
+:root[data-theme='sakura'] :is(section, div, li, dl, ul, aside, form).border-2 {
+  border-radius: 16px;
+}
+
+:root[data-theme='sakura'] :is(p, a:not(.press)).border-2 {
+  border-radius: 12px;
+}
+
+/* A rounded box that opens with a strip (answer feedback, danger zones) clips it to its corners. */
+:root[data-theme='sakura'] div.border-2:has(> .border-b-2:first-child) {
+  overflow: clip;
+}
+
+:root[data-theme='sakura'] span.border-2 {
+  border-radius: 999px;
+}
+
+/* Bars that stay at the top of the screen: plain paper with a hairline and a soft shadow. */
+:root[data-theme='sakura'] :is(.bb-header, .bb-footer, header.sticky.bg-merino-dark) {
+  background-color: #fcf8f3;
+  box-shadow: 0 8px 22px -20px rgb(120 40 64 / 0.45);
+}
+
+/* Header strips of panels (step-by-step, the calculator, the menu, review cards): blush with
+   crimson words rather than a solid block of colour. */
+:root[data-theme='sakura'] :is(header, div).bg-venice-blue:is(.border-b-2, .border-y-2):not(.bb-cardbar) {
+  background-color: var(--sakura-blush);
+  color: var(--color-coral);
+}
+
+:root[data-theme='sakura'] :is(header, div).bg-venice-blue:is(.border-b-2, .border-y-2):not(.bb-cardbar) :is([class*='text-merino'], h2) {
+  color: var(--color-coral);
+}
+
+:root[data-theme='sakura'] :is(header, div).bg-venice-blue:is(.border-b-2, .border-y-2):not(.bb-cardbar) .border-merino {
+  border-color: rgb(160 21 62 / 0.4);
+}
+
+:root[data-theme='sakura'] :is(header, div).bg-venice-blue:is(.border-b-2, .border-y-2):not(.bb-cardbar) :is(button, a):hover {
+  background-color: rgb(160 21 62 / 0.1);
+  color: var(--color-coral);
+}
+
+:root[data-theme='sakura'] :is(header, div).bg-venice-blue:is(.border-b-2, .border-y-2):not(.bb-cardbar) h2.uppercase,
+:root[data-theme='sakura'] div.bg-venice-blue.border-b-2.uppercase:not(.bb-cardbar) {
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+}
+
+/* The step-by-step panel: a rounded sheet. */
+:root[data-theme='sakura'] aside[role='dialog'] {
+  overflow: clip;
+  border-radius: 18px 18px 0 0;
+}
+
+@media (min-width: 640px) {
+  :root[data-theme='sakura'] aside[role='dialog'] {
+    border-width: 1px;
+    border-radius: 18px;
+  }
+}
+
+/* "Danger zone" strips: tinted, like the caps over the counts. */
+:root[data-theme='sakura'] div.border-b-2.bg-danger {
+  background-color: transparent;
+  color: var(--color-danger);
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  font-size: 10.5px;
+}
+
+/* Flashcards: the word in the display serif; the example set off by a thin crimson rule. */
+:root[data-theme='sakura'] .panel-raised :is(span.text-3xl, span.text-xl).font-bold {
+  font-family: var(--sakura-serif);
+  font-weight: 600;
+  letter-spacing: 0;
+}
+
+:root[data-theme='sakura'] .panel-raised span.text-3xl.font-bold {
+  font-size: 2.6rem;
+}
+
+:root[data-theme='sakura'] .panel-raised span.text-xl.font-bold {
+  font-size: 1.85rem;
+  line-height: 1;
+}
+
+@media (min-width: 640px) {
+  :root[data-theme='sakura'] .panel-raised span.text-3xl.font-bold {
+    font-size: 3.9rem;
+  }
+
+  :root[data-theme='sakura'] .panel-raised span.text-xl.font-bold {
+    font-size: 2.4rem;
+  }
+}
+
+:root[data-theme='sakura'] p.border-l-4.border-rock-blue {
+  border-left-width: 2px;
+  border-color: var(--color-coral);
+  background-color: transparent;
+}
+
+/* The reader: the book's title in the serif, the chapter as a crimson eyebrow. */
+:root[data-theme='sakura'] span.block.text-3xl.font-bold {
+  font-family: var(--sakura-serif);
+  font-size: 2.6rem;
+  font-weight: 600;
+  letter-spacing: 0;
+}
+
+:root[data-theme='sakura'] h1.text-sm.uppercase {
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  font-size: 11px;
+}
+
+/* The coloured caps over the pool counts become tinted labels rather than solid bars. */
+:root[data-theme='sakura'] p.border-b-2.bg-danger {
+  background-color: var(--color-danger-bg);
+  color: var(--color-danger);
+}
+
+:root[data-theme='sakura'] p.border-b-2.bg-success {
+  background-color: var(--color-success-bg);
+  color: var(--color-success);
+}
+
+:root[data-theme='sakura'] p.border-b-2.bg-venice-blue {
+  background-color: var(--sakura-blush);
+  color: var(--color-coral);
 }
 
 html,

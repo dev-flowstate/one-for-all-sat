@@ -1,0 +1,30 @@
+Pictures used by the Sakura theme (src/index.css, rules under :root[data-theme='sakura']).
+Every source is dedicated to the public domain under CC0 1.0 Universal
+(https://creativecommons.org/publicdomain/zero/1.0/), so no attribution is required; it is
+given here anyway. Each picture was cut out of its photo and resized, and some were toned, for
+this theme.
+
+branch.avif, branch.webp
+  A flowering cherry branch against a blue sky. The sky was keyed out, the photo flipped,
+  cropped and faded at its lower edge.
+  Source:  "20150318Prunus serrulata1.jpg"
+           https://commons.wikimedia.org/wiki/File:20150318Prunus_serrulata1.jpg
+  Author:  AnRo0002 (Wikimedia Commons user)
+  Licence: CC0 1.0 Universal (public domain dedication)
+
+fuji.avif, fuji.webp
+  Mount Fuji over Lake Kawaguchi. The sky was removed and the mountain and its reflection
+  toned to a misty rose and faded into the paper.
+  Source:  "Fuji Kawaguchi 475.JPG"
+           https://commons.wikimedia.org/wiki/File:Fuji_Kawaguchi_475.JPG
+  Author:  Marion & Christoph Aistleitner
+  Licence: CC0 1.0 Universal (public domain dedication)
+
+petal-1.avif, petal-1.webp, petal-2.avif, petal-2.webp
+  Two single petals, cut out of a photo of cherry petals floating on dark water.
+  Source:  "20150427Prunus serrulata6.jpg"
+           https://commons.wikimedia.org/wiki/File:20150427Prunus_serrulata6.jpg
+  Author:  AnRo0002 (Wikimedia Commons user)
+  Licence: CC0 1.0 Universal (public domain dedication)
+
+The pale sun disk and the paper grain are drawn in CSS (a gradient and an SVG noise filter).

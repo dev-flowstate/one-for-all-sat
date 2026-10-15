@@ -7,7 +7,7 @@ export const THEMES: { id: Theme; label: string; description: string }[] = [
   { id: 'dark', label: 'Dark', description: 'The same look, dark, for night studying.' },
   { id: 'bluebook', label: 'Bluebook', description: 'Blue and white, like the real test app.' },
   { id: 'minecraft', label: 'Minecraft-style', description: 'Sky, grass and dirt, in blocky pixels.' },
-  { id: 'sakura', label: 'Sakura', description: 'Cherry blossoms at dawn, with petals drifting by.' },
+  { id: 'sakura', label: 'Sakura', description: 'Cherry blossoms and Mount Fuji on watercolour paper, with petals drifting by.' },
 ];
 
 /** Light unless another has been picked; the choice is remembered on this device. Kept in step
