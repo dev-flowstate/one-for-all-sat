@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { createPortal } from 'react-dom';
 import { NavLink, useLocation } from 'react-router-dom';
 
@@ -35,12 +35,23 @@ const SECTIONS: { title: string; links: { to: string; label: string }[] }[] = [
 /** Mid-question screens have their own Exit, and a menu there would only invite losing your place. */
 const HIDDEN_ON = ['/run', '/test', '/vocab/drill'];
 
+/**
+ * The part of the page that's on the screen. Zoomed in with a pinch, the screen shows only a
+ * panned window onto the area `position: fixed` is measured from, so a drawer pinned to that
+ * area's left edge would open off to the side, out of sight.
+ */
+function onScreen(): CSSProperties | undefined {
+  const view = window.visualViewport;
+  return view ? { left: view.offsetLeft, top: view.offsetTop, width: view.width, height: view.height } : undefined;
+}
+
 /** The ☰ Menu button at the top left of every page, and the drawer it opens. */
 export function SiteMenu() {
   const { pathname } = useLocation();
   const [open, setOpen] = useState(false);
   const first = useRef<HTMLAnchorElement>(null);
   const button = useRef<HTMLButtonElement>(null);
+  const [placement, setPlacement] = useState<CSSProperties>();
 
   // A link was followed: the drawer has done its job.
   const [openedOn, setOpenedOn] = useState(pathname);
@@ -51,13 +62,23 @@ export function SiteMenu() {
 
   useEffect(() => {
     if (!open) return;
-    first.current?.focus();
+    // Without preventScroll, focusing scrolls whatever it takes to show the element. Zoomed in,
+    // that panned the whole view across to the link and left the page shifted sideways once
+    // the menu closed.
+    first.current?.focus({ preventScroll: true });
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setOpen(false);
     window.addEventListener('keydown', onKey);
+    // The drawer keeps to the screen if the zoomed view is panned or zoomed while it's open.
+    const view = window.visualViewport;
+    const follow = () => setPlacement(onScreen());
+    view?.addEventListener('scroll', follow);
+    view?.addEventListener('resize', follow);
     const opener = button.current;
     return () => {
       window.removeEventListener('keydown', onKey);
-      opener?.focus();
+      view?.removeEventListener('scroll', follow);
+      view?.removeEventListener('resize', follow);
+      opener?.focus({ preventScroll: true });
     };
   }, [open]);
 
@@ -69,7 +90,10 @@ export function SiteMenu() {
         <button
           ref={button}
           type="button"
-          onClick={() => setOpen(true)}
+          onClick={() => {
+            setPlacement(onScreen());
+            setOpen(true);
+          }}
           aria-expanded={open}
           aria-controls="site-menu"
           className="press inline-flex min-h-10 items-center gap-2 border-2 border-ink bg-paper px-3 font-mono text-xs font-bold tracking-tight uppercase shadow-[3px_3px_0_var(--color-ink)] hover:bg-merino-dark"
@@ -83,12 +107,12 @@ export function SiteMenu() {
 
       {open &&
         createPortal(
-          <div className="fixed inset-0 z-50">
+          <div className="fixed inset-0 z-50" style={placement}>
             <div aria-hidden="true" className="absolute inset-0 bg-ink/40" onClick={() => setOpen(false)} />
             <nav
               id="site-menu"
               aria-label="Site menu"
-              className="absolute inset-y-0 left-0 flex w-72 max-w-[85vw] flex-col border-r-2 border-ink bg-paper shadow-[6px_0_0_var(--color-ink)]"
+              className="absolute inset-y-0 left-0 flex w-72 max-w-[85%] flex-col border-r-2 border-ink bg-paper shadow-[6px_0_0_var(--color-ink)]"
             >
               <div className="flex flex-none items-center justify-between border-b-2 border-ink bg-venice-blue px-4 py-3 text-merino">
                 <span className="font-mono text-xs font-bold tracking-tight uppercase">Menu</span>
