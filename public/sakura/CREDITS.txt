@@ -1,30 +1,35 @@
 Pictures used by the Sakura theme (src/index.css, rules under :root[data-theme='sakura']).
 Every source is dedicated to the public domain under CC0 1.0 Universal
 (https://creativecommons.org/publicdomain/zero/1.0/), so no attribution is required; it is
-given here anyway. Each picture was cut out of its photo and resized, and some were toned, for
-this theme.
+given here anyway. Each picture was cut out of its photo's sky and resized for this theme; the
+colours are the photos' own, with the blossoms lifted slightly.
 
-branch.avif, branch.webp
-  A flowering cherry branch against a blue sky. The sky was keyed out, the photo flipped,
-  cropped and faded at its lower edge.
-  Source:  "20150318Prunus serrulata1.jpg"
-           https://commons.wikimedia.org/wiki/File:20150318Prunus_serrulata1.jpg
-  Author:  AnRo0002 (Wikimedia Commons user)
-  Licence: CC0 1.0 Universal (public domain dedication)
+branch-right.avif, branch-right.webp, branch-left.avif, branch-left.webp,
+branch-top.avif, branch-top.webp
+  Flowering cherry branches against a clear sky, framing Mount Fuji. The sky was keyed out
+  and the top-right and top-left branches cropped; branch-top is the left one, flipped and
+  cut shorter for phones.
+  Source:  "JJ Ying 2017 (Unsplash).jpg"
+           https://commons.wikimedia.org/wiki/File:JJ_Ying_2017_(Unsplash).jpg
+           (originally https://unsplash.com/photos/9Qwbfa_RM94)
+  Author:  JJ Ying (https://unsplash.com/@jjying)
+  Licence: CC0 1.0 Universal (Commons' {{Unsplash}} tag, which applies {{Cc-zero}}; posted to
+           Unsplash in March 2017, when its photos were published under CC0)
 
 fuji.avif, fuji.webp
-  Mount Fuji over Lake Kawaguchi. The sky was removed and the mountain and its reflection
-  toned to a misty rose and faded into the paper.
-  Source:  "Fuji Kawaguchi 475.JPG"
-           https://commons.wikimedia.org/wiki/File:Fuji_Kawaguchi_475.JPG
+  Mount Fuji above Lake Kawaguchi on a clear winter day. The sky was removed and the foot of
+  the mountain faded into haze; the mountain keeps its natural colour.
+  Source:  "Fuji Kawaguchi 357.JPG"
+           https://commons.wikimedia.org/wiki/File:Fuji_Kawaguchi_357.JPG
   Author:  Marion & Christoph Aistleitner
   Licence: CC0 1.0 Universal (public domain dedication)
 
 petal-1.avif, petal-1.webp, petal-2.avif, petal-2.webp
-  Two single petals, cut out of a photo of cherry petals floating on dark water.
+  Two single petals, cut out of a photo of cherry petals floating on dark water, and coloured
+  a stronger sakura pink.
   Source:  "20150427Prunus serrulata6.jpg"
            https://commons.wikimedia.org/wiki/File:20150427Prunus_serrulata6.jpg
   Author:  AnRo0002 (Wikimedia Commons user)
   Licence: CC0 1.0 Universal (public domain dedication)
 
-The pale sun disk and the paper grain are drawn in CSS (a gradient and an SVG noise filter).
+The sky, the sun's glow and the light ground are drawn in CSS (gradients).
