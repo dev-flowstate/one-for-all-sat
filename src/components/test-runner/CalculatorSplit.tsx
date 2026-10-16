@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { CalculatorPanel } from './CalculatorPanel';
 import { SplitDivider } from './SplitDivider';
+import { scrollToTop } from '../../lib/scrollToTop';
 
 /** Side-by-side above this, stacked below — the same 1024px pivot the question grid uses. */
 const WIDE_QUERY = '(min-width: 1024px)';
@@ -45,10 +46,7 @@ export function CalculatorSplit({ calculatorOpen, onCloseCalculator, children, s
   const isWide = useIsWide();
   const questionPane = useRef<HTMLDivElement>(null);
 
-  useLayoutEffect(() => {
-    window.scrollTo(0, 0);
-    questionPane.current?.scrollTo(0, 0);
-  }, [scrollKey]);
+  useLayoutEffect(() => scrollToTop(questionPane.current), [scrollKey]);
 
   return (
     <div ref={splitRef} className={calculatorOpen ? 'flex min-h-0 flex-1 flex-col lg:flex-row' : ''}>

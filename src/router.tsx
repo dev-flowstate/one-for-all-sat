@@ -2,6 +2,7 @@ import { lazy, Suspense, useEffect, useLayoutEffect } from 'react';
 import { HashRouter, Routes, Route, Navigate, useLocation, useNavigationType } from 'react-router-dom';
 import { HomePage } from './pages/HomePage';
 import { SiteMenu } from './components/nav/SiteMenu';
+import { scrollToTop } from './lib/scrollToTop';
 
 // Every page but home is its own file, downloaded and started only when it's opened, so the
 // first screen doesn't wait for the code of a dozen others.
@@ -65,7 +66,7 @@ function ScrollToTop() {
   const { pathname } = useLocation();
   const navigationType = useNavigationType();
   useLayoutEffect(() => {
-    if (navigationType !== 'POP') window.scrollTo(0, 0);
+    if (navigationType !== 'POP') scrollToTop();
   }, [pathname, navigationType]);
   return null;
 }
