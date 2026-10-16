@@ -3,10 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import { listDoodles, saveDoodle, type SavedDoodle } from '../lib/doodles';
 import { useLoadedQuestions } from '../lib/useLoadedQuestions';
 import { useVocabStore } from '../store/useVocabStore';
+import { useProgressStore } from '../store/useProgressStore';
 import { Card } from '../components/ui/Card';
 import { Badge } from '../components/ui/Badge';
 import { QuestionLayout } from '../components/test-runner/QuestionLayout';
 import { McqChoices } from '../components/test-runner/McqChoices';
+import { SprInput } from '../components/test-runner/SprInput';
+import { AnswerFeedback } from '../components/test-runner/AnswerFeedback';
 import { QuestionPlaceholder } from '../components/review/QuestionPlaceholder';
 import { Flashcard } from '../components/vocab/Flashcard';
 import { BOOKS, getReadingProgress, setReadingProgress, type BookId } from '../lib/reading';
@@ -50,6 +53,7 @@ export function DoodlesPage() {
     [doodles],
   );
   const { loaded } = useLoadedQuestions(questionIds);
+  const progress = useProgressStore((s) => s.progress);
 
   const cards = useVocabStore((s) => s.cards);
   const cardsLoaded = useVocabStore((s) => s.cardsLoaded);
@@ -121,6 +125,7 @@ export function DoodlesPage() {
               if (k === 'q') {
                 const question = loaded[d.id.slice(2)];
                 if (!question) return <QuestionPlaceholder key={d.id} />;
+                const outcome = progress[question.id]?.lastOutcome;
                 return (
                   <Card
                     key={d.id}
@@ -133,8 +138,10 @@ export function DoodlesPage() {
                       <Badge>{question.skill}</Badge>
                       <Badge>{question.difficulty}</Badge>
                     </div>
+                    {/* Laid out as practice shows it once answered, explanation and all, so a
+                        drawing made over any of it sits where it was drawn. */}
                     <QuestionLayout question={question}>
-                      {question.choices && (
+                      {question.choices ? (
                         <McqChoices
                           choices={question.choices}
                           crossedIds={[]}
@@ -142,6 +149,18 @@ export function DoodlesPage() {
                           revealMode="end"
                           onChoiceClick={() => {}}
                         />
+                      ) : (
+                        <SprInput value="" onChange={() => {}} onSubmit={() => {}} submitted />
+                      )}
+                      {outcome && (
+                        <div className="mt-5">
+                          <AnswerFeedback
+                            outcome={outcome}
+                            explanation={question.explanation}
+                            questionId={question.id}
+                            celebrate={false}
+                          />
+                        </div>
                       )}
                     </QuestionLayout>
                   </Card>

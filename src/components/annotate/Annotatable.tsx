@@ -93,6 +93,13 @@ export function Annotatable({ id, highlighter, stickyToolbar, children }: Annota
   }, []);
 
   const scale = UNITS / size.w;
+  // A drawing can reach below what's on the page now: written over the explanation shown after
+  // answering, say, and opened again before answering. The box grows to the lowest stroke, so
+  // no part of a drawing is ever cut off.
+  let lowest = 0;
+  for (const s of strokes) {
+    for (let i = 1; i < s.points.length; i += 2) lowest = Math.max(lowest, s.points[i] + s.width / 2);
+  }
   const highlighting = active && tool === 'highlighter' && !!highlighter;
   const penOn = active && !highlighting;
 
@@ -317,7 +324,7 @@ export function Annotatable({ id, highlighter, stickyToolbar, children }: Annota
         )}
       </div>
 
-      <div ref={box} className="relative">
+      <div ref={box} className="relative" style={lowest ? { minHeight: lowest / scale } : undefined}>
         {typeof children === 'function' ? children({ highlighting }) : children}
         <svg
           ref={surface}

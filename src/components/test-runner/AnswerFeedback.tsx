@@ -8,6 +8,8 @@ interface AnswerFeedbackProps {
   outcome: AttemptOutcome;
   explanation: string;
   questionId: string;
+  /** The burst of sparks for a right answer; off where it's shown again rather than just earned. */
+  celebrate?: boolean;
 }
 
 /**
@@ -15,12 +17,12 @@ interface AnswerFeedbackProps {
  * verdict bar over the explanation, rather than a tinted wash. The glyph carries the
  * verdict alongside the colour, and the explanation is long-form so it reads in the serif.
  */
-export function AnswerFeedback({ outcome, explanation, questionId }: AnswerFeedbackProps) {
+export function AnswerFeedback({ outcome, explanation, questionId, celebrate = true }: AnswerFeedbackProps) {
   const correct = outcome === 'correct';
   const bar = useRef<HTMLParagraphElement>(null);
   // A bigger, brighter burst over the verdict bar when the answer is right.
   useEffect(() => {
-    if (correct && bar.current)
+    if (correct && celebrate && bar.current)
       sparkFrom(bar.current, {
         colors: ['--color-success', '--color-caution', '--color-venice-blue'],
         count: 12,
@@ -29,7 +31,7 @@ export function AnswerFeedback({ outcome, explanation, questionId }: AnswerFeedb
         width: 4,
         durationMs: 650,
       });
-  }, [correct]);
+  }, [correct, celebrate]);
   return (
     <div className="border-2 border-ink shadow-[4px_4px_0_var(--color-ink)]">
       <p
